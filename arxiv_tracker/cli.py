@@ -70,6 +70,85 @@ def _dedup_addrs(seq):
     return out
 
 
+def _parse_groups(raw_cfg, cli_keywords):
+    """配置里的分组。命令行传入 --keywords 时沿用单查询，不启用分组。"""
+    if cli_keywords:
+        return []
+    out = []
+    for g in raw_cfg.get("groups") or []:
+        if not isinstance(g, dict):
+            continue
+        name = str(g.get("name") or "").strip()
+        kws = [str(k).strip() for k in (g.get("keywords") or []) if str(k).strip()]
+        if name and kws:
+            out.append({"name": name, "keywords": kws})
+    return out
+
+
+def _parse_dt(s: str):
+    from datetime import datetime, timezone
+    if not s:
+        return None
+    s = s.replace("Z", "+00:00")
+    try:
+        return datetime.fromisoformat(s).astimezone(timezone.utc)
+    except Exception:
+        return None
+
+
+def _collect_items(query, *, want_new, cutoff, seen_ids, unique_only,
+                   sort_by, sort_order, fallback_when_empty):
+    """分页抓取，直到攒够未读新条目或越过时间窗。"""
+    page_size = min(200, max(25, want_new))
+    max_pages = 20
+    start = 0
+    collected = []
+    collected_ids = set()
+    reached_cutoff = False
+
+    for _page in range(max_pages):
+        xml = fetch_arxiv_feed(
+            query, start=start, max_results=page_size,
+            sort_by=sort_by, sort_order=sort_order
+        )
+        page_items = parse_feed(xml) or []
+        if not page_items:
+            break
+
+        for it in page_items:
+            t = _parse_dt(it.get("updated")) or _parse_dt(it.get("published"))
+            if cutoff and t and t < cutoff:
+                reached_cutoff = True
+                break
+
+            aid = it.get("id")
+            if unique_only and aid and aid in seen_ids:
+                continue
+            if aid and aid in collected_ids:
+                continue
+
+            collected.append(it)
+            if aid:
+                collected_ids.add(aid)
+            if len(collected) >= want_new:
+                break
+
+        if len(collected) >= want_new or reached_cutoff:
+            break
+        if len(page_items) < page_size:
+            break
+        start += page_size
+
+    if not collected and fallback_when_empty:
+        xml = fetch_arxiv_feed(
+            query, start=0, max_results=want_new,
+            sort_by=sort_by, sort_order=sort_order
+        )
+        collected = parse_feed(xml) or []
+
+    return collected
+
+
 @click.group()
 def cli():
     """arxiv-tracker CLI"""
@@ -165,9 +244,15 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
             click.echo("[Freshness] since_days={}, unique_only={}, state_path='{}', fallback_when_empty={}"
                        .format(since_days, unique_only, state_path, fallback_when_empty))
 
+        groups = _parse_groups(raw_cfg, keys)
+        group_names = [g["name"] for g in groups]
+
         if verbose:
             click.echo("[Run] categories: {}".format(cfg.categories))
-            click.echo("[Run] keywords  : {}".format(cfg.keywords))
+            if groups:
+                click.echo("[Run] groups    : {}".format(group_names))
+            else:
+                click.echo("[Run] keywords  : {}".format(cfg.keywords))
             click.echo("[Run] summary   : {}/{}".format(mode, scope))
             click.echo("[Run] lang      : {}".format(lang))
             click.echo("[Run] translate : {} -> {}".format(trans_cfg.get("enabled", False),
@@ -179,17 +264,6 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
         # 2) 查询（分页抓取直到攒够“未读新条目”或触达时间窗）
         from datetime import datetime, timedelta, timezone
         import json, pathlib
-
-        def _parse_dt(s: str):
-            if not s:
-                return None
-            s = s.replace("Z", "+00:00")
-            try:
-                return datetime.fromisoformat(s).astimezone(timezone.utc)
-            except Exception:
-                return None
-        q = build_search_query(cfg.categories, cfg.keywords, cfg.exclude_keywords, cfg.logic)
-        click.echo("[Query] {}".format(q))
 
         # 读取已见集合（兼容 list / {"ids":[...]} / {id: timestamp} 三种格式）
         seen_ids = set()
@@ -209,56 +283,34 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
 
         cutoff = datetime.now(timezone.utc) - timedelta(days=since_days) if since_days > 0 else None
         want_new = int(cfg.max_results or 50)
+        collect_kwargs = dict(
+            want_new=want_new, cutoff=cutoff, seen_ids=seen_ids, unique_only=unique_only,
+            sort_by=cfg.sort_by, sort_order=cfg.sort_order,
+            fallback_when_empty=fallback_when_empty,
+        )
 
-        # 分页参数（可按需改成配置）
-        page_size = min(200, max(25, want_new))  # 25~200 较稳
-        max_pages = 20
-        start = 0
-        collected, reached_cutoff = [], False
-
-        for _page in range(max_pages):
-            xml = fetch_arxiv_feed(
-                q, start=start, max_results=page_size,
-                sort_by=cfg.sort_by, sort_order=cfg.sort_order
-            )
-            page_items = parse_feed(xml) or []
-            if not page_items:
-                break
-
-            for it in page_items:
-                # 时间窗（按 updated 优先；无则退回 published）
-                t = _parse_dt(it.get("updated")) or _parse_dt(it.get("published"))
-                if cutoff and t and t < cutoff:
-                    reached_cutoff = True
-                    break
-
-                # 去重
-                aid = it.get("id")
-                if unique_only and aid and aid in seen_ids:
-                    continue
-
-                collected.append(it)
-                if len(collected) >= want_new:
-                    break
-
-            if len(collected) >= want_new or reached_cutoff:
-                break
-
-            if len(page_items) < page_size:
-                # 已无更多可翻页内容
-                break
-
-            start += page_size
-
-        # Fallback：若空且允许回退，则给最新一页（不考虑去重/时间窗）
-        if not collected and fallback_when_empty:
-            xml = fetch_arxiv_feed(
-                q, start=0, max_results=want_new,
-                sort_by=cfg.sort_by, sort_order=cfg.sort_order
-            )
-            collected = parse_feed(xml) or []
-
-        items = collected
+        if groups:
+            # 同一篇可以命中多个方向；seen 仍按论文 id 全局去重，避免跨天重复发信。
+            by_id = {}
+            items = []
+            for g in groups:
+                q = build_search_query(cfg.categories, g["keywords"], cfg.exclude_keywords, cfg.logic)
+                click.echo("[Query] {}: {}".format(g["name"], q))
+                for it in _collect_items(q, **collect_kwargs):
+                    aid = it.get("id")
+                    if aid and aid in by_id:
+                        names = by_id[aid].setdefault("groups", [])
+                        if g["name"] not in names:
+                            names.append(g["name"])
+                        continue
+                    it["groups"] = [g["name"]]
+                    if aid:
+                        by_id[aid] = it
+                    items.append(it)
+        else:
+            q = build_search_query(cfg.categories, cfg.keywords, cfg.exclude_keywords, cfg.logic)
+            click.echo("[Query] {}".format(q))
+            items = _collect_items(q, **collect_kwargs)
         if not items:
             click.secho("[Info] No new items after pagination/freshness/dedup filter.", fg="yellow")
         else:
@@ -334,6 +386,8 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
             title = it.get("title", "")
             venue = it.get("venue_inferred") or (it.get("journal_ref") or "")
             click.echo(f"{idx:02d}. {title}  [{' / '.join(it.get('authors', []))}]")
+            if it.get("groups"):
+                click.echo(f"    Groups: {' / '.join(it['groups'])}")
             if venue:
                 click.echo(f"    Venue: {venue}")
             click.echo(f"    Time: {it.get('published', '—')}  ->  {it.get('updated', '—')}")
@@ -372,7 +426,8 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
                     summaries_en=summaries_en or {},
                     translations=translations or {},
                     site_dir=sd, site_title=title, keep_runs=keep,
-                    theme=theme, accent=accent
+                    theme=theme, accent=accent,
+                    group_names=group_names or None,
                 )
                 click.echo(f"Saved: {site_res['index_path']}")
                 page_url = site_url or site_cfg.get("url")
@@ -460,7 +515,8 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
                                 items=items, lang=lang, translations=translations,
                                 summaries_zh=summaries_zh, summaries_en=summaries_en,
                                 detail=detail, max_items=max_items,
-                                title=subject.replace("[arXiv]", "arXiv")
+                                title=subject.replace("[arXiv]", "arXiv"),
+                                groups=group_names or None,
                             )
                         from .mailer import send_email
                         attach = []

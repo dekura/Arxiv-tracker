@@ -48,6 +48,7 @@ CSS = """
 @media (min-width: 860px){.grid-2{grid-template-columns:1fr 1fr}}
 .section{border:1px solid #eef2f7;border-radius:10px;padding:8px 10px;background:#f8fafc}
 .section h4{margin:4px 0 6px 0;font-size:14px}
+.group-title{font-size:18px;margin:18px 0 8px 0;color:#2563eb}
 """
 
 def _render_card(it: Dict[str, Any],
@@ -111,6 +112,7 @@ def render_email_html(
     detail: str = "full",
     max_items: int = 50,
     title: str = "arXiv Daily Digest",
+    groups: Optional[List[str]] = None,
 ) -> str:
     translations = translations or {}
     summaries_zh = summaries_zh or {}
@@ -123,12 +125,29 @@ def render_email_html(
       <style>{CSS}</style>
     """
 
+    def _cards(seq: List[Dict[str, Any]]) -> List[str]:
+        out = []
+        for it in seq[:max_items]:
+            sid = it.get("id") or ""
+            out.append(_render_card(it, translations.get(sid), summaries_zh.get(sid), summaries_en.get(sid)))
+        return out
+
+    if groups:
+        body = [head]
+        for name in groups:
+            group_items = [it for it in items if name in (it.get("groups") or [])]
+            body.append(f'<h3 class="group-title">{_esc(name)}</h3>')
+            if group_items:
+                body.extend(_cards(group_items))
+            else:
+                body.append("<p>今日暂无新增。</p>")
+        body.append("</div>")
+        return "\n".join(body)
+
     if not items:
         return head + "<p>No results.</p></div>"
 
     body = [head]
-    for it in items[:max_items]:
-        sid = it.get("id") or ""
-        body.append(_render_card(it, translations.get(sid), summaries_zh.get(sid), summaries_en.get(sid)))
+    body.extend(_cards(items))
     body.append("</div>")
     return "\n".join(body)

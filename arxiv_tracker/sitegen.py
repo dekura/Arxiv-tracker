@@ -114,6 +114,12 @@ summary{{cursor:pointer;color:var(--acc)}}
 .controls{{display:flex;gap:8px;align-items:center}}
 .btn{{border:1px solid var(--border);background:var(--card);padding:6px 10px;border-radius:10px;cursor:pointer;color:var(--text)}}
 .btn:hover{{border-color:var(--acc)}}
+.tabs{{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0;border-bottom:2px solid var(--border)}}
+.tab{{padding:8px 14px;cursor:pointer;border:none;background:transparent;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px}}
+.tab.active{{color:var(--acc);border-bottom-color:var(--acc);font-weight:600}}
+.group-section{{display:none}}
+.group-section.active{{display:block}}
+.group-header{{font-size:18px;font-weight:600;margin:8px 0 12px 0;color:var(--acc)}}
 """
 
 def _join_links(it: Dict[str, Any]) -> str:
@@ -220,6 +226,10 @@ def _build_page(title: str, sub: str, cards_html: str, history_html: str,
   window.__expandAll = function(open) {{
     document.querySelectorAll('details').forEach(d => d.open = !!open);
   }}
+  window.__switchGroup = function(i) {{
+    document.querySelectorAll('.tab').forEach((el, idx) => el.classList.toggle('active', idx === i));
+    document.querySelectorAll('.group-section').forEach((el, idx) => el.classList.toggle('active', idx === i));
+  }}
 }})();
 </script>
 """
@@ -244,7 +254,7 @@ def _build_page(title: str, sub: str, cards_html: str, history_html: str,
     </div>
     <div class="hr"></div>
     <div>{_esc(sub)}</div>
-    <div class="row">{cards_html}</div>
+    {cards_html}
     <details style="margin-top:16px" class="detail"><summary>History</summary>
       <div class="history-list">{history_html}</div>
     </details>
@@ -265,6 +275,44 @@ def _history_list(archive_dir: str, keep: int) -> List[str]:
         links.append(f'<a href="archive/{_esc(f)}">{_esc(date)}</a>')
     return links
 
+def _cards_html(items: List[Dict[str,Any]],
+                summaries_zh: Dict[str,Dict[str,str]],
+                summaries_en: Dict[str,Dict[str,str]],
+                translations: Dict[str,Dict[str,str]]) -> str:
+    cards = []
+    for it in items:
+        sid = it.get("id") or ""
+        cards.append(_card(it, translations.get(sid), summaries_zh.get(sid), summaries_en.get(sid)))
+    return "\n".join(cards)
+
+
+def _body_html(items: List[Dict[str,Any]],
+               summaries_zh: Dict[str,Dict[str,str]],
+               summaries_en: Dict[str,Dict[str,str]],
+               translations: Dict[str,Dict[str,str]],
+               group_names: Optional[List[str]] = None) -> str:
+    if not group_names:
+        cards = _cards_html(items, summaries_zh, summaries_en, translations)
+        return f'<div class="row">{cards}</div>'
+
+    tabs = []
+    sections = []
+    for i, name in enumerate(group_names):
+        group_items = [it for it in items if name in (it.get("groups") or [])]
+        active = " active" if i == 0 else ""
+        tabs.append(
+            f'<button class="tab{active}" onclick="__switchGroup({i})">{_esc(name)}</button>'
+        )
+        cards = _cards_html(group_items, summaries_zh, summaries_en, translations)
+        empty = '<div class="meta-line">今日暂无新增。</div>' if not group_items else ""
+        sections.append(
+            f'<div class="group-section{active}">'
+            f'<div class="group-header">{_esc(name)}</div>'
+            f'{empty}<div class="row">{cards}</div></div>'
+        )
+    return f'<div class="tabs">{"".join(tabs)}</div>' + "".join(sections)
+
+
 def generate_site(items: List[Dict[str,Any]],
                   summaries_zh: Dict[str,Dict[str,str]],
                   summaries_en: Dict[str,Dict[str,str]],
@@ -272,17 +320,14 @@ def generate_site(items: List[Dict[str,Any]],
                   site_dir: str, site_title: str = "arXiv Results",
                   keep_runs: int = 60,
                   theme: str = "light",
-                  accent: Optional[str] = None) -> Dict[str,str]:
+                  accent: Optional[str] = None,
+                  group_names: Optional[List[str]] = None) -> Dict[str,str]:
     stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M")
     archive_dir = os.path.join(site_dir, "archive")
     os.makedirs(archive_dir, exist_ok=True)
     open(os.path.join(site_dir, ".nojekyll"), "w").close()
 
-    cards = []
-    for it in items:
-        sid = it.get("id") or ""
-        cards.append(_card(it, translations.get(sid), summaries_zh.get(sid), summaries_en.get(sid)))
-    cards_html = "\n".join(cards)
+    cards_html = _body_html(items, summaries_zh, summaries_en, translations, group_names)
     hist_html = "\n".join(_history_list(archive_dir, keep_runs))
 
     acc = (accent or "#2563eb").strip()
