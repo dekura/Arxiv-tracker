@@ -51,7 +51,7 @@ def _chat_completions_request(
     messages: List[Dict[str, str]],
     temperature: float = 0.2,
     max_tokens: int = 1024,
-    timeout: int = 30,
+    timeout: int = 120,
 ) -> str:
     """
     统一的 OpenAI 兼容 Chat Completions 请求（requests 直连）。
@@ -73,12 +73,15 @@ def _chat_completions_request(
     resp.raise_for_status()
     data = resp.json()
 
-    # 标准 OAI 兼容返回
+    # 标准 OAI 兼容返回。思考模式的最终答案在 content，推理过程在 reasoning_content。
     try:
-        return data["choices"][0]["message"]["content"]
+        message = data["choices"][0]["message"] or {}
     except Exception:
-        # 兜底：部分实现把文本放在 text
-        return data.get("choices", [{}])[0].get("text", "")
+        message = {}
+    content = message.get("content") or message.get("text") or ""
+    if not str(content).strip():
+        content = message.get("reasoning_content") or ""
+    return content
 
 # ========== 双语“一段话总结” ==========
 
@@ -124,7 +127,7 @@ def call_llm_bilingual_summary(
 
     text = _chat_completions_request(
         base_url=base_url, api_key=api_key, model=model, messages=messages,
-        temperature=0.2, max_tokens=600
+        temperature=0.2, max_tokens=8192
     )
     data = _json_loose(text)
     return {
@@ -177,7 +180,7 @@ def call_llm_two_stage(item: Dict[str, Any], lang: str, scope: str,
 
     text = _chat_completions_request(
         base_url=base_url, api_key=api_key, model=model, messages=messages,
-        temperature=0.2, max_tokens=900
+        temperature=0.2, max_tokens=8192
     ).strip()
 
     tldr, full_md = "", ""
@@ -233,7 +236,7 @@ DATA:
                 {"role":"user","content":inst}]
     text = _chat_completions_request(
         base_url=base_url, api_key=api_key, model=model, messages=messages,
-        temperature=0.0, max_tokens=600
+        temperature=0.0, max_tokens=8192
     ).strip()
 
     data = _loose_json_load(text)

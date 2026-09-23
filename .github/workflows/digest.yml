@@ -11,7 +11,8 @@ on:
         type: choice
         options: ["false", "true"]
 
-  # 定时触发：每天 19:00 UTC = 北京时间次日 03:00
+  # 定时触发：每天 19:00 UTC = 北京时间次日 03:00。
+  # 这个钟点在 DeepSeek 谷时（工作日 9:00–12:00、14:00–18:00 以外；周末全天都是谷时）。
   schedule:
     - cron: "0 19 * * *"
 
@@ -96,14 +97,15 @@ jobs:
       #  检查 LLM 相关环境变量是否已注入（只显示 SET/MISSING）
       - name: Show LLM env (masked)
         env:
-          OPENAI_COMPAT_API_KEY: ${{ secrets.OPENAI_COMPAT_API_KEY || vars.OPENAI_COMPAT_API_KEY }}
-          DS_API_KEY:            ${{ secrets.DS_API_KEY            || vars.DS_API_KEY }}
+          DS_API_KEY: ${{ secrets.DS_API_KEY || secrets.DEEPSEEK_API_KEY || vars.DS_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.DS_API_KEY || vars.DEEPSEEK_API_KEY }}
         run: |
           python - <<'PY'
           import os
-          def flag(k): print(f"{k}: {'SET' if os.getenv(k) else 'MISSING'}")
-          flag("OPENAI_COMPAT_API_KEY")
-          flag("DS_API_KEY")
+          ok = bool(os.getenv("DS_API_KEY") or os.getenv("DEEPSEEK_API_KEY"))
+          print("DS_API_KEY:", "SET" if ok else "MISSING")
+          if not ok:
+              print("Add repository secret DS_API_KEY at Settings → Secrets and variables → Actions.")
           PY
 
       - name: Who am I (for diagnostics)
@@ -113,8 +115,8 @@ jobs:
       - name: Run tracker & generate site (schedule-only email unless forced)
         env:
           # LLM（DeepSeek / OpenAI 兼容实现）
-          OPENAI_COMPAT_API_KEY: ${{ secrets.OPENAI_COMPAT_API_KEY || vars.OPENAI_COMPAT_API_KEY }}
-          DS_API_KEY:            ${{ secrets.DS_API_KEY            || vars.DS_API_KEY }}
+          DS_API_KEY: ${{ secrets.DS_API_KEY || secrets.DEEPSEEK_API_KEY || vars.DS_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.DS_API_KEY || vars.DEEPSEEK_API_KEY }}
 
           # 邮件地址/用户名：优先 Secrets，若无回退 Variables
           EMAIL_TO:     ${{ secrets.EMAIL_TO     || vars.EMAIL_TO }}
