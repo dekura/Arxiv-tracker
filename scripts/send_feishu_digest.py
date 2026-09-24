@@ -36,7 +36,30 @@ def _shorten(text, limit):
     text = " ".join(str(text or "").split())
     if len(text) <= limit:
         return text
-    return text[:limit].rsplit(" ", 1)[0].rstrip("，,。.;；:：") + "…"
+    clipped = text[:limit]
+    # Prefer a word boundary for English, but Chinese text usually has no
+    # spaces. Never let rsplit() turn a long Chinese string into just "…".
+    if " " in clipped:
+        word_boundary = clipped.rsplit(" ", 1)[0]
+        if len(word_boundary) >= limit * 0.65:
+            clipped = word_boundary
+    else:
+        for punctuation in ("。", "！", "？", "；", "，", ".", "!", "?", ";", ","):
+            boundary = clipped.rfind(punctuation)
+            if boundary >= limit * 0.65:
+                clipped = clipped[:boundary]
+                break
+    return clipped.rstrip("，,。.;；:：！？!?") + "…"
+
+
+def _valid_observation(note):
+    """Reject empty/placeholder outputs instead of publishing them as insights."""
+    normalized = "".join(str(note or "").split()).strip("•-*·_`'\"。；，,：:！!？?….")
+    if len(normalized) < 35:
+        return False
+    if all(char in ".…-—_" for char in normalized):
+        return False
+    return not any(token in normalized for token in ("待补充", "此处填写", "观察一", "观察二"))
 
 
 def _group_items(payload):
@@ -102,12 +125,13 @@ def generate_observations(payload, config_path="config.yaml"):
 
     prompt = (
         "根据本次 arXiv 日报中的论文标题、分组和摘要，写 3 到 5 条有信息量的研究观察。\n"
-        "每条都要结合至少两篇论文或明确指出它是单篇新方向；分析研究趋势、方法关注点、共同瓶颈，"
-        "并提出具体可做的后续研究问题/实验。不要只复述篇数或逐篇摘要。"
+        "参考旧日报的分析方式：概括方向内基础问题、方法突破与应用进展之间的联系，再归纳共同趋势。\n"
+        "每条尽量结合至少两篇论文；若该方向只有一篇，明确写成单篇新方向。分析论文共同关注的方法、"
+        "证据和瓶颈，并给出可执行的后续研究问题或对比实验。不要只复述篇数或逐篇摘要。\n"
         "观察内容用纯文本，不要输出标题标记、引用块或其他 Markdown 符号。\n"
         "只依据给定材料；区分材料证据与推测，不虚构实验结果。不同分组可以交叉综合。"
-        "用简洁但具体的中文，每条约 100-180 字。返回严格 JSON："
-        '{"observations":["...", "..."]}。\n\n'
+        "用具体、易读的中文，每条约 100-180 字；至少写出研究方向/变化、论文间联系、瓶颈或下一步问题中的两项。"
+        "只返回包含 observations 字符串数组的严格 JSON，不要附带代码围栏、解释、示例值或省略号占位符。\n\n"
         "本次论文数据：\n" + json.dumps(papers, ensure_ascii=False)
     )
     try:
@@ -127,9 +151,10 @@ def generate_observations(payload, config_path="config.yaml"):
         observations = result.get("observations") or []
         if isinstance(observations, str):
             observations = [observations]
-        observations = [str(note).strip() for note in observations if str(note).strip()]
+        observations = [str(note).strip() for note in observations if _valid_observation(note)]
         if observations:
             return [_shorten(note, 400) for note in observations[:5]]
+        print("Trend synthesis returned only empty or placeholder observations; using evidence-based fallback.", file=sys.stderr)
     except Exception as error:
         print(f"Trend synthesis unavailable; using evidence-based fallback: {error}", file=sys.stderr)
     return _fallback_observations(groups)
