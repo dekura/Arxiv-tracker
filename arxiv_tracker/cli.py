@@ -416,9 +416,14 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
                 "id": sid,
                 "title": it.get("title", ""),
                 "title_zh": translation.get("title_zh", ""),
-                "summary": summary.get("tldr") or summary.get("full_md", ""),
+                # The current LLM path returns digest_zh/digest_en; tldr/full_md
+                # are empty there. Keep the abstract as a useful final fallback.
+                "summary": (summary.get("digest_zh") or summary.get("digest_en")
+                            or summary.get("tldr") or summary.get("full_md")
+                            or it.get("summary", "")),
                 "groups": it.get("groups") or group_names or [],
                 "html_url": it.get("html_url") or sid,
+                "code_urls": it.get("code_urls") or [],
             })
         import json
         feishu_path = pathlib.Path(out_dir or "outputs") / "feishu_digest.json"

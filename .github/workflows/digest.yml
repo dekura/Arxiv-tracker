@@ -163,6 +163,7 @@ jobs:
         if: ${{ (github.event_name == 'schedule' && github.run_attempt == 1) || (github.event_name == 'workflow_dispatch' && inputs.send_feishu == 'true') }}
         env:
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          DS_API_KEY: ${{ secrets.DS_API_KEY || secrets.DEEPSEEK_API_KEY || vars.DS_API_KEY }}
         run: python scripts/send_feishu_digest.py outputs/feishu_digest.json
 
       - name: Commit changes to docs & state
