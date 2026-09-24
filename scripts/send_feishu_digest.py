@@ -10,41 +10,73 @@ from collections import defaultdict
 
 
 SITE_URL = "https://gjchen.me/Arxiv-tracker/"
-MAX_CHARS = 2000
+MAX_CHARS = 6000
+SUMMARY_CHARS = 180
 
 
-def build_message(payload):
+def _markdown_escape(value):
+    return str(value or "").replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
+
+
+def build_markdown(payload):
     groups = defaultdict(list)
     for item in payload.get("items", []):
         names = item.get("groups") or ["今日论文"]
         for name in names:
             groups[name].append(item)
 
-    lines = ["📚 arXiv 每日论文速递"]
+    lines = ["> 今天的 arXiv 新发现，挑重点快速读起来。"]
     if not groups:
-        lines.append("今日暂无新增命中。")
+        lines.append("\n🌱 **今天没有新命中**\n\n检索还在继续，明天再来看看。")
     else:
         for group, papers in groups.items():
-            lines.append(f"\n🔹 {group}（{len(papers)}）")
+            lines.append(f"\n### {group} · {len(papers)} 篇")
             for paper in papers:
                 title = (paper.get("title_zh") or paper.get("title") or "无标题").strip()
                 url = (paper.get("html_url") or "").strip()
-                lines.append(f"• {title}{f' — {url}' if url else ''}")
+                title_md = _markdown_escape(title)
+                title_md = f"[{title_md}]({url})" if url else title_md
                 summary = " ".join((paper.get("summary") or "").split())
                 if summary:
-                    lines.append(f"  {summary}")
-    lines.append(f"\n网页：{SITE_URL}")
+                    if len(summary) > SUMMARY_CHARS:
+                        summary = summary[:SUMMARY_CHARS].rsplit(" ", 1)[0].rstrip("，,。.;；") + "…"
+                    lines.append(f"- **{title_md}**\n  {summary}")
+                else:
+                    lines.append(f"- **{title_md}**")
 
-    message = "\n".join(lines)
-    if len(message) > MAX_CHARS:
-        suffix = f"\n\n内容较多，完整结果见：{SITE_URL}"
-        excerpt = message[: MAX_CHARS - len(suffix) - 2].rsplit("\n", 1)[0]
-        message = excerpt + "\n…" + suffix
-    return message
+    if groups:
+        ranked = sorted(groups.items(), key=lambda entry: (-len(entry[1]), entry[0]))
+        focus, focus_papers = ranked[0]
+        focus_count = len(focus_papers)
+        counts = "、".join(f"{name} {len(papers)}篇" for name, papers in ranked)
+        unique_ids = {
+            paper.get("id") or paper.get("title")
+            for papers in groups.values()
+            for paper in papers
+        }
+        lines.append(f"\n### 📈 今日观察\n共命中 **{len(unique_ids)} 篇**，{focus}方向最多（{focus_count}篇）。各方向：{counts}。")
+
+    lines.append(f"\n[🌐 打开完整日报]({SITE_URL})")
+    markdown = "\n".join(lines)
+    if len(markdown) > MAX_CHARS:
+        suffix = f"\n\n…其余论文请查看[完整日报]({SITE_URL})"
+        markdown = markdown[: MAX_CHARS - len(suffix) - 1].rsplit("\n", 1)[0] + suffix
+    return markdown
 
 
-def send(webhook, message):
-    body = json.dumps({"msg_type": "text", "content": {"text": message}}).encode("utf-8")
+def build_card(payload):
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {
+            "template": "blue",
+            "title": {"tag": "plain_text", "content": "📚 arXiv 每日论文速递"},
+        },
+        "elements": [{"tag": "markdown", "content": build_markdown(payload)}],
+    }
+
+
+def send(webhook, card):
+    body = json.dumps({"msg_type": "interactive", "card": card}, ensure_ascii=False).encode("utf-8")
     request = urllib.request.Request(
         webhook,
         data=body,
@@ -67,9 +99,9 @@ def main():
         raise RuntimeError("FEISHU_WEBHOOK_URL is missing; add it as a GitHub Actions secret")
     with open(path, encoding="utf-8") as source:
         payload = json.load(source)
-    message = build_message(payload)
-    send(webhook, message)
-    print(f"Feishu digest sent ({len(message)} characters)")
+    card = build_card(payload)
+    send(webhook, card)
+    print(f"Lark digest card sent ({len(card['elements'][0]['content'])} characters)")
 
 
 if __name__ == "__main__":
