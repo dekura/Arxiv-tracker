@@ -4,6 +4,8 @@ from __future__ import annotations
 import os
 import time
 import random
+from email.utils import parsedate_to_datetime
+from datetime import datetime, timezone
 import requests
 from typing import Dict, Optional
 
@@ -16,6 +18,9 @@ DEFAULT_TIMEOUT = float(os.getenv("ARXIV_TIMEOUT", "45"))      # 单次请求超
 MAX_ATTEMPTS    = int(os.getenv("ARXIV_MAX_ATTEMPTS", "6"))    # 尝试次数
 BASE_PAUSE      = float(os.getenv("ARXIV_PAUSE", "1.5"))       # 基础退避（秒）
 MAX_SLEEP       = float(os.getenv("ARXIV_MAX_SLEEP", "20"))    # 退避上限（秒）
+MIN_REQUEST_INTERVAL = float(os.getenv("ARXIV_MIN_REQUEST_INTERVAL", "3"))
+RATE_LIMIT_PAUSE = float(os.getenv("ARXIV_RATE_LIMIT_PAUSE", "30"))
+RATE_LIMIT_MAX_SLEEP = float(os.getenv("ARXIV_RATE_LIMIT_MAX_SLEEP", "300"))
 
 RETRYABLE_STATUS = {429, 500, 502, 503, 504}
 
@@ -26,6 +31,17 @@ HEADERS = {
 }
 
 _session = requests.Session()
+_last_request_at = 0.0
+
+
+def _pace_request() -> None:
+    """Keep consecutive arXiv API requests at least three seconds apart."""
+    global _last_request_at
+    now = time.monotonic()
+    wait = MIN_REQUEST_INTERVAL - (now - _last_request_at)
+    if wait > 0:
+        time.sleep(wait)
+    _last_request_at = time.monotonic()
 
 
 def _sleep_backoff(attempt: int) -> None:
@@ -46,6 +62,7 @@ def _do_get(base_url: str, params: Dict[str, str], timeout: Optional[float] = No
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
         try:
+            _pace_request()
             resp = _session.get(base_url, params=params, headers=HEADERS, timeout=timeout)
             # 主动对可重试状态码抛出异常，以走重试逻辑
             if resp.status_code in RETRYABLE_STATUS:
@@ -61,6 +78,11 @@ def _do_get(base_url: str, params: Dict[str, str], timeout: Optional[float] = No
             st = getattr(e.response, "status_code", None)
             if st not in RETRYABLE_STATUS:
                 break
+            if st == 429 and attempt < MAX_ATTEMPTS:
+                retry_after = _retry_after_seconds(e.response.headers.get("Retry-After"))
+                backoff = min(RATE_LIMIT_PAUSE * (2 ** (attempt - 1)), RATE_LIMIT_MAX_SLEEP)
+                time.sleep(max(retry_after or 0, backoff))
+                continue
 
         # 还有机会就退避后继续
         if attempt < MAX_ATTEMPTS:
@@ -70,6 +92,21 @@ def _do_get(base_url: str, params: Dict[str, str], timeout: Optional[float] = No
     if last_err:
         raise last_err
     raise RuntimeError("Unknown arXiv request error.")
+
+
+def _retry_after_seconds(value: Optional[str]) -> Optional[float]:
+    if not value:
+        return None
+    try:
+        return max(0.0, float(value))
+    except (TypeError, ValueError):
+        try:
+            retry_at = parsedate_to_datetime(value)
+            if retry_at.tzinfo is None:
+                retry_at = retry_at.replace(tzinfo=timezone.utc)
+            return max(0.0, (retry_at - datetime.now(timezone.utc)).total_seconds())
+        except (TypeError, ValueError, OverflowError):
+            return None
 
 
 def fetch_arxiv_feed(query: str,
@@ -96,6 +133,10 @@ def fetch_arxiv_feed(query: str,
             return r.text
         except Exception as e:
             last_err = e
+            if getattr(getattr(e, "response", None), "status_code", None) == 429:
+                # HTTP and HTTPS endpoints share the same service quota; switching
+                # protocol cannot resolve rate limiting and would add more load.
+                raise
             # 换下一个 base 继续
             continue
 
