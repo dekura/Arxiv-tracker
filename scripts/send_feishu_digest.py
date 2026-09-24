@@ -7,6 +7,12 @@ import sys
 import urllib.error
 import urllib.request
 from collections import defaultdict
+from pathlib import Path
+
+# When invoked as ``python scripts/send_feishu_digest.py``, Python puts the
+# scripts directory (not the repository root) on sys.path. Add the project root
+# so this standalone Actions entry point can import the shared package.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import yaml
 
