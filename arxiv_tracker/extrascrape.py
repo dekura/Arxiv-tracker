@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import requests
+from html.parser import HTMLParser
 
 UA = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
@@ -33,9 +34,59 @@ def _extract_from_html(url: str, timeout: int):
     try:
         r = _get(url, timeout=timeout)
         r.raise_for_status()
-        return _extract_from_text(r.text)
+        parser = _PaperLinkParser()
+        parser.feed(r.text)
+        return _dedup(parser.code_urls)
     except Exception:
         return []
+
+
+class _PaperLinkParser(HTMLParser):
+    """Extract code links only from arXiv paper metadata and abstract content.
+
+    The full abstract page contains global help/navigation links (including
+    generic Hugging Face URLs). Treating every page link as paper code caused
+    those links to be displayed as Code1/Code2 on the generated site.
+    """
+
+    _VOID_TAGS = {
+        "area", "base", "br", "col", "embed", "hr", "img", "input",
+        "link", "meta", "param", "source", "track", "wbr",
+    }
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self._stack = []
+        self._scope_depth = 0
+        self.code_urls = []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        classes = set((attrs.get("class") or "").lower().split())
+        in_paper_text = "abstract" in classes or "comments" in classes
+        if in_paper_text:
+            self._scope_depth += 1
+
+        if self._scope_depth and tag.lower() == "a":
+            href = attrs.get("href") or ""
+            self.code_urls.extend(_extract_from_text(href))
+
+        if tag.lower() not in self._VOID_TAGS:
+            self._stack.append((tag.lower(), in_paper_text))
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        self.handle_endtag(tag)
+
+    def handle_endtag(self, tag):
+        tag = tag.lower()
+        for index in range(len(self._stack) - 1, -1, -1):
+            stacked_tag, in_paper_text = self._stack[index]
+            if in_paper_text:
+                self._scope_depth -= 1
+            del self._stack[index:]
+            if stacked_tag == tag:
+                break
 
 def _extract_from_pdf_head(pdf_url: str, timeout: int, head_bytes: int = 256 * 1024):
     """
