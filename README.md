@@ -73,12 +73,15 @@ requirements.txt      # 运行依赖
 
 - `OPENAI_COMPAT_API_KEY`：任意 OpenAI 兼容平台的 API Key（如 **DeepSeek**、**SiliconFlow**）  
 - `SMTP_PASS`：QQ 邮箱 **SMTP 授权码**（非登录密码）
+- `FEISHU_WEBHOOK_URL`：飞书群自定义机器人的 Webhook 地址
 
 **Variables（非机密，可用 Secrets 替代）**
 
 - `EMAIL_TO`：收件人（多个用 `,` 或 `;` 分隔，比如 `a@qq.com,b@xx.com`）
 - `EMAIL_SENDER`：发件人邮箱（通常与 SMTP 用户一致，比如 `xxx@qq.com`）
 - `SMTP_USER`：SMTP 用户名（通常 = 发件人邮箱，比如 `xxx@qq.com`）
+
+每日 `digest.yml` 工作流会用同一轮检索结果更新网站、发送邮件，并将精简摘要发送到飞书。定时运行会自动推送飞书；手动运行时可在 `send_feishu` 输入中单独选择是否发送。请在仓库 **Settings → Secrets and variables → Actions** 添加 `FEISHU_WEBHOOK_URL`。OpenClaw 中原先抓取旧站点的 `arxiv-daily` 任务应停用，避免重复推送。
 
 ### 3) 启用 GitHub Pages
 

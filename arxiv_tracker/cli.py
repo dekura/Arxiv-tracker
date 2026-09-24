@@ -405,8 +405,28 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
         # 6) 保存到文件 + 生成 PDF（可选）
         json_path = save_json(items, out_dir)
         md_path   = save_markdown(items, out_dir, summaries_zh, summaries_en, lang=lang, translations=translations)
+        # Stable, structured payload consumed by GitHub Actions for Feishu delivery.
+        # Keep this derived from the exact item set and summaries used by the email/site.
+        feishu_items = []
+        for it in items:
+            sid = it.get("id") or ""
+            summary = summaries_zh.get(sid) or summaries_en.get(sid) or {}
+            translation = (translations or {}).get(sid) or {}
+            feishu_items.append({
+                "id": sid,
+                "title": it.get("title", ""),
+                "title_zh": translation.get("title_zh", ""),
+                "summary": summary.get("tldr") or summary.get("full_md", ""),
+                "groups": it.get("groups") or group_names or [],
+                "html_url": it.get("html_url") or sid,
+            })
+        import json
+        feishu_path = pathlib.Path(out_dir or "outputs") / "feishu_digest.json"
+        with feishu_path.open("w", encoding="utf-8") as f:
+            json.dump({"items": feishu_items}, f, ensure_ascii=False, indent=2)
         click.echo(f"Saved: {json_path}")
         click.echo(f"Saved: {md_path}")
+        click.echo(f"Saved: {feishu_path}")
 
         # 6.5) 生成站点（如启用）
         page_url = None

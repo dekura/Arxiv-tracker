@@ -10,6 +10,12 @@ on:
         default: "true"
         type: choice
         options: ["false", "true"]
+      send_feishu:
+        description: "Send digest to Feishu for manual run?"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
 
   # 定时触发：每天 19:00 UTC = 北京时间次日 03:00。
   # 这个钟点在 DeepSeek 谷时（工作日 9:00–12:00、14:00–18:00 以外；周末全天都是谷时）。
@@ -68,10 +74,7 @@ jobs:
       - name: Compute Pages URL
         id: site
         run: |
-          REPO="${GITHUB_REPOSITORY}"    # owner/repo
-          OWNER="${REPO%%/*}"
-          NAME="${REPO#*/}"
-          echo "url=https://${OWNER}.github.io/${NAME}/" >> $GITHUB_OUTPUT
+          echo "url=https://gjchen.me/Arxiv-tracker/" >> $GITHUB_OUTPUT
 
       # 一次性检查邮箱变量注入是否OK
       - name: Show email env (masked)
@@ -153,10 +156,16 @@ jobs:
             $EXTRA \
             --verbose
 
+      - name: Send digest to Feishu
+        if: ${{ (github.event_name == 'schedule' && github.run_attempt == 1) || (github.event_name == 'workflow_dispatch' && inputs.send_feishu == 'true') }}
+        env:
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+        run: python scripts/send_feishu_digest.py outputs/feishu_digest.json
+
       - name: Commit changes to docs & state
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: update digest, site & dedup state"
+          commit_message: "chore: update digest, site & state"
           file_pattern: |
             docs/**
             outputs/**
