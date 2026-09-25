@@ -14,11 +14,6 @@ from pathlib import Path
 # so this standalone Actions entry point can import the shared package.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import yaml
-
-from arxiv_tracker.llm import _chat_completions_request, _json_loose
-
-
 SITE_URL = "https://gjchen.me/Arxiv-tracker/"
 MAX_CHARS = 12000
 SUMMARY_CHARS = 300
@@ -52,16 +47,6 @@ def _shorten(text, limit):
     return clipped.rstrip("，,。.;；:：！？!?") + "…"
 
 
-def _valid_observation(note):
-    """Reject empty/placeholder outputs instead of publishing them as insights."""
-    normalized = "".join(str(note or "").split()).strip("•-*·_`'\"。；，,：:！!？?….")
-    if len(normalized) < 35:
-        return False
-    if all(char in ".…-—_" for char in normalized):
-        return False
-    return not any(token in normalized for token in ("待补充", "此处填写", "观察一", "观察二"))
-
-
 def _group_items(payload):
     groups = defaultdict(list)
     for item in payload.get("items", []):
@@ -71,98 +56,29 @@ def _group_items(payload):
     return groups
 
 
-def _fallback_observations(groups):
-    """Produce evidence-based notes if the configured LLM is unavailable."""
-    notes = []
-    ranked = sorted(groups.items(), key=lambda entry: (-len(entry[1]), entry[0]))
-    for name, papers in ranked[:3]:
-        examples = []
-        for paper in papers[:2]:
-            title = paper.get("title_zh") or paper.get("title") or "无标题"
-            summary = _shorten(paper.get("summary"), 100).rstrip("。；;，,")
-            examples.append(f"《{title}》{('：' + summary) if summary else ''}")
-        if examples:
-            notes.append(
-                f"**{_escape_label(name)}方向**：本期代表工作包括" + "；".join(examples)
-                + "。后续可重点比较这些方法在真实仓库、长程任务及成本约束下的稳定性。"
-            )
-    if not notes:
-        notes.append("本期没有新增论文，暂时无法从本期样本判断研究趋势；可继续观察后续几天的主题变化。")
-    return notes
-
-
-def generate_observations(payload, config_path="config.yaml"):
-    """Synthesize research signals across papers; never block delivery on LLM errors."""
-    groups = _group_items(payload)
-    if not groups:
-        return _fallback_observations(groups)
-
-    llm_cfg = {}
-    try:
-        with open(config_path, encoding="utf-8") as source:
-            llm_cfg = (yaml.safe_load(source) or {}).get("llm") or {}
-    except (OSError, yaml.YAMLError):
-        pass
-    api_key = os.getenv(llm_cfg.get("api_key_env") or "DS_API_KEY", "")
-    if not api_key:
-        return _fallback_observations(groups)
-
-    # Keep the synthesis grounded in this run's actual item summaries.
-    papers = []
-    seen = set()
-    for item in payload.get("items", []):
-        key = item.get("id") or item.get("title")
-        if key in seen:
+def _analysis_claim(label, claim, item_by_id, text_key="text"):
+    if not claim:
+        return ""
+    text = _escape_label(_shorten(claim.get(text_key) or "", 110))
+    citations = []
+    for paper_id in claim.get("paper_ids") or []:
+        paper = item_by_id.get(paper_id)
+        if not paper:
             continue
-        seen.add(key)
-        papers.append({
-            "groups": item.get("groups") or [],
-            "title": item.get("title_zh") or item.get("title") or "",
-            "abstract_or_digest": _shorten(item.get("summary"), 700),
-        })
-    if not papers:
-        return _fallback_observations(groups)
-
-    prompt = (
-        "根据本次 arXiv 日报中的论文标题、分组和摘要，写 3 到 5 条有信息量的研究观察。\n"
-        "参考旧日报的分析方式：概括方向内基础问题、方法突破与应用进展之间的联系，再归纳共同趋势。\n"
-        "每条尽量结合至少两篇论文；若该方向只有一篇，明确写成单篇新方向。分析论文共同关注的方法、"
-        "证据和瓶颈，并给出可执行的后续研究问题或对比实验。不要只复述篇数或逐篇摘要。\n"
-        "观察内容用纯文本，不要输出标题标记、引用块或其他 Markdown 符号。\n"
-        "只依据给定材料；区分材料证据与推测，不虚构实验结果。不同分组可以交叉综合。"
-        "用具体、易读的中文，每条约 100-180 字；至少写出研究方向/变化、论文间联系、瓶颈或下一步问题中的两项。"
-        "只返回包含 observations 字符串数组的严格 JSON，不要附带代码围栏、解释、示例值或省略号占位符。\n\n"
-        "本次论文数据：\n" + json.dumps(papers, ensure_ascii=False)
-    )
-    try:
-        response = _chat_completions_request(
-            base_url=llm_cfg.get("base_url", "https://api.deepseek.com"),
-            api_key=api_key,
-            model=llm_cfg.get("model", "deepseek-flash"),
-            messages=[
-                {"role": "system", "content": "你是严谨的软件工程与机器学习研究分析员。"},
-                {"role": "user", "content": prompt},
-            ],
-            temperature=0.25,
-            max_tokens=1800,
-            timeout=60,
-        )
-        result = _json_loose(response)
-        observations = result.get("observations") or []
-        if isinstance(observations, str):
-            observations = [observations]
-        observations = [str(note).strip() for note in observations if _valid_observation(note)]
-        if observations:
-            return [_shorten(note, 400) for note in observations[:5]]
-        print("Trend synthesis returned only empty or placeholder observations; using evidence-based fallback.", file=sys.stderr)
-    except Exception as error:
-        print(f"Trend synthesis unavailable; using evidence-based fallback: {error}", file=sys.stderr)
-    return _fallback_observations(groups)
+        title = _escape_label(paper.get("title_zh") or paper.get("title") or "论文")
+        url = paper.get("html_url") or paper_id
+        citations.append(f"[{title}]({url})")
+    evidence = f"（依据：{'、'.join(citations)}）" if citations else ""
+    return f"• **{label}**：{text}{evidence}"
 
 
 def build_markdown(payload):
     groups = _group_items(payload)
     lines = ["🌱 **今天的 arXiv 新发现，看看研究问题正在往哪里走。**"]
+    if payload.get("report_date"):
+        lines.append(f"📅 {payload['report_date']}")
+    unique_count = len({item.get("id") or item.get("title") for item in payload.get("items", [])})
+    lines.append(f"📊 本期新增 {unique_count} 篇（按论文去重）")
     if not groups:
         lines.extend(["", "今天没有新的命中，检索会继续运行，明天再来看看。"])
     else:
@@ -184,11 +100,24 @@ def build_markdown(payload):
                     code_links = " · ".join(f"[Code {index}]({url})" for index, url in enumerate(code_urls[:3], 1))
                     lines.append(f"  代码：{code_links}")
 
-    observations = payload.get("observations") or []
-    if observations:
+    group_analysis = payload.get("group_analysis") or {}
+    populated_analysis = [
+        (group, analysis) for group, analysis in group_analysis.items()
+        if not analysis.get("empty") and analysis.get("count")
+    ]
+    if populated_analysis:
+        item_by_id = {item.get("id"): item for item in payload.get("items", []) if item.get("id")}
         lines.extend(["", "🔎 **今日观察｜趋势、关注点与可做的问题**"])
-        for observation in observations[:5]:
-            lines.append(f"• {observation}")
+        for group, analysis in populated_analysis:
+            lines.extend(["", f"**{_escape_label(group)}**"])
+            for label, key in (("方向变化", "direction"), ("论文联系", "connections"), ("共同瓶颈", "bottleneck")):
+                rendered = _analysis_claim(label, analysis.get(key), item_by_id)
+                if rendered:
+                    lines.append(rendered)
+            for question in analysis.get("next_steps") or []:
+                rendered = _analysis_claim("可验证的问题", question, item_by_id, text_key="question")
+                if rendered:
+                    lines.append(rendered)
 
     lines.extend(["", f"🌐 [打开完整日报]({SITE_URL})"])
     markdown = "\n".join(lines)
@@ -243,7 +172,6 @@ def main():
         raise RuntimeError("FEISHU_WEBHOOK_URL is missing; add it as a GitHub Actions secret")
     with open(path, encoding="utf-8") as source:
         payload = json.load(source)
-    payload["observations"] = generate_observations(payload)
     card = build_card(payload)
     send(webhook, card)
     print(f"Lark digest card sent ({len(card['elements'][0]['content'])} characters)")

@@ -7,6 +7,7 @@ from .parser import parse_feed
 from .output import save_json, save_markdown
 from .summarizer import build_two_stage_summary
 from .llm import call_llm_translate
+from .research_analysis import generate_group_analysis, merge_group_items
 from .email_template import render_email_html
 from .exporter import md_to_pdf
 
@@ -291,22 +292,12 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
 
         if groups:
             # 同一篇可以命中多个方向；seen 仍按论文 id 全局去重，避免跨天重复发信。
-            by_id = {}
-            items = []
+            group_results = []
             for g in groups:
                 q = build_search_query(cfg.categories, g["keywords"], cfg.exclude_keywords, cfg.logic)
                 click.echo("[Query] {}: {}".format(g["name"], q))
-                for it in _collect_items(q, **collect_kwargs):
-                    aid = it.get("id")
-                    if aid and aid in by_id:
-                        names = by_id[aid].setdefault("groups", [])
-                        if g["name"] not in names:
-                            names.append(g["name"])
-                        continue
-                    it["groups"] = [g["name"]]
-                    if aid:
-                        by_id[aid] = it
-                    items.append(it)
+                group_results.append((g["name"], _collect_items(q, **collect_kwargs)))
+            items = merge_group_items(group_results)
         else:
             q = build_search_query(cfg.categories, cfg.keywords, cfg.exclude_keywords, cfg.logic)
             click.echo("[Query] {}".format(q))
@@ -379,6 +370,17 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
                     except Exception as e:
                         click.secho(f"[Translate] 失败 {sid[:18]}...: {e}", fg="red")
 
+        # 4.5) 为网站与 Lark 生成同一份方向级研究分析。
+        group_analysis = generate_group_analysis(
+            group_names=group_names,
+            items=items,
+            summaries_zh=summaries_zh,
+            summaries_en=summaries_en,
+            translations=translations,
+            llm_cfg=llm_cfg,
+        ) if groups else {}
+        report_date = datetime.now().strftime("%Y-%m-%d")
+
         # 5) 终端预览
         if not items:
             click.echo("（今日暂无新增）")
@@ -418,7 +420,8 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
                 "title_zh": translation.get("title_zh", ""),
                 # The current LLM path returns digest_zh/digest_en; tldr/full_md
                 # are empty there. Keep the abstract as a useful final fallback.
-                "summary": (summary.get("digest_zh") or summary.get("digest_en")
+                "summary": (summary.get("digest_zh") or translation.get("summary_zh")
+                            or summary.get("digest_en")
                             or summary.get("tldr") or summary.get("full_md")
                             or it.get("summary", "")),
                 "groups": it.get("groups") or group_names or [],
@@ -428,7 +431,8 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
         import json
         feishu_path = pathlib.Path(out_dir or "outputs") / "feishu_digest.json"
         with feishu_path.open("w", encoding="utf-8") as f:
-            json.dump({"items": feishu_items}, f, ensure_ascii=False, indent=2)
+            json.dump({"report_date": report_date, "items": feishu_items,
+                       "group_analysis": group_analysis}, f, ensure_ascii=False, indent=2)
         click.echo(f"Saved: {json_path}")
         click.echo(f"Saved: {md_path}")
         click.echo(f"Saved: {feishu_path}")
@@ -453,6 +457,8 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
                     site_dir=sd, site_title=title, keep_runs=keep,
                     theme=theme, accent=accent,
                     group_names=group_names or None,
+                    group_analysis=group_analysis,
+                    report_date=report_date,
                 )
                 click.echo(f"Saved: {site_res['index_path']}")
                 page_url = site_url or site_cfg.get("url")
