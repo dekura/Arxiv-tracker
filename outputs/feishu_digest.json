@@ -1,0 +1,542 @@
+{
+  "report_date": "2026-09-30",
+  "items": [
+    {
+      "id": "http://arxiv.org/abs/2604.08698v3",
+      "title": "EvoLen: Evolution-Guided Tokenization for DNA Language Model",
+      "title_zh": "EvoLen：面向 DNA 语言模型的进化引导分词",
+      "summary": "DNA语言模型依赖分词，但DNA没有天然的token边界或预定义的组合规则，现有BPE主要面向人类语言规律，未必契合生物功能与进化约束，因此分词设计仍未被充分探索。EvoLen将进化信息直接引入分词过程：利用跨物种进化信号对DNA序列分组，在每组上训练独立的BPE分词器，通过优先保留保守模式的规则合并词表，并使用动态规划进行长度感知解码，以更好保留motif尺度的功能序列单元。受控实验表明，EvoLen提升了功能序列模式的保留、跨基因组语境的区分度以及与进化约束的一致性，同时在多个DNALM基准上达到或超过标准BPE，说明分词引入了关键归纳偏置，结合进化信息能够获得更具生物学意义和可解释性的序列表征。",
+      "groups": [
+        "代码预训练"
+      ],
+      "html_url": "https://arxiv.org/abs/2604.08698v3",
+      "code_urls": [
+        "https://github.com/HN020719/EvoLen",
+        "https://huggingface.co/EvoLenTokenizer"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.34218v1",
+      "title": "Loop Dropout: Regularizing Shared Updates in Looped Language Models",
+      "title_zh": "Loop Dropout：正则化循环语言模型中的共享更新",
+      "summary": "循环语言模型通过重复使用同一个 Transformer 模块，将计算深度与参数量解耦，但要让一个共享更新在循环计算中始终有效仍很困难，因为隐藏状态会随循环推进而变化。实证分析发现，标准低秩适配（LoRA）存在后期循环偏置，即共享更新在较晚的循环位置更有效。为此提出的 Loop Dropout 在训练中随机屏蔽适配器应用，并结合逆生存概率缩放，以保持期望更新强度并促进各循环位置的有效适配；推理时仍在所有循环上使用标准 LoRA，不增加可训练参数或推理计算量。实验表明，该方法在多种模型规模、适配器秩和训练配方下提升了数学推理表现，并扩展到通用指令微调和代码生成；其效果优于现有 LoRA 变体和适配器正则化方法，进一步分析还显示早期循环适配得到增强。",
+      "groups": [
+        "代码后训练"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.34218v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.33725v1",
+      "title": "Reliable Replay through Spatial Coherence in Online Continual Learning",
+      "title_zh": "通过空间一致性实现在线持续学习中的可靠回放",
+      "summary": "在线持续学习需要在有限内存和计算条件下让模型适应新任务并保留先前知识，而经验回放虽能缓解该问题，但基于单样本损失增量的优先级会忽略相关记忆对同一更新的响应，并可能过度强调孤立变化。SPHERE 提出一种通用回放分配方法，使用表示核聚合有符号的前瞻损失变化，抑制缺乏支持的高峰并保留一致上升，然后将分配建模为熵正则最优传输，把均匀源质量重新分配至有支持的高风险区域并惩罚远距离迁移，再根据传输目标对原始损失变化的敏感度导出回放系数，并将其与均匀回放混合以维持基线回放。分析给出了核聚合改善风险估计的条件，并界定了残差噪声和平滑偏差造成的传输价值膨胀上界；实验表明，SPHERE 在噪声标签视觉任务、持续语言模型指令微调以及测试奖励不完整的代码生成强化学习中提高了准确率并减少了遗忘。",
+      "groups": [
+        "代码后训练"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.33725v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2604.13010v3",
+      "title": "Lightning OPD: Efficient Post-Training for Large Reasoning Models with Offline On-Policy Distillation",
+      "title_zh": "Lightning OPD：基于离线同策略蒸馏的大型推理模型高效后训练",
+      "summary": "同策略蒸馏（OPD）是大语言模型的一种有效后训练范式，但训练全程需要在线教师服务器，导致大量基础设施开销。我们研究能否通过一次性在 SFT rollout 上预计算教师对数概率并在训练中复用来离线执行 OPD。我们发现，简单这样做无法可靠匹配标准 OPD，并将根因追溯到一个此前被忽视的条件，我们称之为教师一致性，即监督微调和 OPD 必须使用同一教师。违反该条件会引入梯度偏差，降低离线和在线 OPD 的性能。基于此，我们提出 Lightning OPD，一种离线同策略蒸馏框架，强制教师一致性并完全无需在线教师服务器。我们证明，在教师一致性下，Lightning OPD 与标准 OPD 具有相同最优解，梯度差异有界，并具有隐式正则化效应，有助于防止策略漂移。数学推理和代码生成实验表明，Lightning OPD 达到与标准 OPD 相当的性能，同时训练效率提升 4.0 倍。从 SFT 初始化的 Qwen3-8B-Base 模型出发，Lightning OPD 仅用 30 GPU 小时就在 AIME 2024 上达到 69.9%。Lightning OPD 进一步扩展到 MoE 架构，在单台 8xH100 节点上将 Qwen3-30B-A3B 在 AIME 2024 上训练至 71.0%，显著降低 LLM 后训练学术研究的门槛。代码发布于 https://github.com/jet-ai-projects/Lightning-OPD。",
+      "groups": [
+        "代码后训练"
+      ],
+      "html_url": "https://arxiv.org/abs/2604.13010v3",
+      "code_urls": [
+        "https://github.com/jet-ai-projects/Lightning-OPD"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.33875v2",
+      "title": "Counterfactual Rollout Replay: Forkable Environments as Free Process Rewards for Software Engineering Agents",
+      "title_zh": "反事实展开回放：以可分叉环境作为软件工程智能体的免费过程奖励",
+      "summary": "仅使用结果的强化学习为软件工程智能体提供终端成功信号，但对中间决策的指导不足。反事实回放重放（CRR）是一种训练时方法，利用可分叉的可执行环境获得步级回报对比：它选择决策点，恢复对应状态，采样替代动作，并在策略下向前滚动该分支，然后保留实际训练轨迹，将选定步骤的优势替换为其终端回报与采样反事实回报之差，无需人工过程标签或学习得到的过程奖励模型。在14B策略上，CRR在SWE-bench Verified、SWE-bench Live和SWE-rebench上提升pass@1，并可与过程奖励和轨迹搜索方法结合；在SWE-bench Verified上，同一硬件上的等墙钟时间对比显示，CRR达到41.7%，而扩展的仅结果GRPO为36.7%，提升5.0个百分点，且包含分叉开销。这些结果依赖于可负担且可靠的状态恢复，随机延续以及昂贵或不完美的重放仍是局限。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.33875v2",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2605.29522v2",
+      "title": "DeepSurvey: Agent-Oriented Automated Survey Generation with Analytical Depth and Citation Reliability",
+      "title_zh": "DeepSurvey：面向智能体的兼具分析深度与引用可靠性的自动化综述生成",
+      "summary": "随着科学文献快速增长以及AI代理日益参与研究，自动综述生成已成为代理和人类研究者在开展研究前获取领域知识的关键能力，但现有系统偏重覆盖面和呈现形式，并因依赖摘要和孤立论文处理而分析深度不足，也因检索不精确和后验依据不足而引用不可靠。DeepSurvey是一个代理式生成系统，通过提取结构化要点、利用聚类和比较分析建模跨论文关系，并集成代码代理子系统恢复实现层面细节来增强分析深度；同时通过引文图扩展与混合过滤进行主题聚焦检索，实施证据约束的分析与写作，并部署多粒度代理式精炼来验证引用与论断的一致性。实验表明，DeepSurvey取得最高内容得分8.34/10，引用召回率和精确率较最强基线分别提升25.3%和35.2%，跨领域泛化更稳健，并被领域专家相比人类撰写综述更偏好，整体质量偏好为83.3%，内容深度偏好为100%；当编码代理仅以综述作为文献来源时，使用DeepSurvey综述的代理在人类撰写和基线生成的综述中表现最佳。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2605.29522v2",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2605.24539v2",
+      "title": "DemoEvolve: Demonstration-Guided Harness Evolution under Sparse Feedback",
+      "title_zh": "DemoEvolve：稀疏反馈下演示引导的 Harness 演化",
+      "summary": "针对长时程任务中 rollout 代价高、交互预算有限且反馈稀疏延迟，导致编码智能体难以诊断失败并判断哪些修改有效的问题，DemoEvolve 利用人类演示来指导 harness 演化：编码智能体同时检查演示和自身 rollout 历史，提取策略及其适用条件，并将其转化为可复用的 harness 组件。在相同演化流程和智能体交互预算下，该方法比较了演示引导、自 rollout 演化和检索文本知识增强。在留出种子上，DemoEvolve 将 Balatro 的平均 capped 最终轮进度从 16.83 提高到 20.00，将 Slay the Spire 2 的平均到达楼层从 18.17 提高到 28.83，表明演示能为诊断和修改提供具体指导，帮助 harness 演化更有效地利用有限的交互经验。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2605.24539v2",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.36807v1",
+      "title": "XRepoSkill: Learning Transferable Skills for Software Engineering Agents",
+      "title_zh": "XRepoSkill：为软件工程智能体学习可迁移技能",
+      "summary": "软件工程智能体越来越多地使用从既往经验中提炼的可复用技能来解决仓库级问题，但这些技能往往难以跨仓库迁移，部分原因在于成功轨迹中的某个行为可能真正有用、只是偶然出现，或仅是模型的习惯，而不一定导致成功。XRepoSkill 通过对比同一智能体在同一问题上的成功与失败轨迹，从执行路径发生分歧处导出候选规则，为每条规则配备可执行谓词以便在其他轨迹上系统评估，依据规则与成功问题解决的关联性以及其行为是否在多个仓库中反复出现来验证并保留规则，再将同一行为的仓库特定变体合并为可迁移规则，并在新问题上选择相关规则来引导智能体。该方法从官方 SWE-bench Verified 排行榜公开轨迹中学习技能，在 SWE-bench Pro 和 DeepSWE 上使用来自不同厂商的三个骨干大模型进行评估，评估仓库均未出现在技能学习轨迹池中；相对三种近期技能学习方法，XRepoSkill 在全部六个基准与模型组合中取得最高问题解决率，并且在具有挑战性的长程 DeepSWE 基准上，相比未学习技能的同一智能体提升 10.3 个百分点，相比最强技能学习基线提升 5.0 个百分点。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.36807v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.36777v1",
+      "title": "Code4Scene: Benchmarking Coding Agents for Constructing and Editing 3D Scenes",
+      "title_zh": "Code4Scene：为构建和编辑3D场景的编码智能体建立基准",
+      "summary": "Code4Scene 关注能生成 3D 环境的编程智能体是否真正理解三维结构并精确控制场景状态，因为看似合理的渲染可能掩盖错误的空间关系、物体相交或非预期修改。该基准包含 190 个基于人工组装场景的 Unreal Engine 案例，在统一执行接口下评估两类任务：根据开放式语言规范进行场景构建，其中多种实现均可接受；以及根据参考图像编辑场景状态，同时保持其余部分不变。它不评估代码或渲染视图，而是评估生成的引擎原生场景，考察任务完成度、制品完整性和静态物理有效性，编辑任务还与留出的真实场景进行比较。在 95 个公开案例上测试 14 种编程智能体配置后，构建与编辑表现强相关但不可互换（Spearman rho=0.78）；Claude Fable 5.1 在构建上领先，Gemini 3.8 Flash 在编辑上领先，GPT-6 Astra 总体略优。Spatial Composition 是所有智能体最弱的构建类别，编辑仍不精确，最佳 Repair F1 仅为 0.527，且 35.8% 完全恢复目标的编辑仍在场景其他位置引入非预期修改。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.36777v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2606.21804v2",
+      "title": "Is Agent Code Less Maintainable Than Human Code?",
+      "title_zh": "智能体代码比人类代码更难维护吗？",
+      "summary": "可维护性是软件工程的核心维度，尽管编码智能体在单一任务上表现良好，但当后续智能体在其生成的代码上继续开发时，这些代码是否可维护以及是否会造成下游影响仍不明确。作者提出 CodeThread，一个将仓库级编码基准转化为受控实验的框架，并将其应用于四个前沿编码智能体和四个基准，以比较智能体代码与人类代码在维护场景下的差异。研究发现，智能体在智能体代码上解决任务的效果低于在人类代码上，任务解决率最多下降 13.1%；回归分析表明，许多传统可维护性指标无法解释这一差距，更清晰的信号来自输入验证和错误处理等细微行为差异，以及下游代码规模和任务难度。这些结果表明，评估智能体系统不应只看即时任务解决情况，还应关注其生成代码的可维护性。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2606.21804v2",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.36647v1",
+      "title": "CTE-Bench: Counterfactual Trace Evaluation for Stateful Software Simulators",
+      "title_zh": "CTE-Bench：面向有状态软件模拟器的反事实轨迹评估",
+      "summary": "编码智能体会修改运行中的服务代码或覆盖其存储状态，然后依据对后续行为的预期采取行动，错误预期可能数轮调用后才显现，而函数级代码执行基准忽略持久服务状态，智能体基准又只评估动作或最终状态，难以衡量干预效应。CTE-Bench 衡量模型能否在不选择动作的情况下预测干预如何改变有状态服务的未来行为：每个场景提供 Python 服务代码、干预前调用与响应、干预本身（源码编辑或状态覆盖）以及 40 个固定未来调用，模型预测所有未来响应，并通过执行服务校验；三种记忆协议分别向模型展示正确的早期响应、不展示早期响应或展示模型自己此前的预测。CTE-Bench-Core-v1 包含六个确定性 Python 服务上的 255 个场景，每个模型产生 10,200 条预测，主指标 effect-step VM 在干预改变响应的 2,476 个未来调用上衡量响应是否精确匹配。提供正确早期响应时，四个 API 托管模型达到 54.3%-61.5% 的 effect-step VM；隐藏这些响应后降至 23.2%-28.9%；基于自生成预测时为 24.8%-33.2%，最多 1.2% 的场景能被端到端完全预测正确。这表明当前模型主要在获得正确反馈时才能跟踪干预效应，且误差会在 rollout 中累积。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.36647v1",
+      "code_urls": [
+        "https://huggingface.co/datasets/zhangxr7/cte-bench-core-v1"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.36635v1",
+      "title": "WitnessGym: Benchmarking Coding Agents on the Construction of Bug Witnesses",
+      "title_zh": "WitnessGym：对编码智能体构建缺陷见证进行基准测试",
+      "summary": "Bug 验证要求编码智能体生成可执行见证，将具体输入与测试脚手架结合并在执行中暴露错误行为，但现有基准常受限于复用公开历史缺陷与见证或依赖人工构造。WitnessGym 通过向真实项目的测试可达路径自动注入缺陷、重新构建项目并仅保留由构造期见证暴露的案例来解决这一问题，同时提供缺陷规范、执行适配器以及保持见证行为的缺陷保留变换来改变周边结构。基于带测试套件的真实 Java 项目，它自动构建了 1300 个基准案例，其注入补丁与历史缺陷补丁相似，并在盲评中难以被两个受测模型区分；对四个编码智能体框架、六种框架与模型组合在缺陷类型、执行上下文和变换深度上的评估表明，即使缺陷模式已知，见证构造仍然困难。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.36635v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2608.04270v2",
+      "title": "CURATE: Leveraging LLM Agents to Compose, Catalog, and Deploy Reproducible Workflows",
+      "title_zh": "CURATE：利用LLM智能体组合、编目和部署可复现工作流",
+      "summary": "现有的智能体代码生成虽能加速计算工作流开发，但主要聚焦代码生成，并未覆盖部署与共享等完整工作流生命周期，用户仍需自行开发、拼接模块并管理部署。CURATE 是一种人在回路的多智能体系统，利用 LLM 智能体在完整生命周期内进行组合、用户参与、复用与自动化任务执行，其模块目录支持跨工作流存储与复用模块和子图，并可扩展以支持 FAIR 原则下的共享。作者通过初始原型和 6 项实验验证了可行性，为该方案提供了初步证据。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2608.04270v2",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.34198v2",
+      "title": "Frozen Judges, Moving Agents: Version-Dependent LLM-Judge Error and the Limits of Judge-Assisted Agent Evaluation",
+      "title_zh": "冻结的评审器，移动的智能体：版本依赖的 LLM 评审误差与评审辅助智能体评估的局限",
+      "summary": "针对固定语言模型评审在比较新旧编码智能体时可能产生版本相关错误的问题，本文评估了评审辅助智能体评测的可靠性。作者分析了35个公开编码智能体提交（250个SWE-bench Verified问题上的20个预设版本对）、两个客服智能体在155个tau-bench任务上的表现，以及1,106条专家标注的AgentRewardBench轨迹；主要SWE-bench分析使用三名评审和8,743个对齐单元，第四名评审仅作描述性分析，并在同一250个问题上用八种配置和1,981个三评审单元进行了提交后OpenHands验证。结果显示，三名编码智能体评审和四名tau-bench评审在多重性校正后均拒绝任务条件误差不变性；60个SWE-bench评审-版本对单元中有32个存在可检测的差异比较成分，八个仅评审区间宣称的升级无法由基于执行的区间确立，尽管秩相关为0.71-0.79。在tau-bench中，一名评审通过惩罚奖励忽略的程序性习惯而逆转了九点参考奖励差距；失败编码补丁的误接受率随智能体能力上升（以任务和执行结果为条件），而任务可解性预测在不同领域出现符号反转。后续验证复现了能力/误接受关联（平均Spearman +0.944，精确p=0.000099）和Youden对比度下降（平均-0.937，p=0.000397）；迁移旧版本校准使SWE-bench比较误差从3.8升至19.5点，24.6%的bootstrap比无法定义，在80个标注任务上配对审计仅节省5%区间宽度，随机自报告检验为阴性（三个校正p值=1.0）。这些结果支持对当前输出做配对审计，而非仅依赖评审发布决策或迁移校准；独立人工补丁审查仍待进行。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.34198v2",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.32965v2",
+      "title": "Relic: From Multi-Agent Collaboration to Persistent Organizational Capability",
+      "title_zh": "Relic：从多智能体协作到持久组织能力",
+      "summary": "多智能体协作常因代理基于冲突状态行动而失效，对话虽能解决单次事件，但成员更替后经验难以继续约束团队。Relic 将反复出现的协作失败转化为组织所有、可执行的协议：成员反思可见工作、提出规则并治理采纳，被采纳协议把触发条件、责任、所需证据和执行后果绑定到运行时，同时允许修订和退役。一个追踪案例中，反复集成摩擦形成接口评审规则，约束后续 pull request，并随工作继续修订。在覆盖十个软件负载和三个模型的 360 次受控运行中，Relic 将完整契约交付从 14.06% 提升至 19.76%，较无协议生命周期的匹配结构化团队提升 5.71 个百分点，并在每个模型层改善全部四个验证生产端点。新成员迁移下，行为正确率在无继承协议时为 25.4%，同规则以可读文本提供时为 34.6%，以可执行绑定提供时为 41.2%，较仅文本高 6.5 个百分点。在 CooperBench 上，排除 183 个损坏基准对后，Relic 达到 371/469（79.1%），为同类结构化系统最佳报告结果；在 47 对同模型子集上，Relic 以 28/47 超过 Solo 的 26/47，扭转官方同伴基线的协调损失。这些结果表明协作经验可成为持久组织状态，并在创建成员离开后仍然有用。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.32965v2",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.36371v1",
+      "title": "LatentSift: Policy-State Filtering for Token-Efficient Verification of Software Engineering Agents",
+      "title_zh": "LatentSift：面向令牌高效软件工程智能体验证的策略状态过滤",
+      "summary": "测试时扩展通过生成多个候选轨迹并选择最佳轨迹来提升软件工程智能体。验证并选择这些长交互所消耗的令牌可与生成本身一样多。现有混合工作流先应用基于 LLM 的无执行 (EF) 验证器，在运行测试前过滤候选，这会对每条轨迹额外增加一次模型前向。我们提出 LatentSift，一种无需令牌且无需执行的过滤器，用策略在生成候选时已产生的隐藏状态替代这一第一阶段。它通过候选的推理、观察和函数调用状态表示每个候选，将其与策略训练期间从成功和不成功轨迹收集的此类状态正负库进行比较，并将所得距离分数与一个学习到的线性分数融合，以保留有希望的候选进入基于执行的阶段。在 SWE-bench Verified 上，跨三个智能体和两种策略规模，LatentSift 在 K=16 时将 EF 验证器令牌减少 66.6--81.0%，将总验证令牌（包括测试生成）减少 49.1--62.1%，同时混合 Best@16 匹配或优于每个智能体的参考工作流，在 DeepSWE-Preview 上从 59.26% 提升至 60.06%。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.36371v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2607.25431v2",
+      "title": "CodeNib: A Multi-View Data System for Serving Repository Context to Coding Agents",
+      "title_zh": "CodeNib：为编码智能体提供仓库上下文的多视图数据系统",
+      "summary": "编码代理依赖复用的词法、稠密和结构仓库视图进行搜索、导航和上下文构建，但现有系统并未衡量预计算答案何时可以替代可信的重建或实时语言服务器。CodeNib 是一个多视图数据系统，首次将同一提交的词法、稠密和结构视图编译到单一清单和源地址契约之后，使词法命中、图出现和稠密块能够相互核对，并与重建或实时服务器核对，同时通过成本可见的运行时向代理提供搜索、导航和有界上下文。实验表明执行状态不等于正确性：符号级修复在所有留出变更上都能完成，但仅在 24 个中的 13 个上复现重建，因此运行时按仓库接纳它；向量复用则在 30 个留出变更中的 27 个上精确，并获得 40 倍加速；静态定义在 1.2 秒就绪点以 86% 的比例匹配实时服务器。在 LocAgent 后，CodeNib 的视图让代理以更低成本完成 90 次运行中的 78 次，而基线为 65 次；所选上下文策略在五个模型上比 grep/read 少用 50% 到 87% 的 token；在 200 个 SWE-bench Verified 任务上，将 CodeNib 的候选交给代理并在其首次读取源码后退役，解决了 79 个问题，是五种上下文策略中最多的，而按需探索为 66 个，Aider 的仓库地图为 56 个。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2607.25431v2",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.36323v1",
+      "title": "Towards an AI Software Factory for Data Systems",
+      "title_zh": "面向数据系统的AI软件工厂",
+      "summary": "该研究基于一个观察：AI辅助编码工具虽能显著加速编码，但由于Amdahl定律效应，其对端到端软件开发生命周期的影响有限。为此，作者提出构建AI SW Factory，覆盖Targeting、Coding、Reviewing和Ops等SDLC阶段，并产生元数据副产品，通过微调模型权重和更新作为丰富数据基底的World Model来实现自我改进，重点面向数据系统和具有可度量目标的演化编程任务。在微软数十个代码库的规模化部署中，该方法相比代理式编码实现了3倍工程效率和最高22倍token效率，同时指出了若干开放挑战。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.36323v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.36319v1",
+      "title": "StateTape: Action-Conditioned Evidence Lifecycle Modeling for Long-Horizon Coding Agents",
+      "title_zh": "StateTape：面向长时程编程智能体的动作条件化证据生命周期建模",
+      "summary": "长时程编程智能体面临上下文随每次观察不断增长的问题，而基于历史的上下文维护仅依据文本历史，忽略代码之间的关联，因此在仓库多次编辑后可能保留已被写入操作证伪的记录、删除仍然有效的记录，或遗漏下一步需要的代码。StateTape 通过随仓库变化重写智能体上下文来解决该问题：它将仓库建模为符号级代码图，利用依赖关系与语言规则揭示一次写入可能影响哪些符号，并用磁带标记每次写入改变的符号，从而把过时性从文本推断转化为对写入后果的观察。其逐写入流程由磁带提名可能被写入证伪的记录，再由小型管理器模型处理写入日志无法确定的情况，同时论文提供理论分析和 TraceBench 基准，用于对比智能体持有的记录与实际所需记录。在六个编程智能体和三个编辑密集型基准上的实验表明，StateTape 能有效清除被证伪记录并检索所需记录，从而以很小的计算开销取得更高的解决率。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.36319v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.36934v1",
+      "title": "VLALight: A Vision-Language-Action Model for Traffic Signal Control",
+      "title_zh": "VLALight：面向交通信号控制的视觉-语言-动作模型",
+      "summary": "交通信号控制对提升城市出行效率和缓解拥堵至关重要，但现有方法通常依赖人工设计的交通状态或分离的感知模块，导致路侧视觉观测与控制决策之间存在脱节。VLALight 针对这一问题提出了首个基于多视角路侧视频的端到端交通信号控制视觉-语言-动作模型，通过多目标时空交通推理和跨路口拓扑感知协同感知，将视觉观测直接映射为协调的信号动作；它采用两阶段监督冷启动训练来学习视觉交通理解和信号决策，随后使用协同智能体强化学习联合优化本地控制与全网交通效率，并引入自适应快慢推理模式，通过均衡的模式感知 rollout 和相对优势优化来权衡决策质量与推理成本。在三个城市网络的七个真实交通流数据集上，VLALight 持续优于基于交通工程、强化学习以及 LLM/VLM 的基线方法；消融实验验证了协同感知、网络级优化和自适应推理的有效性，表明视觉-语言-动作模型在真实物理交通控制中具有应用潜力。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.36934v1",
+      "code_urls": [
+        "https://github.com/usail-hkust/VLALight.git"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.36642v1",
+      "title": "PR-OPD: Privileged Representation On-policy Self-Distillation for Agentic Reinforcement Learning",
+      "title_zh": "PR-OPD：面向智能体强化学习的特权表示同策略自蒸馏",
+      "summary": "语言模型智能体通常依赖每回合单一奖励的强化学习，而特权自蒸馏可通过让同一策略在给定技能时以 token 概率教无技能自我来增强训练，但本文发现两个问题：技能可把 WebShop 成功率从 42.2% 提升到 56.2%，却只改变不到四分之一采样 token 的概率；同时技能会改变超过 80% 回复 token 的隐藏状态，且线性探针可追溯其对应技能。为此作者提出 PR-OPD，在 GRPO 热启动后，策略为每条轨迹写事后技能，并以该技能重读自身回复作为停止梯度教师，在每一层将投影隐藏状态与教师对齐，同时优化奖励目标，无需外部技能库、独立教师或推理开销。在 ALFWorld 和 WebShop 两个骨干模型上，PR-OPD 在所有设置中总体结果最佳，相较 GRPO 最高提升 ALFWorld 成功率 4.7 个百分点、WebShop 准确率 14.0 个百分点。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.36642v1",
+      "code_urls": [
+        "https://github.com/balibata/PR-OPD"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.36505v1",
+      "title": "BRIDGE: Bilevel Retrieval-Credit-Aware Agentic Reinforcement Learning",
+      "title_zh": "BRIDGE：双层检索信用感知的智能体强化学习",
+      "summary": "现有可验证奖励的智能体强化学习通常只优化大语言模型生成的 token，并将检索到的证据视为环境观测，这造成信息信用分配缺口，使缺失或误导性证据导致的失败被归因于大语言模型策略而非检索器，因此有必要联合训练大语言模型与检索器。论文表明检索与语言模型策略学习具有顺序敏感性，先适配检索器再优化策略比相反顺序带来更大奖励增益，并将检索增强的智能体强化学习形式化为双层优化问题；为此提出 BRIDGE，一种基于强化学习与检索目标损失景观分析的内存高效一阶双层方法。在七个开放域问答基准上，BRIDGE 在 3B 和 7B 骨干模型上均取得最高平均准确率，多跳平均相较最强基线分别提升 9.6 和 3.4 EM 点，并在医学问答基准上取得最佳平均答案准确率和推理质量。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.36505v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.36178v1",
+      "title": "Targeting Pivotal Decisions for Credit Assignment in Agentic Reinforcement Learning",
+      "title_zh": "面向智能体强化学习信用分配的关键决策定位",
+      "summary": "GRPO 将轨迹级优势均匀分配给所有策略 token，无法区分关键决策，也模糊了哪些中间决策促成了成功。ProVer 针对潜在关键决策进行细粒度信用分配：由智能体评判器对比成功与失败轨迹，提出可能导致结果分歧的片段；但该方法不直接信任评判器，而是通过在片段前后采样当前策略续写，并以终端成功率差异估计该片段的优势，再将正优势加入片段内策略 token 的 GRPO 优势中。这样仅用模型判断来选择验证位置，将局部信用建立在观测结果上，避免穷举评估每个中间状态。在 ALFWorld、WebShop 和 SearchQA 上，ProVer 在两个模型规模上均取得最佳平均性能，相对 GRPO 分别提升 9.91%（Qwen3.5-2B）和 7.12%（Qwen3.5-4B）；进一步分析表明，即使没有前沿规模评判模型，有信息量的片段选择也能以适度额外生成开销改进策略训练。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.36178v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.35750v1",
+      "title": "KV-streams for Efficient Compaction in Agentic Reinforcement Learning",
+      "title_zh": "用于智能体强化学习中高效压缩的 KV-streams",
+      "summary": "扩展智能体LLM的时间跨度受限于在GPU内存中容纳越来越长的上下文轨迹，而上下文压缩虽能保持内存恒定，但多数压缩策略需要反复预填充LLM上下文，从而降低训练吞吐量。为此提出的KV-streams是一种即插即用策略，兼容任何压缩方法，通过将KV缓存向前流式传输而不是在每次压缩后清空，实现可扩展且可训练的压缩。实验表明，KV-streams支持三种压缩策略，训练墙钟时间加速2.6至5倍，且未显示损害性能的证据；此外，流式KV缓存可作为循环状态，携带早已从上下文中消失的信息，并且在受控设置中，与先前工作相反，仅RL本身即可使该行为涌现，使KV-streams成为后训练流程中高效轻量的即插即用补充。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.35750v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.35954v1",
+      "title": "ROSS: Relearning from Self-Generated Rollouts through Selective Supervision",
+      "title_zh": "ROSS：通过选择性监督从自生成轨迹中重新学习",
+      "summary": "大语言模型后训练通过强化学习和同策略蒸馏产生自生成轨迹，但策略更新后这些经验常被视为过时；历史轨迹可能与后续策略兼容并保留当前策略不再稳定表现的行为，同时也可能包含错误、放弃的尝试和冗余动作，因此需要更细粒度的选择性监督。ROSS 将完整历史轨迹保留为上下文，仅对选定的模型生成续写计算损失。在领域特定强化学习、多教师同策略蒸馏和智能体强化学习中，ROSS 持续提升上游检查点，并在数学、代码生成、指令遵循和软件工程任务上优于基线。在 Qwen3.6-35B-A3B 上，ROSS 将六基准 MOPD 平均值从 58.40% 提升至 62.20%，并将 SWE-bench Verified 从 64.20% 提升至 68.40%，表明自轨迹训练留下的可复用行为经验可通过离线监督微调带来进一步收益，且无需额外策略轨迹采样。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.35954v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.35532v1",
+      "title": "ARISE: Adapting to Evolving Capability Gaps in Agentic Reinforcement Learning",
+      "title_zh": "ARISE：适应智能体强化学习中不断演变的能力差距",
+      "summary": "随着长时程智能体通过经验不断改进，其已有弱点会消退而新的局限会浮现，但固定的行为标准、训练优先级以及稀疏的任务级反馈往往无法匹配其不断变化的能力需求，且当前策略的 rollout 可能反复重现相同失败。为此，ARISE 提出自适应的规则-技能协同演化框架，利用 rollout 证据持续调整评估标准、探索引导和训练优先级，通过奖励部分行为进展、精炼并选择性激活配套技能，以及基于能力的自适应采样来优先训练针对未解决弱点的任务。在 SkillsBench 和 Terminal-Bench 两个长时程智能体基准上的实验表明，ARISE 同时提升了整体任务性能和训练效率。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.35532v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.35215v1",
+      "title": "ASCT: Attentive Search over Counterfactual Trees for Credit Assignment in Agentic Reinforcement Learning",
+      "title_zh": "ASCT：面向智能体强化学习信用分配的反事实树注意力搜索",
+      "summary": "该论文关注智能体强化学习中的信用分配问题，即终端效用只能评估完整工作流，却无法直接说明其中哪些决策应获得信用。作者提出 ASCT（Attentive Search over Counterfactual Trees），将训练时的多步搜索转化为局部动作信用：在 actor 访问过的状态上，用辅助树从同一可恢复前缀评估其他合法动作，并用冻结 actor 的概率对动作价值表进行中心化，从而在 actor 采样轨迹上为 PPO 提供信用，同时部署时只需 actor。Uniform、UCT 和成本感知的 AgentUCT 均可实例化该框架。在 HotpotQA 的智能体检索增强生成任务上，三种变体均优于 trajectory-return PPO 和 workflow-adapted VinePPO；在三个随机种子下，ASCT-AgentUCT 达到 0.6187 的效用，而 VinePPO 为 0.5939，并在答案 F1 和执行成本上取得改善，记录的辅助 Qwen token 减少 50.3%，迁移与组件描述研究进一步考察了训练场景之外学到的策略。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.35215v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.35158v1",
+      "title": "PEARL: Adaptive Prefill-Decode Execution with Elasticity for Agentic Reinforcement Learning",
+      "title_zh": "PEARL：面向智能体强化学习的弹性自适应预填充-解码执行",
+      "summary": "多轮 rollout 主导了智能体强化学习的开销，异步执行和弹性 GPU 资源虽可加速该阶段，但增加 rollout 副本收益递减，且训练 GPU 在更新之间仍会空闲；同时，有效资源利用还取决于预填充-解码（PD）配置，其是否共置或分离以及最优 PD 比例随工作负载变化，使资源扩展与 PD 配置相互依赖。PEARL 是一个异步智能体强化学习系统，协调外部资源弹性、临时复用空闲训练 GPU 以及自适应 PD 执行：它维护统一的 GPU-工作器-角色状态，利用运行时画像预测 rollout 批次完成时间并考虑环境导致的解码并发下降，在当前 GPU 预算下选择 PD 模式与比例，并将每次决策转化为最小化工作器和角色变更的增量过渡计划，同时通过成本感知切换与借用策略抑制预期收益不足的转换并确保训练 GPU 及时归还。实验表明，PEARL 在不同 LLM 上达到固定资源 ROLL 的 2.17–2.79 倍吞吐量；与 RLBoost+ 相比，Qwen3-8B 的吞吐量最多提升约 26.9%，Qwen3-30B-A3B 最多提升 36.3%。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.35158v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.35152v1",
+      "title": "Coordinated Lane-Level Variable Speed Limits and Ramp Metering for Successive Weaving Segments Considering Merging/Diverging Risks: A Hybrid Model Predictive Control and Multi-Agent Reinforcement Learning Approach",
+      "title_zh": "考虑合流/分流风险的连续交织路段车道级可变限速与匝道控制协同：混合模型预测控制与多智能体强化学习方法",
+      "summary": "城市快速路连续交织段是常发性拥堵与碰撞瓶颈，现有主动交通管理难以兼顾数据驱动优化的适应性与模型控制的鲁棒性和可迁移性。本文提出混合框架协调连续交织段的车道级可变限速与匝道控制，首先重建L-METANET车道级宏观交通流模型以刻画自由与强制换道，其次结合XGBoost-SHAP与随机参数二元Logit模型推导合流与分流碰撞风险解析式并构建系统成本与奖励函数，进而提出MPC-STMAPPO分层控制器，上层MPC基于L-METANET进行长时域滚动优化并生成基线指令，下层时空MAPPO结合Mamba单元与图注意力生成短时域残差调整动作。中国长春18公里东部快速路真实实验表明，L-METANET准确再现换道引发的流量重分布与通行能力下降且状态演化与真实值一致，XGBoost-SHAP-RPBL在多数任务中AUC超过0.80并优于传统Logit模型，MPC-STMAPPO收敛更快且在多项指标上优于MPC和MARL基线，在随机波动需求下泛化能力显著优于纯MARL，展示出较强工业部署潜力。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.35152v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.35082v1",
+      "title": "Cross-Rollout Bellman Closure for Long-Horizon Agentic Reinforcement Learning",
+      "title_zh": "面向长时程智能体强化学习的跨轨迹贝尔曼闭包",
+      "summary": "在长时程智能体强化学习中，GRPO 等基于分组的方法不依赖学习到的评论家，而多个 rollout 常会访问共享锚点状态，为步级信用分配提供跨 rollout 证据，但访问局部平均无法递归传播证据，最短路径估计又可能让罕见路径主导锚点价值。本文提出 Cross-Rollout Bellman Closure，将每个 rollout 组建模为带吸收成功与失败边界的有限经验过程，并通过一次线性求解计算其行为策略贝尔曼不动点，利用经验动作与转移频率在共享锚点间传播证据并聚合替代后续，再通过已观测转移回传状态价值得到动作价值，以动作价值相对状态价值的增益作为步级信用；其有限深度版本在深度为零时退化为访问局部回报平均，并随深度增加收敛到精确闭包，归一化后的闭包信用与轨迹级分组优势结合用于策略优化，且无需额外环境 rollout。在 ALFWorld、WebShop 和 Sokoban 多个模型规模上的实验表明，CRBC 持续提升最终性能与学习效率，例如在 Qwen2.5-1.5B-Instruct 的 ALFWorld 上比最强评估基线高 5.59 个百分点。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.35082v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.34810v1",
+      "title": "UniOPSD: Unifying Outcome and Hindsight Feedback for Agentic Reinforcement Learning",
+      "title_zh": "UniOPSD：统一结果与事后反馈的智能体强化学习",
+      "summary": "面向语言模型智能体的强化学习受稀疏且延迟的结果奖励制约，难以在长交互序列中进行有效信用分配；在线策略自蒸馏虽利用特权训练上下文提供补充监督，但诊断显示结果反馈与后见反馈平均一致性与显著局部分歧并存，因此需要按决策自适应分配二者影响。UniOPSD 通过自适应局部信用仲裁统一结果反馈与后见反馈：在共享交互锚点构建来自环境回报和成功同伴后见信息的可比信用估计，用历史一致性决定全局混合程度，并依据当前信号可用性和相对精度调整每个决策中各来源的影响，同时保留回合级结果贡献，并以有界 token 调制细化融合后的步骤信用用于策略优化。使用 Qwen2.5-3B-Instruct 和 Qwen2.5-7B-Instruct 时，UniOPSD 在 ALFWorld 上分别达到 82.8% 和 83.6% 成功率，在 WebShop 上分别达到 75.0% 和 82.0% 成功率，在 Search-QA 上分别达到 45.3% 和 49.8% 聚合准确率；在 3B WebShop 上，它比 SDAR 提升 7.0 个百分点。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.34810v1",
+      "code_urls": [
+        "https://github.com/Zenghuang-Fu/Uniopsd"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.34459v1",
+      "title": "Escaping Local Views: Discovering Latent Concepts for Interpretable Multi-Agent Reinforcement Learning",
+      "title_zh": "逃离局部视角：发现用于可解释多智能体强化学习的潜在概念",
+      "summary": "多智能体强化学习中，由于每个智能体通常只有部分可观测性，高效协作具有挑战性，而循环网络编码的隐藏表示对个体决策所依据的信息揭示有限。为此，本文提出可解释框架“逃离局部视角”（ELV），引入语义结构化的潜在概念以使策略决策透明：每个智能体从局部观测和动作-观测轨迹中提取低维语义概念，通过变分自编码器将其联合编码为上下文潜在变量，从而连接局部视角与全局语义；采用双路注意力机制，一路估计各概念相对于全局上下文的重要性，另一路通过成对概念交互捕捉高阶协作模式；并加入概念预测模块，从下一概念预测误差中导出内在奖励，激励智能体探索语义新颖区域。多个环境中的实验表明，ELV不仅取得有竞争力的性能，还能显式展示智能体如何推理其决策。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.34459v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2606.14693v2",
+      "title": "Learning Coordinated Preference for Multi-Objective Multi-Agent Reinforcement Learning",
+      "title_zh": "面向多目标多智能体强化学习的协调偏好学习",
+      "summary": "合作式多目标多智能体强化学习不仅面临目标之间的冲突，也面临具有不同观测、角色和贡献的智能体之间的冲突，因此协调权衡较为困难。本文提出偏好协调多智能体策略优化（PCMA），通过学习协调的智能体特异性偏好来实现智能体之间的互补权衡。理论上，该方法将合作式MOMARL建模为团队最优均衡问题，并证明在适当条件下偏好多样性可带来团队目标的一阶改进。在多个合作式MOMA环境和实际交通控制场景上的实验表明，PCMA同时提升了性能与权衡协调性。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2606.14693v2",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2609.20784v2",
+      "title": "RetireOPD: Self-Retiring On-Policy Distillation for Agentic Reinforcement Learning",
+      "title_zh": "RetireOPD：面向智能体强化学习的自退役同策略蒸馏",
+      "summary": "多轮智能体用强化学习训练时每条轨迹只能获得单一标量奖励，因此自策略蒸馏被用来从具备特权任务技能的自教师提供密集的词元级监督，使无技能的学生能够内化这些能力。然而，在智能体任务中发现，仅有特权信息并不总能让教师可靠，而且教师监督的收益依赖训练阶段。为此提出的 RetireOPD 先用以环境奖励优化的解耦技能条件教师，再将无技能学生与强化学习和自策略蒸馏联合训练。它不遵循预定义的蒸馏时间表，而是采用自适应退休：当学生与教师的差异不再缩小且学生达到教师成功率的指定比例时，学生自行丢弃教师，之后仅用强化学习继续训练。在 Qwen2.5 1.5B 到 7B 模型上，RetireOPD 将 ALFWorld 成功率较强化学习基线提升 14.1% 至 18.8%，将 WebShop 准确率提升 11.8% 至 19.0%，并在所有设置中超过其自身的技能条件教师。",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2609.20784v2",
+      "code_urls": []
+    }
+  ],
+  "group_analysis": {
+    "代码预训练": {
+      "direction": {
+        "text": "本期仅命中一篇《EvoLen：面向 DNA 语言模型的进化引导分词》，样本不足以判断 代码预训练 方向的趋势；可把这项工作作为后续比较的起点。",
+        "paper_ids": [
+          "http://arxiv.org/abs/2604.08698v3"
+        ]
+      },
+      "connections": {
+        "text": "本期没有第二篇同方向论文可作横向对照，因此暂不能判断它与同期工作的共同方法或差异。",
+        "paper_ids": [
+          "http://arxiv.org/abs/2604.08698v3"
+        ]
+      },
+      "bottleneck": {
+        "text": "当前材料缺少同期对照结果，尚无法确认方法收益是否稳定，也不能据此归纳共同瓶颈。",
+        "paper_ids": [
+          "http://arxiv.org/abs/2604.08698v3"
+        ]
+      },
+      "next_steps": [
+        {
+          "question": "在该论文采用的任务和基准上复现核心结果，并补充强基线、成本及失败案例对照。",
+          "paper_ids": [
+            "http://arxiv.org/abs/2604.08698v3"
+          ]
+        }
+      ],
+      "source": "fallback",
+      "count": 1,
+      "empty": false
+    },
+    "代码后训练": {
+      "direction": {
+        "text": "本期收录 3 篇 代码后训练 论文；趋势综合暂不可用，先列出 《Loop Dropout：正则化循环语言模型中的共享更新》、《通过空间一致性实现在线持续学习中的可靠回放》、《Lightning OPD：基于离线同策略蒸馏的大型推理模型高效后训练》 供核对，不据此推断领域变化。",
+        "paper_ids": [
+          "http://arxiv.org/abs/2609.34218v1",
+          "http://arxiv.org/abs/2609.33725v1",
+          "http://arxiv.org/abs/2604.13010v3"
+        ]
+      },
+      "connections": {
+        "text": "目前没有通过内容校验的跨论文综合结论；可先对照各论文的任务设定、训练信号和评测基准。",
+        "paper_ids": [
+          "http://arxiv.org/abs/2609.34218v1",
+          "http://arxiv.org/abs/2609.33725v1",
+          "http://arxiv.org/abs/2604.13010v3"
+        ]
+      },
+      "bottleneck": {
+        "text": "仅凭分组命中关系无法可靠判断共同瓶颈；需要回看论文中的失败分析、数据覆盖和成本报告。",
+        "paper_ids": [
+          "http://arxiv.org/abs/2609.34218v1",
+          "http://arxiv.org/abs/2609.33725v1",
+          "http://arxiv.org/abs/2604.13010v3"
+        ]
+      },
+      "next_steps": [
+        {
+          "question": "把本期论文放到可比任务和基准上复现，比较其方法、数据、评测结果与推理成本。",
+          "paper_ids": [
+            "http://arxiv.org/abs/2609.34218v1",
+            "http://arxiv.org/abs/2609.33725v1",
+            "http://arxiv.org/abs/2604.13010v3"
+          ]
+        }
+      ],
+      "source": "fallback",
+      "count": 3,
+      "empty": false
+    },
+    "代码Agent": {
+      "direction": {
+        "text": "本期收录 15 篇 代码Agent 论文；趋势综合暂不可用，先列出 《反事实展开回放：以可分叉环境作为软件工程智能体的免费过程奖励》、《DeepSurvey：面向智能体的兼具分析深度与引用可靠性的自动化综述生成》、《DemoEvolve：稀疏反馈下演示引导的 Harness 演化》 供核对，不据此推断领域变化。",
+        "paper_ids": [
+          "http://arxiv.org/abs/2609.33875v2",
+          "http://arxiv.org/abs/2605.29522v2",
+          "http://arxiv.org/abs/2605.24539v2"
+        ]
+      },
+      "connections": {
+        "text": "目前没有通过内容校验的跨论文综合结论；可先对照各论文的任务设定、训练信号和评测基准。",
+        "paper_ids": [
+          "http://arxiv.org/abs/2609.33875v2",
+          "http://arxiv.org/abs/2605.29522v2",
+          "http://arxiv.org/abs/2605.24539v2"
+        ]
+      },
+      "bottleneck": {
+        "text": "仅凭分组命中关系无法可靠判断共同瓶颈；需要回看论文中的失败分析、数据覆盖和成本报告。",
+        "paper_ids": [
+          "http://arxiv.org/abs/2609.33875v2",
+          "http://arxiv.org/abs/2605.29522v2",
+          "http://arxiv.org/abs/2605.24539v2"
+        ]
+      },
+      "next_steps": [
+        {
+          "question": "把本期论文放到可比任务和基准上复现，比较其方法、数据、评测结果与推理成本。",
+          "paper_ids": [
+            "http://arxiv.org/abs/2609.33875v2",
+            "http://arxiv.org/abs/2605.29522v2",
+            "http://arxiv.org/abs/2605.24539v2"
+          ]
+        }
+      ],
+      "source": "fallback",
+      "count": 15,
+      "empty": false
+    },
+    "Agentic RL": {
+      "direction": {
+        "text": "本期收录 15 篇 Agentic RL 论文；趋势综合暂不可用，先列出 《VLALight：面向交通信号控制的视觉-语言-动作模型》、《PR-OPD：面向智能体强化学习的特权表示同策略自蒸馏》、《BRIDGE：双层检索信用感知的智能体强化学习》 供核对，不据此推断领域变化。",
+        "paper_ids": [
+          "http://arxiv.org/abs/2609.36934v1",
+          "http://arxiv.org/abs/2609.36642v1",
+          "http://arxiv.org/abs/2609.36505v1"
+        ]
+      },
+      "connections": {
+        "text": "目前没有通过内容校验的跨论文综合结论；可先对照各论文的任务设定、训练信号和评测基准。",
+        "paper_ids": [
+          "http://arxiv.org/abs/2609.36934v1",
+          "http://arxiv.org/abs/2609.36642v1",
+          "http://arxiv.org/abs/2609.36505v1"
+        ]
+      },
+      "bottleneck": {
+        "text": "仅凭分组命中关系无法可靠判断共同瓶颈；需要回看论文中的失败分析、数据覆盖和成本报告。",
+        "paper_ids": [
+          "http://arxiv.org/abs/2609.36934v1",
+          "http://arxiv.org/abs/2609.36642v1",
+          "http://arxiv.org/abs/2609.36505v1"
+        ]
+      },
+      "next_steps": [
+        {
+          "question": "把本期论文放到可比任务和基准上复现，比较其方法、数据、评测结果与推理成本。",
+          "paper_ids": [
+            "http://arxiv.org/abs/2609.36934v1",
+            "http://arxiv.org/abs/2609.36642v1",
+            "http://arxiv.org/abs/2609.36505v1"
+          ]
+        }
+      ],
+      "source": "fallback",
+      "count": 15,
+      "empty": false
+    }
+  }
+}
