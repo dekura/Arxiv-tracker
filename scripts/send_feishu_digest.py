@@ -14,9 +14,17 @@ from pathlib import Path
 # so this standalone Actions entry point can import the shared package.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from arxiv_tracker.insights import TRAINING_LABELS  # noqa: E402
+
 SITE_URL = "https://gjchen.me/Arxiv-tracker/"
 MAX_CHARS = 12000
-SUMMARY_CHARS = 300
+FIELD_CHARS = 70
+# Tiers are tried in order until the card fits MAX_CHARS; later tiers drop the least essential lines.
+DETAIL_TIERS = (
+    (("problem", "核心问题"), ("challenge", "关键困难"), ("solution", "解决方案"), ("future", "未来方向")),
+    (("problem", "核心问题"), ("solution", "解决方案")),
+    (),
+)
 
 
 def _escape_label(value):
@@ -49,92 +57,88 @@ def _shorten(text, limit):
 
 def _group_items(payload):
     groups = defaultdict(list)
+    for name in payload.get("groups") or []:
+        groups[name]
     for item in payload.get("items", []):
-        names = item.get("groups") or ["今日论文"]
-        for name in names:
+        for name in item.get("groups") or ["今日论文"]:
             groups[name].append(item)
-    return groups
+    return {name: papers for name, papers in groups.items() if papers}
 
 
-def _analysis_claim(label, claim, item_by_id, text_key="text"):
-    if not claim:
-        return ""
-    text = _escape_label(_shorten(claim.get(text_key) or "", 110))
-    citations = []
-    for paper_id in claim.get("paper_ids") or []:
-        paper = item_by_id.get(paper_id)
-        if not paper:
-            continue
-        title = _escape_label(paper.get("title_zh") or paper.get("title") or "论文")
-        url = paper.get("html_url") or paper_id
-        citations.append(f"[{title}]({url})")
-    evidence = f"（依据：{'、'.join(citations)}）" if citations else ""
-    return f"• **{label}**：{text}{evidence}"
+def _title_link(paper):
+    title = _escape_label((paper.get("title") or "Untitled").strip())
+    url = (paper.get("html_url") or "").strip()
+    return f"[{title}]({url})" if url else title
+
+
+def _tag_line(paper):
+    tags = paper.get("tags") or {}
+    bits = [" + ".join(tags.get("training") or []), tags.get("architecture"), tags.get("application")]
+    return " · ".join(_escape_label(bit) for bit in bits if bit)
+
+
+def _paper_lines(paper, fields):
+    lines = [f"• **{_title_link(paper)}**"]
+    tag_line = _tag_line(paper)
+    if tag_line:
+        lines.append(f"  {tag_line}")
+    innovation = ((paper.get("tags") or {}).get("innovation") or "").strip()
+    if innovation:
+        lines.append(f"  💡 {_escape_label(_shorten(innovation, FIELD_CHARS))}")
+    facts = [f"**{label}**：{_escape_label(_shorten(paper[key], FIELD_CHARS))}"
+             for key, label in fields if (paper.get(key) or "").strip()]
+    for index in range(0, len(facts), 2):
+        lines.append("  " + " ｜ ".join(facts[index:index + 2]))
+    code_urls = list(dict.fromkeys(paper.get("code_urls") or []))
+    if code_urls:
+        lines.append("  代码：" + " · ".join(f"[Code {i}]({u})" for i, u in enumerate(code_urls[:3], 1)))
+    return lines
+
+
+def _training_summary(items):
+    counts = defaultdict(int)
+    for item in items:
+        for label in (item.get("tags") or {}).get("training") or []:
+            counts[label] += 1
+    ordered = sorted(counts, key=lambda label: TRAINING_LABELS.index(label) if label in TRAINING_LABELS else 99)
+    return " · ".join(f"{label} {counts[label]}" for label in ordered)
+
+
+def _render(payload, fields):
+    items = payload.get("items", [])
+    unique_count = len({item.get("id") or item.get("title") for item in items})
+    with_code = sum(1 for item in items if item.get("code_urls"))
+    header = " · ".join(bit for bit in (payload.get("report_date"), f"{unique_count} 篇",
+                                         f"{with_code} 篇有代码") if bit)
+    lines = [f"📅 {header}"]
+    distribution = _training_summary(items)
+    if distribution:
+        lines.append(f"🏷 训练方法：{distribution}")
+    groups = _group_items(payload)
+    if not groups:
+        lines.extend(["", "今天没有新的命中，检索会继续运行，明天再来看看。"])
+    shown_in = {}
+    for group, papers in groups.items():
+        # Lark card Markdown does not reliably render headings/blockquote.
+        lines.extend(["", f"📚 **{_escape_label(group)} · {len(papers)} 篇**"])
+        for paper in papers:
+            key = paper.get("id") or paper.get("title")
+            if key in shown_in:
+                lines.append(f"• {_title_link(paper)}（见「{_escape_label(shown_in[key])}」）")
+                continue
+            shown_in[key] = group
+            lines.extend(_paper_lines(paper, fields))
+    lines.extend(["", f"🌐 [打开完整日报（可按方向/训练方法筛选）]({SITE_URL})"])
+    return "\n".join(lines)
 
 
 def build_markdown(payload):
-    groups = _group_items(payload)
-    lines = ["🌱 **今天的 arXiv 新发现，看看研究问题正在往哪里走。**"]
-    if payload.get("report_date"):
-        lines.append(f"📅 {payload['report_date']}")
-    unique_count = len({item.get("id") or item.get("title") for item in payload.get("items", [])})
-    lines.append(f"📊 本期新增 {unique_count} 篇（按论文去重）")
-    if not groups:
-        lines.extend(["", "今天没有新的命中，检索会继续运行，明天再来看看。"])
-    else:
-        for group, papers in groups.items():
-            # Lark card Markdown does not reliably render headings/blockquote.
-            lines.extend(["", f"📚 **{_escape_label(group)} · {len(papers)} 篇**"])
-            for paper in papers:
-                title = (paper.get("title_zh") or paper.get("title") or "无标题").strip()
-                url = (paper.get("html_url") or "").strip()
-                title_md = _escape_label(title)
-                if url:
-                    title_md = f"[{title_md}]({url})"
-                summary = _shorten(paper.get("summary"), SUMMARY_CHARS)
-                lines.append(f"• **{title_md}**")
-                if summary:
-                    lines.append(f"  {summary}")
-                code_urls = list(dict.fromkeys(paper.get("code_urls") or []))
-                if code_urls:
-                    code_links = " · ".join(f"[Code {index}]({url})" for index, url in enumerate(code_urls[:3], 1))
-                    lines.append(f"  代码：{code_links}")
-
-    group_analysis = payload.get("group_analysis") or {}
-    populated_analysis = [
-        (group, analysis) for group, analysis in group_analysis.items()
-        if not analysis.get("empty") and analysis.get("count")
-    ]
-    if populated_analysis:
-        item_by_id = {item.get("id"): item for item in payload.get("items", []) if item.get("id")}
-        lines.extend(["", "🔎 **今日观察｜趋势、关注点与可做的问题**"])
-        for group, analysis in populated_analysis:
-            lines.extend(["", f"**{_escape_label(group)}**"])
-            for label, key in (("方向变化", "direction"), ("论文联系", "connections"), ("共同瓶颈", "bottleneck")):
-                rendered = _analysis_claim(label, analysis.get(key), item_by_id)
-                if rendered:
-                    lines.append(rendered)
-            for question in analysis.get("next_steps") or []:
-                rendered = _analysis_claim("可验证的问题", question, item_by_id, text_key="question")
-                if rendered:
-                    lines.append(rendered)
-
-    lines.extend(["", f"🌐 [打开完整日报]({SITE_URL})"])
-    markdown = "\n".join(lines)
-    if len(markdown) > MAX_CHARS:
-        # Preserve the trend analysis and site link; shorten the paper section first.
-        marker = "\n🔎 **今日观察｜趋势、关注点与可做的问题**"
-        if marker in markdown:
-            prefix, tail = markdown.split(marker, 1)
-            suffix = marker + tail
-            notice = "\n\n…其余论文及详情请查看完整日报"
-            budget = max(0, MAX_CHARS - len(suffix) - len(notice))
-            prefix = prefix[:budget].rsplit("\n", 1)[0]
-            markdown = prefix + notice + suffix
-        else:
-            suffix = f"\n\n…详情请查看[完整日报]({SITE_URL})"
-            markdown = markdown[: MAX_CHARS - len(suffix) - 1].rsplit("\n", 1)[0] + suffix
-    return markdown
+    for fields in DETAIL_TIERS:
+        markdown = _render(payload, fields)
+        if len(markdown) <= MAX_CHARS:
+            return markdown
+    suffix = f"\n\n…其余论文请查看[完整日报]({SITE_URL})"
+    return markdown[: MAX_CHARS - len(suffix) - 1].rsplit("\n", 1)[0] + suffix
 
 
 def build_card(payload):

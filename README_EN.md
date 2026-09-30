@@ -220,29 +220,22 @@ max_results: 100             # per-page cap; the runner auto-paginates internall
 sort_by: "lastUpdatedDate"   # or submittedDate
 sort_order: "descending"
 
-# === Output language ===
-lang: "both"                 # zh / en / both
-
-# === Summaries ===
+# === Taxonomy + structured digest ===
+# llm: one JSON call per paper -> Chinese title, architecture / training method / application /
+#      core innovation, plus problem / challenge / solution / results / future; none/heuristic = abstract's first sentence
 summary:
-  mode: "llm"                # none / heuristic / llm
-  scope: "both"              # tldr / full / both
+  mode: "llm"
+insights:
+  workers: 8                          # concurrent requests
+  cache_path: ".state/llm_cache.json" # keyed by base arXiv id; new versions and reruns are free
+  cache_days: 60
+  prompt_version: 1                   # bump after editing the prompt to invalidate the cache
 
 # === LLM (OpenAI-Compatible: DeepSeek / SiliconFlow) ===
 llm:
   base_url: "https://api.deepseek.com"     # or "https://api.siliconflow.cn"
   model: "deepseek-chat"                   # e.g., "Qwen/Qwen3-8B" for SiliconFlow
   api_key_env: "OPENAI_COMPAT_API_KEY"
-  system_prompt_en: |
-    You are a senior paper-reading assistant...
-  system_prompt_zh: |
-    你是资深论文阅读助手...
-
-# === Optional: CN translation for title/abstract ===
-translate:
-  enabled: true
-  lang: "zh"
-  fields: ["title", "summary"]
 
 # === Email (QQ SMTP example) ===
 email:
