@@ -105,22 +105,27 @@ def _collect_items(query, *, want_new, cutoff, seen_ids, unique_only,
     start = 0
     collected = []
     collected_ids = set()
-    reached_cutoff = False
 
     for _page in range(max_pages):
         xml = fetch_arxiv_feed(
             query, start=start, max_results=page_size,
             sort_by=sort_by, sort_order=sort_order
         )
+        if "http://www.w3.org/2005/Atom" not in (xml or ""):
+            raise RuntimeError("arXiv 返回的不是 Atom feed，已中止，避免把故障当成没有新论文。")
         page_items = parse_feed(xml) or []
         if not page_items:
             break
 
+        page_newest = None
         for it in page_items:
             t = _parse_dt(it.get("updated")) or _parse_dt(it.get("published"))
+            if t and (page_newest is None or t > page_newest):
+                page_newest = t
+            # 过期条目跳过，不能在第一条旧论文处停。arXiv 的排序偶尔不是严格新到旧，
+            # 提前 break 会把同一页后面仍在时间窗内的论文整页丢掉。
             if cutoff and t and t < cutoff:
-                reached_cutoff = True
-                break
+                continue
 
             aid = it.get("id")
             if unique_only and aid and aid in seen_ids:
@@ -134,7 +139,10 @@ def _collect_items(query, *, want_new, cutoff, seen_ids, unique_only,
             if len(collected) >= want_new:
                 break
 
-        if len(collected) >= want_new or reached_cutoff:
+        if len(collected) >= want_new:
+            break
+        # 这一页最新的一篇也已经出窗，后面的页只会更旧。
+        if cutoff and page_newest and page_newest < cutoff:
             break
         if len(page_items) < page_size:
             break

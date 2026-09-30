@@ -150,6 +150,62 @@ class DigestImprovementsTests(unittest.TestCase):
         self.assertIn("今天没有新的命中", lark)
         self.assertNotIn("今日观察", lark)
 
+    def test_freshness_window_covers_weekend_gap(self):
+        config = yaml.safe_load(Path("config.yaml").read_text(encoding="utf-8"))
+        self.assertGreaterEqual(int(config["freshness"]["since_days"]), 5)
+        self.assertTrue(config["freshness"]["unique_only"])
+
+    @patch("arxiv_tracker.cli.parse_feed")
+    @patch("arxiv_tracker.cli.fetch_arxiv_feed")
+    def test_stale_first_hit_does_not_drop_later_fresh_paper(self, fetch, parse):
+        from datetime import datetime, timezone
+        from arxiv_tracker.cli import _collect_items
+
+        cutoff = datetime(2026, 9, 26, tzinfo=timezone.utc)
+        fetch.return_value = '<feed xmlns="http://www.w3.org/2005/Atom"></feed>'
+        parse.return_value = [
+            {"id": "http://arxiv.org/abs/old", "updated": "2026-09-20T00:00:00+00:00"},
+            {"id": "http://arxiv.org/abs/fresh", "updated": "2026-09-28T00:00:00+00:00"},
+        ]
+        items = _collect_items(
+            "q", want_new=15, cutoff=cutoff, seen_ids=set(), unique_only=True,
+            sort_by="lastUpdatedDate", sort_order="descending", fallback_when_empty=False,
+        )
+        self.assertEqual([it["id"] for it in items], ["http://arxiv.org/abs/fresh"])
+        fetch.assert_called_once()
+
+    @patch("arxiv_tracker.cli.parse_feed")
+    @patch("arxiv_tracker.cli.fetch_arxiv_feed")
+    def test_fully_stale_page_does_not_request_the_next_page(self, fetch, parse):
+        from datetime import datetime, timezone
+        from arxiv_tracker.cli import _collect_items
+
+        cutoff = datetime(2026, 9, 26, tzinfo=timezone.utc)
+        fetch.return_value = '<feed xmlns="http://www.w3.org/2005/Atom"></feed>'
+        parse.side_effect = [
+            [{"id": f"http://arxiv.org/abs/{i}", "updated": "2026-09-20T00:00:00+00:00"} for i in range(25)],
+            [{"id": "http://arxiv.org/abs/fresh", "updated": "2026-09-28T00:00:00+00:00"}],
+        ]
+        items = _collect_items(
+            "q", want_new=15, cutoff=cutoff, seen_ids=set(), unique_only=True,
+            sort_by="lastUpdatedDate", sort_order="descending", fallback_when_empty=False,
+        )
+        self.assertEqual(items, [])
+        fetch.assert_called_once()
+
+    @patch("arxiv_tracker.cli.fetch_arxiv_feed")
+    def test_non_atom_response_is_not_treated_as_no_papers(self, fetch):
+        from datetime import datetime, timezone
+        from arxiv_tracker.cli import _collect_items
+
+        fetch.return_value = "<html>bad gateway</html>"
+        with self.assertRaises(RuntimeError):
+            _collect_items(
+                "q", want_new=15, cutoff=datetime(2026, 9, 26, tzinfo=timezone.utc),
+                seen_ids=set(), unique_only=True, sort_by="lastUpdatedDate",
+                sort_order="descending", fallback_when_empty=False,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
