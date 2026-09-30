@@ -224,29 +224,22 @@ max_results: 100             # 每页抓取上限（内部支持自动分页累�
 sort_by: "lastUpdatedDate"   # 或 submittedDate
 sort_order: "descending"
 
-# === 输出语言 ===
-lang: "both"                 # zh / en / both
-
-# === 摘要生成 ===
+# === 分类 + 结构化摘要 ===
+# llm：每篇一次 JSON 调用，产出中文标题、模型架构/训练方法/应用场景/核心创新，
+#      以及 核心问题/关键困难/解决方案/主要结果/未来方向；none/heuristic 只用摘要首句
 summary:
-  mode: "llm"                # none / heuristic / llm
-  scope: "both"              # tldr / full / both
+  mode: "llm"
+insights:
+  workers: 8                          # 并发请求数
+  cache_path: ".state/llm_cache.json" # 按 arXiv 基础 ID 缓存，新版本和重跑不重复计费
+  cache_days: 60
+  prompt_version: 1                   # 改 prompt 后 +1，旧缓存失效
 
 # === LLM（OpenAI-Compatible，DeepSeek / SiliconFlow 均可） ===
 llm:
   base_url: "https://api.deepseek.com"     # 或 "https://api.siliconflow.cn"
   model: "deepseek-chat"                   # 例：SiliconFlow 可用 "Qwen/Qwen3-8B"
   api_key_env: "OPENAI_COMPAT_API_KEY"     # 统一密钥环境变量
-  system_prompt_en: |
-    You are a senior paper-reading assistant...
-  system_prompt_zh: |
-    你是资深论文阅读助手...
-
-# === 可选：题目/摘要中文翻译 ===
-translate:
-  enabled: true
-  lang: "zh"
-  fields: ["title", "summary"]
 
 # === 邮件发送（QQ 邮箱示例） ===
 email:
