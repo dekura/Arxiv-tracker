@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import os, re, sys, traceback, time, pathlib, click
 from .config import Settings
-from .query import build_search_query
+from .query import build_search_query, date_window
 from .client import fetch_arxiv_feed
 from .parser import parse_feed
 from .output import save_json, save_markdown
-from .summarizer import build_two_stage_summary
-from .llm import call_llm_translate
-from .research_analysis import generate_group_analysis, merge_group_items
+from .insights import analyze_papers, arxiv_base_id
+from .research_analysis import merge_group_items
 from .email_template import render_email_html
 from .exporter import md_to_pdf
 
@@ -173,24 +172,21 @@ def cli():
 @click.option("--max-results", type=int, default=None)
 @click.option("--sort-by", type=click.Choice(["submittedDate", "lastUpdatedDate"]), default=None)
 @click.option("--sort-order", type=click.Choice(["ascending", "descending"]), default=None)
-@click.option("--lang", type=click.Choice(["zh", "en", "both"]), default=None, help="输出语言")
-@click.option("--summary-mode", type=click.Choice(["none", "heuristic", "llm"]), default=None)
-@click.option("--summary-scope", type=click.Choice(["tldr", "full", "both"]), default=None)
+@click.option("--summary-mode", type=click.Choice(["none", "heuristic", "llm"]), default=None,
+              help="llm=调用大模型生成分类与结构化摘要；其他=用摘要首句兜底")
 @click.option("--email", "email_enabled", is_flag=True, default=None, help="启用邮件发送（覆盖配置）")
 @click.option("--email-detail", type=click.Choice(["simple", "full"]), default=None, help="邮件内容详略")
 @click.option("--email-max-items", type=int, default=None, help="邮件最多包含的条目数")
 @click.option("--out-dir", default="outputs", help="输出目录")
 @click.option("--verbose", is_flag=True, help="打印详细运行日志")
-@click.option("--translate", "translate_enabled", is_flag=True, default=None, help="启用 LLM 中文翻译（覆盖配置）")
-@click.option("--translate-lang", type=click.Choice(["zh"]), default=None, help="翻译目标语言")
 @click.option("--pdf", "pdf_enabled", is_flag=True, default=False, help="将 Markdown 同步导出为 PDF")
 @click.option("--site-dir", default=None, help="输出静态站点目录（如 docs）")
 @click.option("--site-url", default=None, help="站点首页 URL（用于邮件正文链接）")
 @click.option("--no-email", is_flag=True, help="跳过邮件发送（用于重试）")
 
 def run(config_path, categories, keywords, exclude_keywords, logic, max_results, sort_by, sort_order,
-        lang, summary_mode, summary_scope, email_enabled, email_detail, email_max_items,
-        out_dir, verbose, translate_enabled, translate_lang, pdf_enabled, no_email: bool,
+        summary_mode, email_enabled, email_detail, email_max_items,
+        out_dir, verbose, pdf_enabled, no_email: bool,
         site_dir, site_url):
     try:
         if verbose:
@@ -210,22 +206,13 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
                       sort_order=(sort_order or cfg.sort_order))
 
         raw_cfg = _load_raw_cfg(config_path)
-        lang = lang or raw_cfg.get("lang", "both")
 
-        # 摘要
+        # 分类 + 结构化摘要（每篇一次 LLM 调用）
         summary_cfg = raw_cfg.get("summary", {}) or {}
         llm_cfg = raw_cfg.get("llm", {}) or {}
+        insights_cfg = raw_cfg.get("insights", {}) or {}
         mode = summary_mode or summary_cfg.get("mode", "none")
-        scope = summary_scope or summary_cfg.get("scope", "both")
-
-        # 翻译
-        trans_cfg = (raw_cfg.get("translate", {}) or {}).copy()
-        if translate_enabled is not None:
-            trans_cfg["enabled"] = translate_enabled
-        if translate_lang:
-            trans_cfg["lang"] = translate_lang
-        if "fields" not in trans_cfg:
-            trans_cfg["fields"] = ["title", "summary"]
+        use_llm = mode == "llm" and insights_cfg.get("enabled", True)
 
         # —— 邮件配置（合并 config + CLI 覆盖 + no-email）——
         email_cfg = (raw_cfg.get("email", {}) or {}).copy()
@@ -262,10 +249,7 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
                 click.echo("[Run] groups    : {}".format(group_names))
             else:
                 click.echo("[Run] keywords  : {}".format(cfg.keywords))
-            click.echo("[Run] summary   : {}/{}".format(mode, scope))
-            click.echo("[Run] lang      : {}".format(lang))
-            click.echo("[Run] translate : {} -> {}".format(trans_cfg.get("enabled", False),
-                                                          trans_cfg.get("lang", "zh")))
+            click.echo("[Run] insights  : llm={} workers={}".format(use_llm, insights_cfg.get("workers", 8)))
             click.echo("[Run] email     : enabled={}, detail={}, max_items={}".format(
                 email_cfg.get("enabled", False), email_cfg.get("detail"), email_cfg.get("max_items")
             ))
@@ -291,6 +275,10 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
                 seen_ids = set()
 
         cutoff = datetime.now(timezone.utc) - timedelta(days=since_days) if since_days > 0 else None
+        window = None
+        if cutoff:
+            window_field = "submittedDate" if cfg.sort_by == "submittedDate" else "lastUpdatedDate"
+            window = date_window(window_field, cutoff, datetime.now(timezone.utc) + timedelta(days=1))
         want_new = int(cfg.max_results or 50)
         collect_kwargs = dict(
             want_new=want_new, cutoff=cutoff, seen_ids=seen_ids, unique_only=unique_only,
@@ -302,12 +290,12 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
             # 同一篇可以命中多个方向；seen 仍按论文 id 全局去重，避免跨天重复发信。
             group_results = []
             for g in groups:
-                q = build_search_query(cfg.categories, g["keywords"], cfg.exclude_keywords, cfg.logic)
+                q = build_search_query(cfg.categories, g["keywords"], cfg.exclude_keywords, cfg.logic, window)
                 click.echo("[Query] {}: {}".format(g["name"], q))
                 group_results.append((g["name"], _collect_items(q, **collect_kwargs)))
             items = merge_group_items(group_results)
         else:
-            q = build_search_query(cfg.categories, cfg.keywords, cfg.exclude_keywords, cfg.logic)
+            q = build_search_query(cfg.categories, cfg.keywords, cfg.exclude_keywords, cfg.logic, window)
             click.echo("[Query] {}".format(q))
             items = _collect_items(q, **collect_kwargs)
         if not items:
@@ -342,51 +330,9 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
             except Exception as e:
                 click.secho(f"[Scrape] 补链失败 {(it.get('id') or '')[:18]}...: {e}", fg="yellow")
 
-        # 3) 摘要
-        summaries_zh, summaries_en = {}, {}
-        def _sum_for_lang(L):
-            out = {}
-            for it in items:
-                sid = it.get("id") or ""
-                out[sid] = build_two_stage_summary(item=it, mode=mode, lang=L, scope=scope, llm_cfg=llm_cfg)
-            return out
-
-        if lang in ("zh", "both"):
-            summaries_zh = _sum_for_lang("zh")
-        if lang in ("en", "both"):
-            summaries_en = _sum_for_lang("en")
-
-        # 4) 翻译（中文）
-        translations = {}
-        if trans_cfg.get("enabled") and (trans_cfg.get("lang", "zh") == "zh"):
-            api_key = (llm_cfg.get("api_key")
-                       or os.getenv(llm_cfg.get("api_key_env") or "OPENAI_API_KEY", ""))
-            if not api_key:
-                click.secho("[Translate] 跳过：未找到 LLM API Key（配置 llm.api_key 或设置环境变量 {}）"
-                            .format(llm_cfg.get("api_key_env") or "OPENAI_API_KEY"), fg="yellow")
-            else:
-                for it in items:
-                    sid = it.get("id") or ""
-                    try:
-                        translations[sid] = call_llm_translate(
-                            item=it, target_lang="zh",
-                            base_url=llm_cfg.get("base_url", ""),
-                            model=llm_cfg.get("model", ""),
-                            api_key=api_key,
-                            system_prompt=llm_cfg.get("system_prompt_translate_zh", "")
-                        )
-                    except Exception as e:
-                        click.secho(f"[Translate] 失败 {sid[:18]}...: {e}", fg="red")
-
-        # 4.5) 为网站与 Lark 生成同一份方向级研究分析。
-        group_analysis = generate_group_analysis(
-            group_names=group_names,
-            items=items,
-            summaries_zh=summaries_zh,
-            summaries_en=summaries_en,
-            translations=translations,
-            llm_cfg=llm_cfg,
-        ) if groups else {}
+        # 3) 中文标题 + 分类标签 + 结构化摘要：每篇一次 JSON 调用，并发，按 arXiv 基础 ID 缓存
+        insights = analyze_papers(items, llm_cfg=llm_cfg, insights_cfg=insights_cfg,
+                                  use_llm=use_llm, log=click.echo)
         report_date = datetime.now().strftime("%Y-%m-%d")
 
         # 5) 终端预览
@@ -404,43 +350,40 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
             if it.get("pdf_url"):
                 click.echo(f"    PDF : {it['pdf_url']}")
             sid = it.get("id") or ""
-            s = (summaries_zh.get(sid) or summaries_en.get(sid) or {})
-            if s.get("tldr"):
-                click.echo(f"    TL;DR: {s['tldr']}")
-            tx = translations.get(sid)
-            if tx and tx.get("title_zh"):
-                click.echo(f"    标题(中): {tx['title_zh']}")
+            ins = insights.get(sid) or {}
+            tags = ins.get("tags") or {}
+            if tags.get("training"):
+                click.echo(f"    Tags: {' + '.join(tags['training'])} | {tags.get('architecture', '')} | {tags.get('application', '')}")
+            if tags.get("innovation"):
+                click.echo(f"    创新: {tags['innovation']}")
             click.echo("")
 
         # 6) 保存到文件 + 生成 PDF（可选）
         json_path = save_json(items, out_dir)
-        md_path   = save_markdown(items, out_dir, summaries_zh, summaries_en, lang=lang, translations=translations)
+        md_path   = save_markdown(items, out_dir, insights=insights)
         # Stable, structured payload consumed by GitHub Actions for Feishu delivery.
-        # Keep this derived from the exact item set and summaries used by the email/site.
+        # Keep this derived from the exact item set and insights used by the email/site.
         feishu_items = []
         for it in items:
             sid = it.get("id") or ""
-            summary = summaries_zh.get(sid) or summaries_en.get(sid) or {}
-            translation = (translations or {}).get(sid) or {}
+            ins = insights.get(sid) or {}
             feishu_items.append({
                 "id": sid,
+                "arxiv_id": arxiv_base_id(sid),
                 "title": it.get("title", ""),
-                "title_zh": translation.get("title_zh", ""),
-                # The current LLM path returns digest_zh/digest_en; tldr/full_md
-                # are empty there. Keep the abstract as a useful final fallback.
-                "summary": (summary.get("digest_zh") or translation.get("summary_zh")
-                            or summary.get("digest_en")
-                            or summary.get("tldr") or summary.get("full_md")
-                            or it.get("summary", "")),
+                "title_zh": ins.get("title_zh", ""),
+                "tags": ins.get("tags") or {},
+                **{k: ins.get(k, "") for k in ("problem", "challenge", "solution", "results", "future")},
                 "groups": it.get("groups") or group_names or [],
                 "html_url": it.get("html_url") or sid,
                 "code_urls": it.get("code_urls") or [],
             })
         import json
         feishu_path = pathlib.Path(out_dir or "outputs") / "feishu_digest.json"
+        feishu_path.parent.mkdir(parents=True, exist_ok=True)
         with feishu_path.open("w", encoding="utf-8") as f:
-            json.dump({"report_date": report_date, "items": feishu_items,
-                       "group_analysis": group_analysis}, f, ensure_ascii=False, indent=2)
+            json.dump({"report_date": report_date, "groups": group_names, "items": feishu_items},
+                      f, ensure_ascii=False, indent=2)
         click.echo(f"Saved: {json_path}")
         click.echo(f"Saved: {md_path}")
         click.echo(f"Saved: {feishu_path}")
@@ -459,13 +402,10 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
                 accent = site_cfg.get("accent", "#2563eb")
                 site_res = generate_site(
                     items=items,
-                    summaries_zh=summaries_zh or {},
-                    summaries_en=summaries_en or {},
-                    translations=translations or {},
+                    insights=insights,
                     site_dir=sd, site_title=title, keep_runs=keep,
                     theme=theme, accent=accent,
                     group_names=group_names or None,
-                    group_analysis=group_analysis,
                     report_date=report_date,
                 )
                 click.echo(f"Saved: {site_res['index_path']}")
@@ -544,19 +484,13 @@ def run(config_path, categories, keywords, exclude_keywords, logic, max_results,
                     if not (to_list and sender and passwd):
                         click.secho("[Email] 配置不完整，跳过发送（需要 EMAIL_TO / EMAIL_SENDER / SMTP_PASS）", fg="yellow")
                     else:
-                        html_body = ""
-                        if page_url:
-                            html_body += f'<div style="margin-bottom:10px">Web 版：<a href="{page_url}">{page_url}</a></div>'
-                        if not items:
-                            html_body += "<p>今日暂无新增命中。</p>"
-                        else:
-                            html_body += render_email_html(
-                                items=items, lang=lang, translations=translations,
-                                summaries_zh=summaries_zh, summaries_en=summaries_en,
-                                detail=detail, max_items=max_items,
-                                title=subject.replace("[arXiv]", "arXiv"),
-                                groups=group_names or None,
-                            )
+                        html_body = render_email_html(
+                            items=items, insights=insights,
+                            detail=detail, max_items=max_items,
+                            title=subject.replace("[arXiv]", "arXiv"),
+                            groups=group_names or None,
+                            page_url=page_url, report_date=report_date,
+                        )
                         from .mailer import send_email
                         attach = []
                         if email_cfg.get("attach_md", False) and md_path:
