@@ -1,38 +1,75 @@
 import json
+import os
+import re
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
 
+import requests
 import yaml
 
-from arxiv_tracker.query import build_search_query
-from arxiv_tracker.research_analysis import generate_group_analysis, merge_group_items
+from arxiv_tracker.email_template import render_email_html
+from arxiv_tracker.insights import analyze_papers, arxiv_base_id, fallback_insight, normalize_training
+from arxiv_tracker.output import save_markdown
+from arxiv_tracker.query import build_search_query, date_window
+from arxiv_tracker.research_analysis import merge_group_items
 from arxiv_tracker.sitegen import generate_site
-from scripts.send_feishu_digest import build_markdown
+from scripts.send_feishu_digest import MAX_CHARS, build_markdown
+
+
+def _llm_json(**overrides):
+    data = {
+        "title_zh": "代理工具使用的在线强化学习",
+        "architecture": "LLM + tool harness",
+        "training": ["RL"],
+        "application": "工具调用",
+        "innovation": "用在线 rollout 的工具执行结果作为稀疏奖励",
+        "problem": "语言模型代理调用工具时错误累积，长程任务成功率低",
+        "challenge": "工具反馈稀疏且延迟，离线数据覆盖不到真实交互分布",
+        "solution": "在真实工具环境中在线采样轨迹，用执行成功信号做 PPO 更新",
+        "results": "ToolBench 成功率从 41% 提升到 58%",
+        "future": "奖励仅覆盖可自动判定的任务",
+    }
+    data.update(overrides)
+    return json.dumps(data, ensure_ascii=False)
 
 
 class DigestImprovementsTests(unittest.TestCase):
     def setUp(self):
         self.paper_a = {
-            "id": "https://arxiv.org/abs/2609.00001",
+            "id": "https://arxiv.org/abs/2609.00001v2",
             "title": "Learning to Use Tools in Agents",
             "authors": ["A. Researcher"],
             "summary": "We study tool use by language model agents and train them with online reinforcement learning.",
-            "html_url": "https://arxiv.org/abs/2609.00001",
-            "pdf_url": "https://arxiv.org/pdf/2609.00001",
+            "html_url": "https://arxiv.org/abs/2609.00001v2",
+            "pdf_url": "https://arxiv.org/pdf/2609.00001v2",
             "code_urls": ["https://github.com/example/agent-tools"],
             "groups": ["Agentic RL", "代码Agent"],
         }
         self.paper_b = {
-            "id": "https://arxiv.org/abs/2609.00002",
+            "id": "https://arxiv.org/abs/2609.00002v1",
             "title": "Robust Agent Training with Verifiable Rewards",
             "authors": ["B. Researcher"],
-            "summary": "We compare verifiable reward signals for long-horizon language agent tasks.",
-            "html_url": "https://arxiv.org/abs/2609.00002",
+            "summary": "We compare verifiable reward signals for long-horizon language agent tasks. More text.",
+            "html_url": "https://arxiv.org/abs/2609.00002v1",
             "code_urls": [],
             "groups": ["Agentic RL"],
         }
+        self.insights = {
+            self.paper_a["id"]: {
+                "title_zh": "代理工具使用的在线强化学习",
+                "tags": {"architecture": "LLM + tool harness", "training": ["RL"],
+                         "application": "工具调用", "innovation": "用在线 rollout 的工具执行结果作为稀疏奖励"},
+                "problem": "语言模型代理调用工具时错误累积", "challenge": "工具反馈稀疏且延迟",
+                "solution": "在真实工具环境中在线采样轨迹做 PPO 更新", "results": "ToolBench 成功率 41% → 58%",
+                "future": "奖励仅覆盖可自动判定的任务", "source": "llm",
+            },
+            self.paper_b["id"]: fallback_insight(self.paper_b),
+        }
+
+    # ---- config / query / fetch ----
 
     def test_config_adds_agentic_rl_and_drops_broad_fim_keyword(self):
         config = yaml.safe_load(Path("config.yaml").read_text(encoding="utf-8"))
@@ -45,6 +82,15 @@ class DigestImprovementsTests(unittest.TestCase):
         self.assertIn('ti:"agentic reinforcement learning"', query)
         self.assertIn('abs:"online reinforcement learning for agents"', query)
 
+    def test_query_carries_server_side_date_window(self):
+        window = date_window("lastUpdatedDate", datetime(2026, 9, 25, 3, 0, tzinfo=timezone.utc),
+                             datetime(2026, 10, 1, tzinfo=timezone.utc))
+        self.assertEqual(window, "lastUpdatedDate:[202609250300 TO 202610010000]")
+        query = build_search_query(["cs.SE"], ["coding agent"], ["survey"], "AND", window)
+        self.assertIn(" AND lastUpdatedDate:[202609250300 TO 202610010000]", query)
+        self.assertTrue(query.endswith(")"))
+        self.assertLess(query.index("lastUpdatedDate"), query.index("AND NOT"))
+
     def test_overlapping_group_results_count_each_paper_once(self):
         merged = merge_group_items([
             ("Agentic RL", [self.paper_a, self.paper_b]),
@@ -52,103 +98,6 @@ class DigestImprovementsTests(unittest.TestCase):
         ])
         self.assertEqual(len(merged), 2)
         self.assertEqual(merged[0]["groups"], ["Agentic RL", "代码Agent"])
-
-    @patch("arxiv_tracker.research_analysis._chat_completions_request")
-    def test_analysis_checks_citations_and_marks_empty_groups(self, request):
-        request.return_value = json.dumps({"groups": {"Agentic RL": {
-            "direction": {"text": "本期研究把在线策略更新用于语言模型代理的工具调用。", "paper_ids": [self.paper_a["id"]]},
-            "connections": {"text": "两项工作分别关注工具交互与可验证奖励，可在长程任务中互补对照。", "paper_ids": [self.paper_a["id"], self.paper_b["id"]]},
-            "bottleneck": {"text": "两项工作的评测任务仍不足以说明奖励信号能否迁移到不同工具环境。", "paper_ids": [self.paper_a["id"], self.paper_b["id"]]},
-            "next_steps": [{"question": "在相同长程工具任务上比较在线奖励与可验证奖励的稳定性。", "paper_ids": [self.paper_a["id"], self.paper_b["id"]]}],
-        }}})
-        analysis = generate_group_analysis(
-            ["Agentic RL", "代码预训练"], [self.paper_a, self.paper_b],
-            summaries_zh={}, llm_cfg={"api_key": "test-key"},
-        )
-        request.assert_called_once()
-        self.assertEqual(analysis["Agentic RL"]["source"], "llm")
-        self.assertTrue(analysis["代码预训练"]["empty"])
-        self.assertEqual(analysis["Agentic RL"]["connections"]["paper_ids"], [self.paper_a["id"], self.paper_b["id"]])
-
-    @patch("arxiv_tracker.research_analysis._chat_completions_request")
-    def test_placeholder_or_unknown_citations_use_explicit_safe_fallback(self, request):
-        request.return_value = json.dumps({"groups": {"Agentic RL": {
-            "direction": {"text": "...", "paper_ids": ["https://arxiv.org/abs/9999.99999"]},
-        }}})
-        analysis = generate_group_analysis(
-            ["Agentic RL"], [self.paper_a], llm_cfg={"api_key": "test-key"}
-        )["Agentic RL"]
-        self.assertEqual(analysis["source"], "fallback")
-        self.assertIn("样本不足", analysis["direction"]["text"])
-        self.assertEqual(analysis["direction"]["paper_ids"], [self.paper_a["id"]])
-
-    @patch("arxiv_tracker.research_analysis._chat_completions_request", side_effect=RuntimeError("offline"))
-    def test_empty_digest_skips_llm_and_synthesis_failure_has_fallback(self, request):
-        empty = generate_group_analysis(["Agentic RL"], [], llm_cfg={"api_key": "test-key"})
-        request.assert_not_called()
-        self.assertTrue(empty["Agentic RL"]["empty"])
-
-        fallback = generate_group_analysis(
-            ["Agentic RL"], [self.paper_a], llm_cfg={"api_key": "test-key"}
-        )["Agentic RL"]
-        self.assertEqual(fallback["source"], "fallback")
-        self.assertTrue(fallback["direction"]["text"])
-        request.assert_called_once()
-
-    def test_site_and_lark_render_same_linked_trend_data_and_search_controls(self):
-        claims = {
-            "direction": {"text": "本期工作探索在线策略更新与工具使用训练。", "paper_ids": [self.paper_a["id"]]},
-            "connections": {"text": "两项研究可在相同任务上对照交互策略和奖励设计。", "paper_ids": [self.paper_a["id"], self.paper_b["id"]]},
-            "bottleneck": {"text": "目前尚需验证训练信号跨工具环境迁移时的稳定性。", "paper_ids": [self.paper_a["id"], self.paper_b["id"]]},
-            "next_steps": [{"question": "固定工具集和任务难度后比较两类训练信号的成功率与成本。", "paper_ids": [self.paper_a["id"], self.paper_b["id"]]}],
-            "count": 2,
-        }
-        group_analysis = {"Agentic RL": claims, "代码预训练": {"count": 0, "empty": True}}
-        translations = {self.paper_a["id"]: {"title_zh": "代理工具使用强化学习"}}
-        summaries_zh = {self.paper_a["id"]: {"digest_zh": "通过在线强化学习提升代理调用工具的能力。"}}
-        with tempfile.TemporaryDirectory() as site_dir:
-            result = generate_site(
-                items=[self.paper_a, self.paper_b], summaries_zh=summaries_zh, summaries_en={},
-                translations=translations, site_dir=site_dir, group_names=["Agentic RL", "代码预训练"],
-                group_analysis=group_analysis,
-            )
-            html = Path(result["index_path"]).read_text(encoding="utf-8")
-
-        self.assertIn("今日研究观察", html)
-        self.assertIn("去重论文", html)
-        self.assertIn('id="paper-search"', html)
-        self.assertIn('id="code-only"', html)
-        self.assertIn("card.dataset.hasCode === 'true'", html)
-        self.assertIn("overflow-x:auto", html)
-        self.assertIn("代理工具使用强化学习", html)
-        self.assertIn("class=\"code-link\"", html)
-        self.assertIn("https://arxiv.org/abs/2609.00002", html)
-        self.assertIn("固定工具集和任务难度后比较两类训练信号的成功率与成本。", html)
-        self.assertIn("本方向今日无命中", html)
-
-        payload = {
-            "items": [{**self.paper_a, "title_zh": "代理工具使用强化学习"}, self.paper_b],
-            "group_analysis": group_analysis,
-        }
-        markdown = build_markdown(payload)
-        self.assertIn("今日观察", markdown)
-        self.assertIn("[代理工具使用强化学习](https://arxiv.org/abs/2609.00001)", markdown)
-        self.assertIn("本期工作探索在线策略更新与工具使用训练。", html)
-        self.assertIn("本期工作探索在线策略更新与工具使用训练。", markdown)
-
-    def test_no_hits_have_clear_empty_state_without_invented_trends(self):
-        analysis = generate_group_analysis(["Agentic RL"], [], llm_cfg={})
-        with tempfile.TemporaryDirectory() as site_dir:
-            result = generate_site(
-                items=[], summaries_zh={}, summaries_en={}, translations={}, site_dir=site_dir,
-                group_names=["Agentic RL"], group_analysis=analysis,
-            )
-            html = Path(result["index_path"]).read_text(encoding="utf-8")
-        self.assertIn("今天没有新增命中", html)
-        self.assertIn("本方向今日无命中，暂不生成趋势判断", html)
-        lark = build_markdown({"items": [], "group_analysis": analysis})
-        self.assertIn("今天没有新的命中", lark)
-        self.assertNotIn("今日观察", lark)
 
     def test_freshness_window_covers_weekend_gap(self):
         config = yaml.safe_load(Path("config.yaml").read_text(encoding="utf-8"))
@@ -158,7 +107,6 @@ class DigestImprovementsTests(unittest.TestCase):
     @patch("arxiv_tracker.cli.parse_feed")
     @patch("arxiv_tracker.cli.fetch_arxiv_feed")
     def test_stale_first_hit_does_not_drop_later_fresh_paper(self, fetch, parse):
-        from datetime import datetime, timezone
         from arxiv_tracker.cli import _collect_items
 
         cutoff = datetime(2026, 9, 26, tzinfo=timezone.utc)
@@ -177,7 +125,6 @@ class DigestImprovementsTests(unittest.TestCase):
     @patch("arxiv_tracker.cli.parse_feed")
     @patch("arxiv_tracker.cli.fetch_arxiv_feed")
     def test_fully_stale_page_does_not_request_the_next_page(self, fetch, parse):
-        from datetime import datetime, timezone
         from arxiv_tracker.cli import _collect_items
 
         cutoff = datetime(2026, 9, 26, tzinfo=timezone.utc)
@@ -195,7 +142,6 @@ class DigestImprovementsTests(unittest.TestCase):
 
     @patch("arxiv_tracker.cli.fetch_arxiv_feed")
     def test_non_atom_response_is_not_treated_as_no_papers(self, fetch):
-        from datetime import datetime, timezone
         from arxiv_tracker.cli import _collect_items
 
         fetch.return_value = "<html>bad gateway</html>"
@@ -205,6 +151,145 @@ class DigestImprovementsTests(unittest.TestCase):
                 seen_ids=set(), unique_only=True, sort_by="lastUpdatedDate",
                 sort_order="descending", fallback_when_empty=False,
             )
+
+    # ---- insights ----
+
+    def test_training_labels_are_normalized_to_fixed_vocabulary(self):
+        self.assertEqual(normalize_training(["SFT", "GRPO reinforcement learning"]), ["SFT", "RL"])
+        self.assertEqual(normalize_training("DPO + RLVR"), ["偏好优化", "RLVR"])
+        self.assertEqual(normalize_training(["continued pretraining"]), ["继续预训练"])
+        self.assertEqual(normalize_training(["new benchmark", "SFT", "RL"]), ["评测基准", "SFT"])
+        self.assertEqual(normalize_training(["something odd"]), ["其他"])
+        self.assertEqual(arxiv_base_id("http://arxiv.org/abs/2604.08698v3"), "2604.08698")
+
+    @patch("arxiv_tracker.insights._chat_completions_request")
+    def test_one_json_call_per_paper_and_cache_survives_new_versions(self, request):
+        request.return_value = _llm_json()
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = {"cache_path": os.path.join(tmp, "cache.json"), "workers": 4}
+            first = analyze_papers([self.paper_a, self.paper_b], {"api_key": "k"}, cfg, log=lambda _: None)
+            self.assertEqual(request.call_count, 2)
+            self.assertEqual(request.call_args.kwargs["response_format"], {"type": "json_object"})
+            ins = first[self.paper_a["id"]]
+            self.assertEqual(ins["source"], "llm")
+            self.assertEqual(ins["tags"]["training"], ["RL"])
+            self.assertEqual(ins["title_zh"], "代理工具使用的在线强化学习")
+
+            v3 = dict(self.paper_a, id="https://arxiv.org/abs/2609.00001v3")
+            second = analyze_papers([v3], {"api_key": "k"}, cfg, log=lambda _: None)
+            self.assertEqual(request.call_count, 2)
+            self.assertEqual(second[v3["id"]]["source"], "cache")
+
+            bumped = analyze_papers([v3], {"api_key": "k"}, dict(cfg, prompt_version=2), log=lambda _: None)
+            self.assertEqual(request.call_count, 3)
+            self.assertEqual(bumped[v3["id"]]["source"], "llm")
+
+    @patch("arxiv_tracker.insights.time.sleep")
+    @patch("arxiv_tracker.insights._chat_completions_request")
+    def test_retry_then_fallback_without_caching_failures(self, request, _sleep):
+        error = requests.exceptions.HTTPError(response=type("R", (), {"status_code": 429})())
+        request.side_effect = [error, _llm_json(), "not json", "still not json", "{}"]
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "cache.json")
+            out = analyze_papers([self.paper_a, self.paper_b], {"api_key": "k"},
+                                 {"cache_path": path, "workers": 1}, log=lambda _: None)
+            cached = json.loads(Path(path).read_text(encoding="utf-8"))
+        self.assertEqual(out[self.paper_a["id"]]["source"], "llm")
+        self.assertEqual(out[self.paper_b["id"]]["source"], "fallback")
+        self.assertEqual(out[self.paper_b["id"]]["tags"]["innovation"],
+                         "We compare verifiable reward signals for long-horizon language agent tasks.")
+        self.assertEqual(list(cached), ["2609.00001@p1"])
+
+    @patch("arxiv_tracker.insights._chat_completions_request")
+    def test_without_api_key_no_llm_calls(self, request):
+        with patch.dict(os.environ, {}, clear=True):
+            out = analyze_papers([self.paper_a], {"api_key_env": "MISSING_KEY"}, {}, log=lambda _: None)
+        request.assert_not_called()
+        self.assertEqual(out[self.paper_a["id"]]["source"], "fallback")
+
+    # ---- renderers ----
+
+    def test_site_is_one_dense_table_with_english_titles(self):
+        with tempfile.TemporaryDirectory() as site_dir:
+            result = generate_site(
+                items=[self.paper_a, self.paper_b], insights=self.insights, site_dir=site_dir,
+                group_names=["Agentic RL", "代码Agent", "代码预训练"], report_date="2026-09-30",
+            )
+            page = Path(result["index_path"]).read_text(encoding="utf-8")
+
+        self.assertNotIn("今日研究观察", page)
+        self.assertIn("max-width:1680px", page)
+        for column in ("论文编号", "Title", "模型架构", "训练方法", "应用场景", "核心创新"):
+            self.assertIn(f"<th>{column}</th>", page)
+        self.assertEqual(page.count('class="paper-row"'), 2)
+        self.assertIn('>Learning to Use Tools in Agents</a>', page)
+        self.assertIn('<div class="title-zh">代理工具使用的在线强化学习</div>', page)
+        self.assertNotIn('>代理工具使用的在线强化学习</a>', page)
+        self.assertIn("<span>关键困难</span>工具反馈稀疏且延迟", page)
+        self.assertIn('data-training="RL"', page)
+        self.assertIn('data-groups="Agentic RL|代码Agent"', page)
+        self.assertIn('id="training-filter"', page)
+        self.assertIn(">2609.00001</a>", page)
+        self.assertEqual(page.count("<summary>Abstract</summary><div>We study tool use"), 1)
+
+    def test_site_empty_state(self):
+        with tempfile.TemporaryDirectory() as site_dir:
+            result = generate_site(items=[], insights={}, site_dir=site_dir, group_names=["Agentic RL"])
+            page = Path(result["index_path"]).read_text(encoding="utf-8")
+        self.assertIn("今日暂无新增论文", page)
+
+    def test_email_is_compact_table_without_abstracts(self):
+        body = render_email_html([self.paper_a, self.paper_b], self.insights,
+                                 groups=["Agentic RL", "代码Agent"], page_url="https://x/", report_date="2026-09-30")
+        self.assertIn("<table", body)
+        self.assertIn("Learning to Use Tools in Agents", body)
+        self.assertIn("用在线 rollout 的工具执行结果作为稀疏奖励", body)
+        self.assertIn("困难</b> 工具反馈稀疏且延迟", body)
+        self.assertNotIn("We study tool use", body)
+        self.assertNotIn("代理工具使用的在线强化学习", body)
+        self.assertIn("同时属于「Agentic RL」", body)
+        self.assertEqual(body.count("工具反馈稀疏且延迟"), 1)
+        self.assertIn("RL 1", body)
+        self.assertIn("今日暂无新增命中", render_email_html([], {}))
+
+    def _feishu_payload(self, items=None):
+        items = items or [self.paper_a, self.paper_b]
+        out = []
+        for it in items:
+            ins = self.insights.get(it["id"]) or fallback_insight(it)
+            out.append({**it, "title_zh": ins["title_zh"], "tags": ins["tags"],
+                        **{k: ins[k] for k in ("problem", "challenge", "solution", "results", "future")}})
+        return {"report_date": "2026-09-30", "groups": ["Agentic RL", "代码Agent"], "items": out}
+
+    def test_feishu_uses_english_titles_and_structured_fields(self):
+        markdown = build_markdown(self._feishu_payload())
+        self.assertIn("[Learning to Use Tools in Agents](https://arxiv.org/abs/2609.00001v2)", markdown)
+        self.assertNotIn("代理工具使用的在线强化学习", markdown)
+        self.assertIn("RL · LLM + tool harness · 工具调用", markdown)
+        for label in ("核心问题", "关键困难", "解决方案", "未来方向"):
+            self.assertIn(f"**{label}**", markdown)
+        self.assertIn("（见「Agentic RL」）", markdown)
+        self.assertNotIn("今日观察", markdown)
+        self.assertIn("训练方法：RL 1", markdown)
+
+    def test_feishu_degrades_detail_before_truncating(self):
+        many = [dict(self.paper_a, id=f"https://arxiv.org/abs/2609.{i:05d}", groups=["Agentic RL"]) for i in range(60)]
+        self.insights.update({it["id"]: self.insights[self.paper_a["id"]] for it in many})
+        markdown = build_markdown(self._feishu_payload(many))
+        self.assertLessEqual(len(markdown), MAX_CHARS)
+        self.assertIn("打开完整日报", markdown)
+        self.assertEqual(len(re.findall(r"\[Learning to Use Tools in Agents\]", markdown)), 60)
+
+    def test_feishu_empty_digest(self):
+        lark = build_markdown({"items": [], "groups": ["Agentic RL"]})
+        self.assertIn("今天没有新的命中", lark)
+
+    def test_markdown_attachment_has_table_and_structured_fields(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = save_markdown([self.paper_a], tmp, insights=self.insights)
+            text = Path(path).read_text(encoding="utf-8")
+        self.assertIn("| 论文编号 | Title | 方向 | 模型架构 | 训练方法 | 应用场景 | 核心创新 |", text)
+        self.assertIn("**关键困难**：工具反馈稀疏且延迟", text)
 
 
 if __name__ == "__main__":
