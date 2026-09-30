@@ -1,6 +1,7 @@
 # arxiv_tracker/query.py
 import re
-from typing import List
+from datetime import datetime, timezone
+from typing import List, Optional
 
 FIELDS = ("ti", "abs", "co")  # 标题/摘要/评论（会议常在 comments）
 
@@ -49,7 +50,13 @@ def _kw_group(kw: str) -> str:
 
     return "(" + " OR ".join(parts) + ")"
 
-def build_search_query(categories: List[str], keywords: List[str], exclude_keywords: List[str] = None, logic: str = "AND") -> str:    
+def date_window(field: str, start: datetime, end: datetime) -> str:
+    """arXiv 服务端时间窗，例如 lastUpdatedDate:[202609250000 TO 202609302359]（UTC）。"""
+    fmt = lambda d: d.astimezone(timezone.utc).strftime("%Y%m%d%H%M")
+    return f"{field}:[{fmt(start)} TO {fmt(end)}]"
+
+def build_search_query(categories: List[str], keywords: List[str], exclude_keywords: List[str] = None,
+                       logic: str = "AND", window: Optional[str] = None) -> str:
     """
     生成 arXiv API 的 search_query 字符串。
     - categories: ["cs.CV","cs.LG"] -> (cat:cs.CV OR cat:cs.LG)
@@ -86,6 +93,10 @@ def build_search_query(categories: List[str], keywords: List[str], exclude_keywo
         positive_q = key_q
     else:
         positive_q = "all:*"
+
+    # 服务端先按时间窗过滤，省掉翻页和 3 秒限速下的无效请求
+    if window:
+        positive_q = f"{positive_q} AND {window}"
 
     # 最终拼接
     return positive_q + exc_q
