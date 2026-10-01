@@ -173,6 +173,26 @@
   },
   "saved": "2026-09-30"
  },
+ "2609.33665@p1": {
+  "data": {
+   "challenge": "单环境任务缺少服务间依赖与状态传递，跨服务信息流难以验证，且部分工具无法被可靠实现",
+   "future": "",
+   "problem": "现有环境生成方法只在单一环境内造任务，无法覆盖真实工作流中跨多个服务的信息与动作流转",
+   "results": "448 个服务、10,130 个工具；八个基准平均提升 9.17 分，AutomationBench 超过 Claude Opus 4.6，领先对比的 35B-A3B 智能体专用模型",
+   "solution": "按依赖图随机游走组合有限服务库扩展任务空间；编码智能体把工具规范转为带类型状态的已验证服务，世界模型兜底不可实现工具；SFT 用验证轨迹，RL 用 Completion-Focused Rubric Reward",
+   "tags": {
+    "application": "跨服务工具调用与编排",
+    "architecture": "LLM agent + tool harness",
+    "innovation": "把工具规范编译成带类型状态的已验证服务，按依赖图随机游走组合生成跨服务任务",
+    "training": [
+     "SFT",
+     "RL"
+    ]
+   },
+   "title_zh": "CompoWorld：面向通用智能体的组合式环境扩展"
+  },
+  "saved": "2026-10-02"
+ },
  "2609.33987@p1": {
   "data": {
    "challenge": "反馈若误判进行中的工作或未触及根本问题，就会无效甚至有害，而缺少反馈后追踪使错误无法被识别与撤销。",
@@ -822,5 +842,278 @@
    "title_zh": "在思考之前思考：通过元推理扩展智能体推理"
   },
   "saved": "2026-09-30"
+ },
+ "2609.39086@p1": {
+  "data": {
+   "challenge": "真实仓库崩溃需要跨文件上下文与实时运行时状态，而生成代码直接执行会改变状态并可能触达开发者保护的敏感操作",
+   "future": "HealGuard 误报率达 68.42%，摘要未提具体改进方向",
+   "problem": "LLM 运行时修复仅在小型竞赛程序上评测，且把 LLM 生成代码注入活进程的安全性无人处理",
+   "results": "最佳设置 38.11% 恢复执行、28.68% 通过目标测试；通过的执行中 17.4% 被标为状态可达受保护操作；684 受控用例全检出不安全项，误报率 68.42%",
+   "solution": "建 HealBench（265 个真实仓库错误、配补丁版参考执行、统一跨文件与活状态 agent 框架），并设计 HealGuard：强制 HealCore 子集书写 + 静态动态污点分析核查状态传播",
+   "tags": {
+    "application": "仓库级运行时错误修复",
+    "architecture": "LLM agent + taint analysis",
+    "innovation": "限定修复代码用可分析子集 HealCore 编写，用静态与动态污点分析追踪修复改动状态是否流入受保护操作",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "真实代码仓库中可信的运行时错误修复：基准与护栏"
+  },
+  "saved": "2026-10-02"
+ },
+ "2609.39304@p1": {
+  "data": {
+   "challenge": "单次 rollout 是噪声二值结果，样本少时修订靠运气晋升；无条件接受所有修订会在十轮内累积错误导致性能下滑",
+   "future": "",
+   "problem": "手工编写的 harness（提示、工具、控制规则）决定现成编码智能体作为机器人策略的成败，缺少可靠的自动改进方法",
+   "results": "训练 rollout 5→100 使留出成功率 47%→67%，小训练集过拟合（训练 70%、留出 54%）；加 Champion-Challenger 后 30 轮留出 51%→67%",
+   "solution": "优化智能体提出 harness 修订，扩大每轮 rollout 数提高信噪比，并用 Champion-Challenger 在固定评估集上仅当严格优于现任时才晋升",
+   "tags": {
+    "application": "视觉界面机器人操控",
+    "architecture": "Coding agent + tool harness",
+    "innovation": "用优化智能体自动进化 harness，靠扩大每轮 rollout 批量与 Champion-Challenger 严格择优提升泛化",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "规模与选择：什么让自动 Harness 进化对视觉界面机器人智能体有效"
+  },
+  "saved": "2026-10-02"
+ },
+ "2609.39420@p1": {
+  "data": {
+   "challenge": "交易框架代码稀缺，领域专门化会损害指令跟随与解析器相容的结构化工具调用，修复后仓库级智能体性能仍难恢复",
+   "future": "领域专门化损伤结构化工具调用与仓库级智能体能力，恢复 SFT 只修复格式、未复原基座性能",
+   "problem": "通用 LLM 难以把自然语言交易策略规格转成在特定交易框架中可执行、且语义忠实于请求的程序逻辑",
+   "results": "400 任务 QuantCode-Bench 上，继续预训练使 Qwen3.5-397B-A17B Judge Pass 41.5%→47.5%；Qwen3.6-35B-A3B 经 SFT 达 58.2%、回测成功 83.5%、智能体最终成功 47.5%→79.5%",
+   "solution": "在算法交易框架代码上继续预训练，再用智能体验证的请求-代码对做 SFT；用 QuantCode-Bench 与 SWE-bench 式仓库级赛道评测，并做定向恢复 SFT",
+   "tags": {
+    "application": "算法交易策略代码生成",
+    "architecture": "Decoder-only LLM",
+    "innovation": "交易框架代码继续预训练 + 智能体验证的请求-代码对 SFT，并显式评测能力保留与工具调用格式退化",
+    "training": [
+     "继续预训练",
+     "SFT"
+    ]
+   },
+   "title_zh": "QuantCode 模型：面向可执行算法交易代码的语言模型专门化"
+  },
+  "saved": "2026-10-02"
+ },
+ "2609.39551@p1": {
+  "data": {
+   "challenge": "单个编码代理产品难以自查静默关键缺陷，错误跨迭代累积，执行准确率成为长周期自动研究的约束瓶颈",
+   "future": "",
+   "problem": "长周期自动研究代理执行准确率低：改动会静默泄漏留出数据、漏归一化、断梯度或未接上训练/评测开关，导致昂贵运行失效",
+   "results": "预算对齐下异构组合将 all-oracle 执行准确率从最优单产品 45.8% 提升至 62.5%（+16.7 点），静默关键缺陷率 10.4%；HSTU 十二轮部署 NDCG@10 0.2192（+4.48%）",
+   "solution": "EOP 声明阶段、门、分支与循环并由运行时强制执行编译状态机；meta-meta-harness 把 Claude Code、Codex 等黑盒代理产品组合为执行图节点互相审查修复；知识层跨迭代传递发现含负结果",
+   "tags": {
+    "application": "生成式排序模型自动演化",
+    "architecture": "Multi-agent auto-research harness",
+    "innovation": "用可执行操作协议编译状态机强制阶段与门控，并让异构编码代理产品互为审查修复节点",
+    "training": [
+     "其他",
+     "评测基准"
+    ]
+   },
+   "title_zh": "RankEvolve：用于演化排序模型的可靠多智能体自动研究执行框架"
+  },
+  "saved": "2026-10-02"
+ },
+ "2609.39564@p1": {
+  "data": {
+   "challenge": "长文 GDD 需求彼此依赖，智能体倾向产出看似合理的结果，难以在代码实现与实际游玩中同时满足关联约束",
+   "future": "",
+   "problem": "现有游戏开发基准多使用简短规格，缺乏对长文 GDD 中跨游戏逻辑、视觉渲染与玩家交互的相互依赖需求的一致性评估",
+   "results": "当前智能体难以同时满足跨实现与游玩的相互依赖需求；两轮后需求特定反馈使 GDD Fidelity 较自修订提升 10.9%",
+   "solution": "把每份 GDD 转成含规则、约束与前置关系的依赖感知契约；结合源码审查与智能体生成的测试策略做场景回放和自适应试玩，契约固定以统一判定与证据",
+   "tags": {
+    "application": "长文 GDD 游戏开发",
+    "architecture": "Code agent + contract verifier",
+    "innovation": "将每份 GDD 转为依赖感知契约，契约跨智能体与修订轮次固定，判定与证据按需求对齐",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "A2Z GameSpec-Bench：编程智能体能多忠实地依据游戏设计规格生成游戏？"
+  },
+  "saved": "2026-10-02"
+ },
+ "2609.39678@p1": {
+  "data": {
+   "challenge": "现有方法难以判断规则请求的权限是否必要，因为恶意规则仍能生成正确补丁，表面行为正常",
+   "future": "",
+   "problem": "仓库指令文件引导编码智能体但也暴露于提示注入，恶意规则可在产出正确补丁的同时索取凭证或数据传输权限",
+   "results": "共享重构任务上检出全部314个AIShellJack攻击输入，5个良性模板零告警；80条人工验证良性GHAgentFiles规则误报3条（3.75%）",
+   "solution": "将请求权限翻译为类型化语言并合成沙箱配置，在完整权限与逐项去除权限下运行同一规则与任务，以缩减权限下仍通过功能测试判定该权限可弃用",
+   "tags": {
+    "application": "编码智能体规则权限审计",
+    "architecture": "LLM + sandbox harness",
+    "innovation": "逐条移除权限合成沙箱配置，以功能测试通过作为可弃权见证来诊断可疑请求",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "Aletheia：面向编码智能体规则的权限最小性测试"
+  },
+  "saved": "2026-10-02"
+ },
+ "2609.39717@p1": {
+  "data": {
+   "challenge": "打分聚合无法表达强制门失败；软指标可补偿硬性风险信号，使本应阻断的动作被放行。",
+   "future": "仅在合成案例上验证机制，未证明实际部署安全性与跨域有效性。",
+   "problem": "基准、审计与协议只描述性能、权限和修复，未规定观测证据应如何在关键任务中改变 Agent 的授权。",
+   "results": "280 例注入中，分数规则在公布阈值下放行 80/100 应阻断与全部 40 应复核；仅阈值不超过最小权重时与门合取完全一致。",
+   "solution": "定义 Runtime Assurance Contract：绑定自主边界、组件资格、证据状态、转移策略、人工复核容量与非补偿门；失败或未知的必选门强制重试、切换、升级、延后或停止。",
+   "tags": {
+    "application": "高风险 Agent 运行时授权",
+    "architecture": "LLM agent + policy gate schema",
+    "innovation": "用非补偿门控把证据状态绑定到自主权限，软指标只可路由不可授权。",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "信任不是分数：面向高风险 AI Agent 的运行时保证契约"
+  },
+  "saved": "2026-10-02"
+ },
+ "2609.39933@p1": {
+  "data": {
+   "challenge": "标量反馈早期利于探索，但不揭示编辑如何影响竞争行为，任务增益衰减后搜索易停滞。",
+   "future": "",
+   "problem": "LLM 自动研究依赖标量任务反馈，忽视编辑对竞争行为的影响，导致改进一行为损害另一行为。",
+   "results": "在 5 类模型上，任务错误和冲突相关错误分别最多降低 28% 和 14%，优于纯标量 AutoResearch，并可迁移到其他代码智能体。",
+   "solution": "ConflictGuide-Skill 结合文献分类与模型证据识别竞争行为，生成探针指标；两阶段：I 探索，II 用探针反馈引导缓解冲突并门控编辑保留。",
+   "tags": {
+    "application": "模型代码自动研究",
+    "architecture": "LLM AutoResearch + behavior probes",
+    "innovation": "识别竞争行为并用探针反馈门控编辑保留，替代纯标量反馈。",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "ConflictGuide：当竞争行为可见时 AutoResearch 得到改进"
+  },
+  "saved": "2026-10-02"
+ },
+ "2609.39957@p1": {
+  "data": {
+   "challenge": "现有方法或依赖执行反馈事后恢复，或用专用检查拦截错误，无法在执行前预判干预收益",
+   "future": "",
+   "problem": "编码代理单个错误动作会误导后续决策、抬高恢复成本，执行前难以判断干预是否有利于最终任务完成",
+   "results": "SWE-bench Verified Mini 与 Ask or Assume 上跨哨兵规模与编码代理家族任务完成率最高提升 14% 和 10%，token 消耗具竞争力",
+   "solution": "特权教师用已记录执行结果作为干预判断证据，蒸馏给仅接收动作前上下文与候选动作的 0.6B/1.7B 学生，输出允许、自动重定向或暂停并附干预反馈；构建 SWE-Intervene 动作级数据集",
+   "tags": {
+    "application": "仓库级编码代理干预",
+    "architecture": "Lightweight sentinel + coding agent",
+    "innovation": "以记录的执行结果为证据的特权教师，蒸馏出只看动作前上下文的因果学生哨兵",
+    "training": [
+     "蒸馏"
+    ]
+   },
+   "title_zh": "学习何时以及如何干预：面向编码代理的 Hindsight-Distilled Sentinel"
+  },
+  "saved": "2026-10-02"
+ },
+ "2609.40143@p1": {
+  "data": {
+   "challenge": "删除须保持原序列顺序与精确长度，还要在压缩序列的同时维持预测功能，此前缺乏对应评价标准",
+   "future": "",
+   "problem": "现有模型型核酸设计器只在固定长度上用替换优化，不问已有功能元件中哪些碱基可删除且保留预测活性",
+   "results": "5 个转录因子结合靶标、400 与 100 bp 下对比随机、贪心与 ERA 引导瘦身，ERA 在 9/10 设置均值最高；400 bp 五项目举 bootstrap 区间均大于 0",
+   "solution": "仿 NucleoBench 提出兼顾序列缩减与功能保持的瘦身量化评测；编码智能体 ERA 以替换型设计器 GrAdaBeam 为起始程序，搜索可执行设计器程序并改写得到 GRADASLIM",
+   "tags": {
+    "application": "调控 DNA 序列精简",
+    "architecture": "LLM coding agent",
+    "innovation": "首次定义仅删除的序列瘦身任务，要求同时返回子序列及其源索引以便验证",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "从 DNA 设计到 DNA 瘦身：可审计的智能体发现仅删除型设计器"
+  },
+  "saved": "2026-10-02"
+ },
+ "2609.40169@p1": {
+  "data": {
+   "challenge": "现有自动演进方法仅凭执行反馈修改 harness，无法主动引入新解法，适应滞后",
+   "future": "",
+   "problem": "Agent harness 的自动改进依赖元编码 agent 自身知识与观测到的失败，探索受限且只能被动响应",
+   "results": "AppWorld Challenge 上 Qwen3.5-27B 目标完成率 49.6%→63.6%；Tau2-Bench Telecom 上 GPT-5.4-mini pass@1 72.7%→81.9%",
+   "solution": "把 harness 演进方向划分为功能模块，用主题建模从文献中识别各模块改进策略，实现并评估策略组合，并可持续纳入新论文",
+   "tags": {
+    "application": "工具调用与任务执行",
+    "architecture": "LLM + meta coding agent",
+    "innovation": "用主题建模从研究文献抽取各功能模块的改进策略并组合评估，驱动 harness 演进",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "从研究中学习：迈向终身 Agent Harness 演化"
+  },
+  "saved": "2026-10-02"
+ },
+ "2609.40230@p1": {
+  "data": {
+   "challenge": "细粒度细节或需知识密集、最新信息时该假设失效，且此前缺少该类场景的训练数据与评测基准",
+   "future": "",
+   "problem": "视觉感知被默认成单次看图的一次性预测，假设图像内容与模型参数知识足以解答查询",
+   "results": "4B EviRover 在 EviLens 平均超骨干30分，接近先进闭源模型；BrowseComp-VL 提升15分，并迁移至 WebEyes 等基准",
+   "solution": "设计两条数据生成流水线得到 EviRover-SFT-5K 与 EviRover-RL-12K，先SFT再智能体RL训练，并构建688例人工校验的 EviLens 基准",
+   "tags": {
+    "application": "细粒度视觉感知问答",
+    "architecture": "Multimodal perception agent + tools",
+    "innovation": "将感知形式化为可交互获取证据的智能体过程，用SFT后接智能体RL训练4B感知智能体",
+    "training": [
+     "SFT",
+     "RL"
+    ]
+   },
+   "title_zh": "EviRover：强化超越一瞥的智能体感知"
+  },
+  "saved": "2026-10-02"
+ },
+ "2609.40285@p1": {
+  "data": {
+   "challenge": "现有 on-policy 蒸馏只对整条轨迹做密集监督，无法阻止早期的关键错误，也难以让学生采样到它几乎不会产生的恢复行为。",
+   "future": "",
+   "problem": "多轮交互中一次错误动作会改变学生后续遇到的状态，导致误差跨轮累积，最终任务失败。",
+   "results": "在 ALFWorld、WebShop、Search-based QA 上对 13 个基线取得最佳平均表现，Qwen3-1.7B 在 ALFWorld 提升 +5.5%；Nemotron-3.5 在 SWE-Bench Verified 解决率 +3.2%。",
+   "solution": "在每个 pivotal mistake 处，教师先给出 gold action，再在随后几轮命名 recovery action；预防分支用 reverse KL 把学生推离该错误，恢复分支用 forward KL 迁移学生罕见采样的恢复行为。",
+   "tags": {
+    "application": "多轮交互智能体任务",
+    "architecture": "LLM agent + on-policy teacher",
+    "innovation": "定位 pivotal mistake 后，教师同时给出 gold action 与后续 recovery action，用 reverse KL 防错、for…",
+    "training": [
+     "蒸馏"
+    ]
+   },
+   "title_zh": "PivotOPD：学习从多轮智能体中的关键错误中恢复"
+  },
+  "saved": "2026-10-02"
+ },
+ "2609.40303@p1": {
+  "data": {
+   "challenge": "长跨度循环进展停滞、LLM 原语能力受限，促使研究者不断堆叠手工 harness，却缺乏等时间预算下的公平对照。",
+   "future": "",
+   "problem": "自主 ML 工程（MLE）中，多智能体编排、检索子智能体等复杂 harness 是否真的比极简编码 Agent 带来性能增益。",
+   "results": "开源 SOTA harness 相对极简单会话编码 Agent 基线无优势，性能主要由 LLM 主干决定，harness 机制层在当前 MLE 基准上冗余。",
+   "solution": "固定相同时间预算与相同前沿 LLM 主干，将开源 SOTA harness 与单会话极简编码 Agent（直接 read/write/bash 访问执行环境）逐层消融比较，识别各机器层贡献。",
+   "tags": {
+    "application": "自主机器学习工程",
+    "architecture": "Minimal-harness coding agent",
+    "innovation": "在等时间预算与同一前沿 LLM 主干下，用大规模系统消融对比复杂 harness 与仅含 read/write/bash 的单会话极简编码 Agent。",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "一个强 Agent 做自主 ML 工程需要多少 harness？"
+  },
+  "saved": "2026-10-02"
  }
 }
