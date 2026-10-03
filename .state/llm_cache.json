@@ -862,6 +862,161 @@
   },
   "saved": "2026-10-03"
  },
+ "2609.38335@p1": {
+  "data": {
+   "challenge": "仓库级生成评测既要系统级推理，又难保证行为精确规定且与具体实现无关",
+   "future": "端到端仓库生成仍有较大提升空间",
+   "problem": "如何评估编码 agent 从自然语言规格与空工作区端到端构建完整可运行软件仓库的能力",
+   "results": "13个前沿模型 pass@1 为 11.7%–67.7%，模型区分度强且提升空间大；轨迹呈长前置推理模式",
+   "solution": "构建186个整仓库生成任务覆盖11种语言；每任务由工程师与LLM协作产出隐藏测试和实现无关规格，再用自主agent依据静态检查与真实rollout失败迭代审计修复",
+   "tags": {
+    "application": "从零生成软件仓库",
+    "architecture": "LLM coding agent benchmark",
+    "innovation": "隐藏测试+实现无关规格，自主 agent 迭代审计并修复任务缺陷",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "E2E-SWE：评测 LLM 从零构建可运行代码库的能力"
+  },
+  "saved": "2026-10-04"
+ },
+ "2609.38345@p1": {
+  "data": {
+   "challenge": "组织设计、运行时与执行追踪割裂，缺乏统一基础设施，观测到的增益无法归因到具体协作结构",
+   "future": "",
+   "problem": "多智能体编码评测假设既定组织被忠实执行，实际行为与配置存在偏差，组件差异使性能增益难以归因",
+   "results": "改变任一配置维度使 Adherence 从 47.2% 变至 97.2%；双 coder 工作流在 agentic coding 基准上超过 Mini-SWE-agent、Codex CLI、Claude Code 达 SOTA，单智能体配置 token 最少",
+   "solution": "在共享运行时上统一组织设计与实验控制，以细粒度事件流追踪执行并定义 Adherence 指标，实现可编程协作配置的受控因果对比",
+   "tags": {
+    "application": "仓库级编码智能体协作",
+    "architecture": "Multi-agent coding framework",
+    "innovation": "统一组织设计与共享运行时，用细粒度事件流定义 Adherence 量化实际协作行为",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "OpenCollab：可编程协作与可控运行时的多智能体编码框架"
+  },
+  "saved": "2026-10-04"
+ },
+ "2609.38414@p1": {
+  "data": {
+   "challenge": "换数据集即需重新训练，不同模态各有特征工程与专用模型，模型像黑箱无法在数据约束下审阅",
+   "future": "",
+   "problem": "主流的fit-then-sample范式每个数据集都要重训模型，跨模态需专用模型，且生成模型不透明、难以在约束下检查行为",
+   "results": "四个单表基准2分钟建成生成器、6秒采样5万行，边缘保真度接近领先方法；唯一完美保留Adult列间1对1映射；关系库主外键完美保持",
+   "solution": "对源数据算确定性统计画像，把画像而非原始行交给LLM推断字段语义与完整性约束，编码agent将其编译成可执行、可审计的采样器，统一覆盖单表、时序、关系数据",
+   "tags": {
+    "application": "表格、时序与关系数据合成",
+    "architecture": "LLM + coding agent",
+    "innovation": "用LLM从确定性统计画像推断字段语义与跨列约束，由编码agent编译为可执行采样器",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "无需训练的合成：面向表格、时序与关系型数据的纯推理流水线"
+  },
+  "saved": "2026-10-04"
+ },
+ "2609.38606@p1": {
+  "data": {
+   "challenge": "不安全智能体对隐藏安全风险进行有效规划与测试的概率不到一半，仅靠执行结果反馈难以学会安全行为。",
+   "future": "",
+   "problem": "Vibe coding 生成的方案功能正确却仍含安全漏洞，智能体对需求背后的隐藏安全风险缺乏规划与测试。",
+   "results": "BaxBench 安全 pass@1 提升 6.9 分，SusVibes 未见 CWE 提升 11.5 分；SusVibes 功能 pass@1 提升 13.6 分，SWE-bench Verified 提升 4.1 分。",
+   "solution": "在含 4 项安全任务的安全套件上做监督微调，再用基于可验证执行反馈的 SECUREVIBE_rl 与基于提示自监督的 SECUREVIBE_hg 做后训练，强化安全规划、编码与测试。",
+   "tags": {
+    "application": "代码安全生成",
+    "architecture": "Code LLM + agent harness",
+    "innovation": "围绕安全规划与安全测试构造监督信号，并用 hint 引导自监督补充结果反馈",
+    "training": [
+     "SFT",
+     "RLVR"
+    ]
+   },
+   "title_zh": "SecureVibe：让 Vibe Coding 更安全"
+  },
+  "saved": "2026-10-04"
+ },
+ "2609.38812@p1": {
+  "data": {
+   "challenge": "验证几乎总会在候选解生成后启动，但错误检出率仅61.43%，检出的错误中仅49.36%被修复",
+   "future": "",
+   "problem": "终端智能体依赖自验证评估并修正解，但该验证的可信度缺乏系统量化",
+   "results": "TerminalBench2.1 上 Pass@1 较对应基座提升 9.74–16.85 点，较全轨迹蒸馏提升 4.49–8.61 点；SWE-bench Verified 上避免全轨迹蒸馏的分布外退化",
+   "solution": "提出 SCVD：学生先给出候选解，再在同一交互上下文上蒸馏教师的后续验证与恢复轨迹，使学习集中在错误检出与修复环节",
+   "tags": {
+    "application": "命令行终端任务求解",
+    "architecture": "LLM + terminal tool harness",
+    "innovation": "让学生先产出候选解，再从同一交互上下文蒸馏更强教师的验证与修复行为",
+    "training": [
+     "蒸馏",
+     "SFT"
+    ]
+   },
+   "title_zh": "终端智能体能信任自己的验证吗？诊断并改进自验证"
+  },
+  "saved": "2026-10-04"
+ },
+ "2609.38885@p1": {
+  "data": {
+   "challenge": "推理期的上下文操纵与交互次数限制会丢弃任务相关信息，难以兼顾解决率与 token 效率。",
+   "future": "",
+   "problem": "多轮交互编码 Agent 与环境频繁交互带来大量 token 开销，推高使用成本与延迟。",
+   "results": "在 SWE-bench Verified 与 SWE-bench Multilingual 上，相较 SOTA 编码 Agent 与 RL 方法，解决率与 token 效率的折中更优。",
+   "solution": "HERO 在策略优化中优先任务解决而非 token 效率，并在轨迹级和轮次级鼓励高效推理模式，利用熵相关约束削减无效行为。",
+   "tags": {
+    "application": "仓库级代码修复",
+    "architecture": "LLM + tool harness",
+    "innovation": "分层 RL：策略优化先保解决率，再在轨迹级与轮次级奖励高效推理，用轮级熵抑制无效行为。",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "用更少 Token 做更多事：面向高效编码 Agent 的分层强化学习"
+  },
+  "saved": "2026-10-04"
+ },
+ "2609.38982@p1": {
+  "data": {
+   "challenge": "直接生成方法对机器人与物理环境理解不足；真机反复试错成本高且存在安全隐患",
+   "future": "",
+   "problem": "LLM 编码代理如何在物理世界高效获取控制真实机器人的能力，同时避免高实验成本与安全风险",
+   "results": "在叠毛巾、扫码、盘子操作等真实操作任务上，无需任何示教、仅 10 分钟真机交互即可习得机器人技能",
+   "solution": "两阶段：先在仿真中开放式试探-优化，构建鲁棒可泛化的机器人工具箱；再用少量真机试验校正仿真器，由校正后的仿真器诊断失败并筛选候选修复方案",
+   "tags": {
+    "application": "真实机器人操作技能获取",
+    "architecture": "LLM coding agent + simulator",
+    "innovation": "仿真中开放式试探-优化建机器人工具箱，真机试验反向校正仿真器用于诊断与筛选修复",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "SimEX：仿真集成的机器人自动研究"
+  },
+  "saved": "2026-10-04"
+ },
+ "2609.38983@p1": {
+  "data": {
+   "challenge": "已有工作只用静态语料评估风险分类器或推断隐式授权边界，不检查已批准动作是否被原样派发",
+   "future": "仅绑定工具调用边界的防御存在盲区：Scope、Argument 类在字段层无差异，验证器需下探到进程层",
+   "problem": "智能体框架默认人类批准的动作 A 就是框架执行的动作 A'，该假设从未被系统检验",
+   "results": "六类洗白均复现（每类 N≈20，κ=1.0）；Approval Token 消除 Delegation、Temporal 洗白（p<10^-5），Scope/Argument 无改善（p=1）",
+   "solution": "在 Claude Code 的 PreToolUse 中介点做无头重复测量，统计 Bound-Gap Rate；原型 Approval Token 用密钥绑定 principal、agent_id、session、tool、arguments、scope、expiry，密钥不回传智能体",
+   "tags": {
+    "application": "编程智能体权限审批",
+    "architecture": "Coding-agent harness + mediator",
+    "innovation": "提出六类审批洗白分类法，在 PreToolUse 中介点用带密钥的 Approval Token 校验绑定完整性",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "审批洗白：系统化梳理 AI 编程智能体执行框架中的审批—执行绑定失效"
+  },
+  "saved": "2026-10-04"
+ },
  "2609.39022@p1": {
   "data": {
    "challenge": "成功的证明无法暴露规格缺陷，完整验收规则和等长通用建议在不同模型与预算下效果参差，缺乏资源受限下筛选有用指导的方法",
@@ -881,6 +1036,25 @@
    "title_zh": "从验证失败到面向编码智能体的可复用指导"
   },
   "saved": "2026-10-03"
+ },
+ "2609.39081@p1": {
+  "data": {
+   "challenge": "中间结果写下后从不复查，被当作排除后续搜索的事实；只检查最终输出无法发现此类错误",
+   "future": "早期错误中间结论曾耗费三周并导致长度 7 的错误判断，需复查中间产物而非仅最终输出",
+   "problem": "用 LLM 编程智能体寻找四字母词（如 DNA 条形码）在编辑距离下尽可能远离的大码集",
+   "results": "E_4(6,3) 从 114 提升到 ≥120，并改进长度 6–9、距离 3–6 的另外 12 个下界",
+   "solution": "智能体编写验证器与搜索代码，人类选定问题并设定验证协议；限定预设对称性收缩搜索空间，另一会话用更好算子重跑",
+   "tags": {
+    "application": "编码理论开放问题搜索",
+    "architecture": "LLM agent + verifier",
+    "innovation": "将搜索限定到预设对称性的码类，把问题规模缩小约四倍",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "用于编码理论的编程智能体"
+  },
+  "saved": "2026-10-04"
  },
  "2609.39086@p1": {
   "data": {
@@ -1155,6 +1329,25 @@
   },
   "saved": "2026-10-02"
  },
+ "2610.00313@p1": {
+  "data": {
+   "challenge": "书面规则需 Agent 自行解析与验证，易漏判违规且耗费大量模型输出，缺乏可复用、一致的可执行判定",
+   "future": "公开 CPU 开销在两个任务ID队列均上升，Agent 输出节省因队列而异",
+   "problem": "科学编码 Agent 只拿到文字形式的方程、边界条件与输出要求，必须自行判断修改后的程序是否满足要求",
+   "results": "任务ID队列完全修复 26/30 文本 vs 29/30 工具，8-ID 队列 13/16 vs 15/16；PDE 任务 23/24 vs 24/24，模型输出降 31.2%",
+   "solution": "R2T 为公开科学需求提供预制可执行检查，Agent 直接调用获知是否违规；配对实验固定检查、起始程序、模型与预算，对比文本与工具两种形式",
+   "tags": {
+    "application": "科学计算代码修复",
+    "architecture": "LLM agent + executable checks",
+    "innovation": "将公开科学需求预制为可调用可执行检查，替代自然语言规则供 Agent 直接调用",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "从规则到工具：面向科学计算中 LLM Agent 的可执行检查"
+  },
+  "saved": "2026-10-04"
+ },
  "2610.00388@p1": {
   "data": {
    "challenge": "稀疏的结果级奖励使中间步骤缺乏监督信号，难以把成败归因到具体动作上。",
@@ -1173,6 +1366,25 @@
    "title_zh": "T2SPO：面向智能体强化学习的轨迹到步骤策略优化"
   },
   "saved": "2026-10-03"
+ },
+ "2610.00425@p1": {
+  "data": {
+   "challenge": "现有基准不含环境规范检查，无法定位依赖错误来源；跨 agent、语言与任务的一致性差异缺乏可测度量",
+   "future": "需设计同时优化功能正确性与环境可移植性的训练目标和评测协议",
+   "problem": "代码生成评测只看功能正确性，忽略环境依赖规范这一同等关键维度，导致依赖不一致、冗余或不完整却无法被功能测试发现",
+   "results": "同一任务依赖集一致率低至 7%；更新的 agent 无实质提升；最大分歧出现在声明层与运行时层之间，指向训练分布中的环境先验",
+   "solution": "设计环境规范 agent 协议，将依赖拆为声明、运行时安装、必要且充分三层分层比对，在 3 个 agent、4 种语言、50 个任务上测量依赖集一致性与层间分歧",
+   "tags": {
+    "application": "代码生成环境依赖规范",
+    "architecture": "Coding agent evaluation framework",
+    "innovation": "提出声明层、运行时安装层、必要且充分层三层依赖框架，并配以 agent 协议来量化环境规范偏差",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "能运行的代码，不能运行的环境：测量 AI 生成软件的环境可复现性"
+  },
+  "saved": "2026-10-04"
  },
  "2610.00648@p1": {
   "data": {
