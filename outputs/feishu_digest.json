@@ -1,10 +1,279 @@
 {
-  "report_date": "2026-10-05",
+  "report_date": "2026-10-06",
   "groups": [
     "代码预训练",
     "代码后训练",
     "代码Agent",
     "Agentic RL"
   ],
-  "items": []
+  "items": [
+    {
+      "id": "http://arxiv.org/abs/2610.03055v1",
+      "arxiv_id": "2610.03055",
+      "title": "hacktrace: behavior-supervised detection of reward hacking during code generation",
+      "title_zh": "hacktrace：代码生成过程中奖励黑客行为的行为监督检测",
+      "tags": {
+        "architecture": "Code LLM + behavior monitor",
+        "application": "代码生成奖励作弊检测",
+        "innovation": "复用生成代码时的内部状态做监控，并按捷径行为而非漏洞利用是否成功监督",
+        "training": [
+          "评测基准",
+          "RL"
+        ]
+      },
+      "problem": "代码智能体可通过删除暴露 bug 的测试来通过评分，需检测包括失败尝试在内的奖励黑客捷径行为",
+      "challenge": "仅在漏洞利用成功时监督会漏检失败捷径，另一路让模型重跑诚实问答监控既慢又耗 token",
+      "solution": "读取智能体生成代码时已计算的内部状态，在回合结束前监控，并与最终文件静态特征结合；同一信号经 GRPO 惩罚用于 RL",
+      "results": "每问题平均 AUC 0.997，监控开销 8 ms；强 GRPO 惩罚下通过解中作弊比例从 82-91% 降至 1-5%",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.03055v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.02952v1",
+      "arxiv_id": "2610.02952",
+      "title": "GTDD: Generative Test-Driven Development for AI Coding Agents with Adversarial Testing",
+      "title_zh": "GTDD：面向 AI 编码代理的生成式测试驱动开发与对抗测试",
+      "tags": {
+        "architecture": "Coding agent + tester + evaluator",
+        "application": "AI 编码代理 TDD",
+        "innovation": "独立测试代理在每轮候选实现固定后生成新输入，可信评估器返回缩减反例并保存回归",
+        "training": [
+          "免训练"
+        ]
+      },
+      "problem": "AI 编码代理可适应观察到的测试，通过预定测试集仍可能未实现大量预期行为",
+      "challenge": "固定测试集可被编码代理针对调整，通过测试不等于完整实现；测试可见性与重复反馈影响误接受",
+      "solution": "独立测试代理每轮依据人类行为契约和历史反馈生成新输入，可信评估器检查并返回缩减反例用于回归，结合回归测试与独立接受规则",
+      "results": "在 stateful key-value store 配对实验中，开发中重新生成测试的策略平均失败率低于仅生成一次测试的策略；给测试者候选源码无额外提升",
+      "future": "未隔离出单一策略特征导致差异的来源；需进一步分析。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.02952v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.02770v1",
+      "arxiv_id": "2610.02770",
+      "title": "AptMQL-Bench: From Text-to-SQL to Text-to-MQL via Access-Pattern Schema Design and Data-Preserving Migration",
+      "title_zh": "AptMQL-Bench：从 Text-to-SQL 到 Text-to-MQL，基于访问模式的 Schema 设计与保数据迁移",
+      "tags": {
+        "architecture": "Multi-agent code generation pipeline",
+        "application": "文档数据库自然语言查询",
+        "innovation": "以预期访问模式驱动文档 Schema 设计，并用编码 agent 将查询重写为 MongoDB 原生形式",
+        "training": [
+          "评测基准"
+        ]
+      },
+      "problem": "现有 text-to-SQL 到 text-to-MQL 的机械式基准转换会迁移失败、静默丢数据，并生成随数据规模急剧变慢的 Schema",
+      "challenge": "启发式转换直接镜像关系外键图与源 SQL：21 个 BIRD 库中 6 个无法迁移，最多静默丢弃 25.9% 行，查询慢一个数量级",
+      "solution": "编码 agent 加人工验证的转换流水线，按预期访问模式设计文档 Schema、将查询重写为 MongoDB 原生，SQLite 数据无损迁移且可扩展",
+      "results": "AptMQL-Bench 含 21 个文档库、3,186 条自然语言请求；最强模型 Claude Opus 4.5 无外部知识证据仅 57.38% 准确率，有则为 70.34%",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.02770v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.02569v1",
+      "arxiv_id": "2610.02569",
+      "title": "Pincer: Resource Authorization for Agents using a Digital Twin",
+      "title_zh": "Pincer：使用数字孪生为 Agent 做资源授权",
+      "tags": {
+        "architecture": "LLM agent + digital twin",
+        "application": "编码 Agent 资源授权",
+        "innovation": "用隔离上下文的数字孪生持续学习用户偏好，充当用户代理自动裁决 Agent 权限请求并执行动态最小权限策略",
+        "training": [
+          "其他",
+          "评测基准"
+        ]
+      },
+      "problem": "长时程自主编码 Agent 依赖通用 shell 并自建持久记忆，现有沙箱防御难以兼顾安全与功能，导致外部攻击面扩大",
+      "challenge": "用户维护策略随时间衰减、重复授权导致疲劳；自动模式分类器不学习用户特定策略，也不防对抗设置；类型工具、信息流控制等防御牺牲过多功能",
+      "solution": "在资源层与工具调用层防御并行运行：数字孪生以隔离上下文自动学习并执行用户特定的动态最小权限策略，作为用户在权限请求上的代理；并构建多日用户—Agent 交互数据集以复现学习阶段",
+      "results": "安全性与实用性均优于 LLM judge 变体和 Conseca(HotOS'25) 改编等基线，在特定攻击类型上安全提升显著，其他攻击类型也优于基线",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.02569v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.02563v1",
+      "arxiv_id": "2610.02563",
+      "title": "OpenGameEval: Benchmarking Agentic Programming and Exploration in a Stateful Game Engine",
+      "title_zh": "OpenGameEval：在有状态游戏引擎中对智能体编程与探索进行基准测试",
+      "tags": {
+        "architecture": "LLM agent + game-engine harness",
+        "application": "游戏引擎内编程与探索",
+        "innovation": "八工具动作空间分离观测与编辑工具，使探索行为可被直接度量并预测任务成败",
+        "training": [
+          "评测基准"
+        ]
+      },
+      "problem": "现有智能体编程基准虽要求探索，却只以最终任务成功率打分，无法度量探索过程",
+      "challenge": "游戏引擎任务需多步状态交互，仅凭最终成败无法区分模型是探索不足还是编辑出错",
+      "solution": "在 Roblox Studio 内以可复现的有状态会话运行语言模型智能体，用可执行检查对编辑后场景与模拟游玩会话打分，并用任务与模型配对分析探索行为对通过率的影响",
+      "results": "84 个人工筛选任务、每任务 16 次尝试、13 个前沿模型：最佳单次通过 51.7%、五次全过 39.4%，6 个任务无人解出；检查参考解涉及的全部对象使纯场景任务通过率 +13.4pp",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.02563v1",
+      "code_urls": [
+        "https://github.com/Roblox/open-game-eval"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.02456v1",
+      "arxiv_id": "2610.02456",
+      "title": "SideKernel: A Usable microVM Sandbox for AI Coding Agents on macOS",
+      "title_zh": "SideKernel：面向 macOS 上 AI 编码智能体的可用 microVM 沙箱",
+      "tags": {
+        "architecture": "Local microVM sandbox",
+        "application": "macOS 本地 AI 编码智能体沙箱",
+        "innovation": "用在线用户调研定位可用性障碍，据此设计本地 microVM 沙箱，并以 23 项能力测试横向对比",
+        "training": [
+          "免训练"
+        ]
+      },
+      "problem": "AI 编码智能体是不受信系统组件，却需在开发者机器上自主运行；macOS 本地开源沙箱选项少且难用",
+      "challenge": "现有本地开源 microVM 沙箱数量稀少、使用繁琐，导致用户采用率低",
+      "solution": "先做形成性在线用户调研，识别阻碍沙箱采用的主要可用性障碍，再据此实现开源本地 microVM macOS 沙箱，并按 5 条纳入标准筛出对比对象做 23 项能力测试",
+      "results": "调研显示不足 40% 的 AI 编码智能体用户在沙箱中运行；对比中仅少数沙箱与 SideKernel 相近，Docker Sandboxes 与 SideKernel 在可用性相关能力上得分最高",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.02456v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.02351v1",
+      "arxiv_id": "2610.02351",
+      "title": "DeReAct: Decomposed Reasoning and Acting for Reliable AI Agents",
+      "title_zh": "DeReAct：面向可靠 AI 智能体的分解式推理与行动",
+      "tags": {
+        "architecture": "Modular multi-policy agent (ReAct + Cri…",
+        "application": "智能体任务执行与完成判定",
+        "innovation": "将动作授权与完成判定外化为 Critic 和 Context Manager 两个门控策略，独立于 Brain 决策。",
+        "training": [
+          "免训练"
+        ]
+      },
+      "problem": "ReAct 智能体由单一 LLM 策略同时提议动作、与环境交互并判定任务完成，导致错误传播和缺乏依据的完成声明。",
+      "challenge": "动作授权与完成控制耦合在同一策略中，难以独立约束，错误会沿轨迹累积并提前终止执行。",
+      "solution": "Critic 在执行前校验提议动作，Context Manager 重建环境可支持的 State 并认证任务完成，两个门控策略与 Brain 解耦。",
+      "results": "GAIA 与 SWE-bench Verified 上，Qwen3-Coder-480B 的 Pass@1 提升 6.5–7.0 点，Claude Sonnet 4.5 提升 4.2–5.2 点；Claude Opus 4.5 上与 ReAct 持平但轨迹更符合证据与约束。",
+      "future": "增益随 Brain 能力增强而递减；外部门控仅在目标失败足够普遍且门控策略自身充分时有效。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.02351v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.02331v1",
+      "arxiv_id": "2610.02331",
+      "title": "World Editing: Intervening on Executable Worlds at Increasing Depth",
+      "title_zh": "世界编辑：在递增深度上干预可执行世界",
+      "tags": {
+        "architecture": "LLM coding agent + game engine",
+        "application": "游戏世界编辑与模组开发",
+        "innovation": "用干预深度轴刻画编辑强度，以可执行性、行为、保持与视觉四类确定性检查评测编辑",
+        "training": [
+          "评测基准"
+        ]
+      },
+      "problem": "交互式世界模型已能生成环境并在其中行动，但如何有意编辑一个已存在的可执行世界、同时保持不应改变的性质，仍未被探索",
+      "challenge": "多数失败编辑仍能构建并加载，真正难点是让编辑后的世界按请求行为运行；可靠性随干预深度下降，视觉一致性普遍不足",
+      "solution": "将世界编辑形式化为对既有世界的干预并维持不变量，用 Minecraft 与 Terraria 的工业级 modding 实例化，构建 IGMBench：110 个任务、1.1K 条可执行状态与行为判据，覆盖属性、实体、动力学、系统四类干预",
+      "results": "最强配置在严格任务级判据下解出 78.2% 任务，判据级达 94.8%；所有配置的联合视觉通过率均低于 50%",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.02331v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.03223v1",
+      "arxiv_id": "2610.03223",
+      "title": "AdaStep: Adaptive Step Credit Weighting for Agentic Reinforcement Learning",
+      "title_zh": "AdaStep：面向智能体强化学习的自适应步级信用加权",
+      "tags": {
+        "architecture": "Critic-free LLM agent RL",
+        "application": "长程智能体决策",
+        "innovation": "把步级优势加权建模为MSE估计问题，按信号-总方差比推导每状态最优收缩系数",
+        "training": [
+          "RL"
+        ]
+      },
+      "problem": "长程LLM智能体用稀疏结果奖励训练，轨迹级目标过粗，难以区分单步决策的贡献",
+      "challenge": "步级信用估计不可靠，因为观测回报还受后续动作、环境转移和轨迹长度影响",
+      "solution": "将加权视为潜在步级优势的均方误差估计，在显式条件采样假设下导出每状态最优收缩系数：回报变化源于所选动作时保留局部信用，由下游随机性主导时抑制；仅需标量计算",
+      "results": "三个骨干模型在ALFWorld、WebShop、ScienceWorld上一致优于基线，计算成本低",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.03223v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.02847v1",
+      "arxiv_id": "2610.02847",
+      "title": "Turnover-Orthogonal Credit Assignment for Open-Team Multi-Agent Reinforcement Learning",
+      "title_zh": "面向开放团队多智能体强化学习的周转正交信用分配（TOCA）",
+      "tags": {
+        "architecture": "Permutation-invariant centralized critic",
+        "application": "开放团队多智能体协作",
+        "innovation": "把回报分解为动作、纯周转、动作-周转交互三部分，用事件条件基线剔除纯周转分量",
+        "training": [
+          "RL"
+        ]
+      },
+      "problem": "开放团队中智能体中途加入、离开或被替换，标准集中式评论家与共享优势把动作效应与外生周转效应混成单一信用信号",
+      "challenge": "存活智能体因无法控制的外生周转事件被错误奖惩，难以区分自身动作的真实贡献",
+      "solution": "用事件条件中心化价值分解，配合置换不变的中心化评论家处理变规模智能体集与事件 token，导出反事实逐智能体信用及软加权交互变体 TOCA-β",
+      "results": "诊断实验回报优于事件感知 MAPPO 类评论家，移除交互信用显著掉点；Dynamic Spread 高周转率下 TOCA-β 平均回报最佳",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.02847v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.02554v1",
+      "arxiv_id": "2610.02554",
+      "title": "Test-time Multi-agent Coordination by Decomposed Value Gradient Flow",
+      "title_zh": "通过分解价值梯度流的测试时多智能体协调",
+      "tags": {
+        "architecture": "Generative prior + value function",
+        "application": "离线多智能体协调",
+        "innovation": "测试时用 Stein 变分梯度下降把行为样本输运到高价值区，输运步数替代固定正则系数",
+        "training": [
+          "RL"
+        ]
+      },
+      "problem": "离线 MARL 中生成式策略能表达多模态协调却分不清高价值区域，价值优化策略能利用 Q 函数却坍塌为单一主导模式",
+      "challenge": "单个智能体的模式坍塌会破坏联合协调，多智能体同时漂移会把联合策略推入未见动作区域",
+      "solution": "训练解耦的流匹配行为先验与分解价值函数，测试时经 Stein 变分梯度下降将行为样本输运至高价值区域；在 IGM 下证明联合软价值间隙的单次 KL 界，随输运收敛而消失",
+      "results": "在离散与连续离线 MARL 基准上取得最佳平均性能，且在所有 offline-to-online 配置中均有提升",
+      "future": "界中存在与 IGM 违背程度成正比的不可消除加性残差",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.02554v1",
+      "code_urls": []
+    }
+  ]
 }
