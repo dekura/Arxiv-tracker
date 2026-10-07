@@ -1963,6 +1963,65 @@
   },
   "saved": "2026-10-06"
  },
+ "2610.04641@p1": {
+  "data": {
+   "challenge": "现有可读性模型跨数据集不一致；直接 LLM 评判消耗大量 token 且不可解释，难以稳定对齐人类判断",
+   "future": "",
+   "problem": "现有可读性模型在不同数据集上与人类判断不一致，且直接 LLM 评判需大量 prompt token 且不透明",
+   "results": "5 基准+MBJP（1100 样本）平均 Spearman 高 0.101；13 种变换响应率 Java 93.8%、Python 87.6%",
+   "solution": "结合传统代码度量、嵌入语义组织与因果 LM 可预测性特征，用线性回归拟合人类评分，将 LLM 作为测量仪器实现特征粒度可解释",
+   "tags": {
+    "application": "代码可读性评估",
+    "architecture": "Linear regression over LLM features",
+    "innovation": "用线性回归组合信息论特征，将 LLM 作为测量工具而非黑盒评判，特征系数可解释",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "回到未来：从 LLM 中回归可读性特征"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.04687@p1": {
+  "data": {
+   "challenge": "改变行序会改变错误发现；仅提供已验证的错误位置时准确率仍远低于修复后的表格",
+   "future": "需额外推理开销",
+   "problem": "不完美表格问答中，LLM 的错误发现是否受错误位置影响，以及仅给出错误位置能否保证正确作答",
+   "results": "RADAR-T 上较 code-agent 基线提升 3.8–18.5 点（5 个 LLM）；修复表比错误标记表高 39.0–59.1 点",
+   "solution": "对表格多次打乱形成多视图做几何平衡的错误发现，再以显式提示引导验证和处理所报告的错误，并由代码执行完成干预",
+   "tags": {
+    "application": "不完美表格问答",
+    "architecture": "LLM + code execution agent",
+    "innovation": "跨打乱行序的多视图聚合发现错误，并显式引导验证与处理错误",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "理解基于 LLM 的不完美表格问答中的错误"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.04716@p1": {
+  "data": {
+   "challenge": "智能体输出有效性检查通过率高，但与真实变更一致率低，普遍出现漏删、多删与无关代码改动",
+   "future": "",
+   "problem": "日志代码移除研究不足：过量日志带来噪声、运行时开销并掩盖诊断信息，而现有工作多关注日志生成与修改",
+   "results": "95.6%–100% 输出通过有效性检查，但仅 11.1%–19.6% 移除与真实变更相同的日志代码；commit message 与开发者讨论带来最大对齐增益，taxonomy 指引降低运行时间",
+   "solution": "提取并人工验证真实日志移除案例，划分直接语句移除、日志基础设施移除与日志替换三类，用多模型设置评测四个编码智能体并与真实接受变更对比",
+   "tags": {
+    "application": "日志代码自动移除",
+    "architecture": "Coding agent + LLM",
+    "innovation": "从 Python/Java 仓库归纳 10 种移除模式与 11 种原因，并构建 387 例 LogRem 数据集评测编码智能体",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "面向用编码智能体自动剪枝日志代码：我们走到了哪一步？"
+  },
+  "saved": "2026-10-08"
+ },
  "2610.04779@p1": {
   "data": {
    "challenge": "PR diff 基于 PR 专属 base，校验器基于公共 merge base，代理指标错配，文件集不相交仍会冲突",
@@ -2294,5 +2353,371 @@
    "title_zh": "PlotGround：将图表数字化锚定在真实科学图表及其源数据中"
   },
   "saved": "2026-10-07"
+ },
+ "2610.07257@p1": {
+  "data": {
+   "challenge": "终端复用器与智能体管理器只用于排列窗口，不治理内存，无法在运行中输出可审计的资源信号",
+   "future": "监控开销未达 2% 目标（10 智能体时 2.7%），需进一步降低归属扫描成本",
+   "problem": "同机并行运行多个编码智能体时，现有工具无法归属内存、确认子树回收或发现逃逸进程，OOM 会丢未提交工作",
+   "results": "7.5 GiB 预算下零 swap、子树回收 100%、逃逸检测 10/10；基线超支 2× 并溢出约 2 GiB swap；1 Hz 扫描 CPU 从 0.6% 升至 2.7%，超 2% 目标",
+   "solution": "MemMux 本地运行时把资源治理变为可检查信号：在绑定预算内准入子集并在压力下回收，按智能体归属，完整回收进程子树，暴露逃逸子进程",
+   "tags": {
+    "application": "并行编码智能体资源治理",
+    "architecture": "Local agent-hosting runtime",
+    "innovation": "把内存治理转为可检查运行时信号：按智能体归属、完整回收、逃逸进程可见",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "MemMux：面向并行编码智能体集群的运行时验证与诚实资源归属"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07261@p1": {
+  "data": {
+   "challenge": "现有协调工具为反应式，冲突检测在智能体速度下滞后，警告到达时编辑已浪费",
+   "future": "负面结果：向智能体路由事实无法在窗口拟合规模挽救长上下文准确率，价值在成本与容量",
+   "problem": "并行编码智能体各自通过测试但合并结果失败，单智能体评测无法发现团队级集成冲突",
+   "results": "干净集成 1/9→9/9，冲突 13→0；契约变更下 0→1.0（前沿）/0.6（小模型），重复错误率 1.00→0.00",
+   "solution": "在 Nerveplane 中前置调度规划：解析工作项声明 scope，划分互斥 scope，按生产者→消费者依赖图排序合并，由 NP-Bench 用真实 git merge 验证",
+   "tags": {
+    "application": "并行编码智能体协调",
+    "architecture": "Multi-agent coding agent system",
+    "innovation": "将协调转为调度：按声明 scope 划分不重叠任务，按生产者→消费者图预排序合并",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "验证并行编码智能体中的协调：NP-Bench 与调度规划器"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07332@p1": {
+  "data": {
+   "challenge": "标准 RL 忽略专家路由已有的操作相关专业化结构，训练中路由失控，实证上限制任务性能与推理效率",
+   "future": "",
+   "problem": "长程智能体常基于稀疏 MoE 模型，但智能体行为与 MoE 结构的协同设计尚缺，RL 训练中专家路由不受控",
+   "results": "在所有评测基准上成功率提升超过 10 个百分点",
+   "solution": "分层路由控制框架：显式鼓励 turn 级专家选择对齐 READ/UPDATE 等智能体操作，正则化 token 级选择保持局部一致，并加入熵门控机制缓解后训练不稳定",
+   "tags": {
+    "application": "长程智能体任务",
+    "architecture": "Sparse MoE LLM agent",
+    "innovation": "分层路由控制：turn 级令专家选择对齐智能体操作，token 级正则维持局部一致",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "为智能体强化学习构建 MoE 专家选择结构"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07491@p1": {
+  "data": {
+   "challenge": "统一惩罚忽视各智能体所牺牲奖励的异质性；智能体独立乘子仍依赖同一聚合成本信号",
+   "future": "",
+   "problem": "多智能体共享成本预算时，公共 Lagrange 乘子只能约束总量，无法决定惩罚如何在各智能体间分摊",
+   "results": "CityLearn、MABIM、Harvest、MetaDrive（3–400 智能体）上平均社会福利较统一/独立乘子基线最高提升 29%，电网与驾驶成本守住预算，库存违规减少",
+   "solution": "LiRA 学习每个智能体对公共乘子的责任份额，只重分配其影响而不改动原奖励与约束；推导涵盖学习更新与数据分布变化的社会福利梯度，在收敛前优化责任份额",
+   "tags": {
+    "application": "多智能体共享预算约束",
+    "architecture": "Multi-agent RL + Lagrange multipliers",
+    "innovation": "为每个智能体学习公共 Lagrange 乘子的责任份额，并按含数据分布变化的社会福利梯度优化",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "谁来承担负担？多智能体强化学习中共享约束的责任学习"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07534@p1": {
+  "data": {
+   "challenge": "编码 agent 会用自身假设填补指令空缺，而现有 SDD 模板缺少对规范质量与完备性的判断标准。",
+   "future": "",
+   "problem": "SDD 模板只提供工件格式，无法帮助开发者判断规范是否充分、清晰。",
+   "results": "15 名实践者多数认可每条实践；规范质量前 1/3 仓库 bug 修复提交占 11.8%，后 1/3 为 20.4%，贡献者中位数 4 倍。",
+   "solution": "EPIC 用 10 个质量维度下的 40 条实践，指导在规范、计划和任务中显式写出期望与决策，让开发者在 agent 之前发现并填补空缺。",
+   "tags": {
+    "application": "编码 agent 规范编写",
+    "architecture": "Spec-driven development framework",
+    "innovation": "对 114 个仓库按 ISO 29148 评分，提炼 40 条实践、10 个质量维度。",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "面向规范驱动开发的 EPIC 框架"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07550@p1": {
+  "data": {
+   "challenge": "每个RA优化任务都需从头训练分布式策略，经验驱动学习样本效率低，训练开销难以承受。",
+   "future": "",
+   "problem": "MARL优化随机接入网络依赖经验驱动的分布式策略学习，每个优化任务训练开销大，难以实际部署。",
+   "results": "数值结果表明FM方法显著提升RA网络优化中MARL的训练速度；收敛分析显示其收敛阶与critic交换+线性近似的传统MARL相同。",
+   "solution": "用基础模型辅助MARL，在共识式去中心化actor-critic中利用FM先验，仅交换局部奖励；分析非线性值函数近似下的收敛阶与传统MARL相同。",
+   "tags": {
+    "application": "无线随机接入网络优化",
+    "architecture": "FM-aided decentralized MARL actor-critic",
+    "innovation": "FM辅助actor-critic嵌入共识式去中心化MARL，降低每任务训练开销",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "基础模型辅助的多智能体强化学习用于无线随机接入网络优化"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07557@p1": {
+  "data": {
+   "challenge": "检查器合成需解析缺陷规范、检视仓库、实现分析器专属逻辑，并靠反复编译与分析反馈迭代，长时程闭环难",
+   "future": "",
+   "problem": "现有代码智能体基准只测补丁生成或漏洞检测，不评估智能体能否在仓库中端到端开发出可用检查器",
+   "results": "21 个模型-harness 配置各重复 3 次，平均 Pass@1 为 32.30%，最佳配置达 45.33%",
+   "solution": "CheckerBench 提供含漏洞/修复版本、固定分析环境与检查器脚手架的任务集；CheckerLab 独立重建提交检查器，量化漏洞-修复诊断对比、补丁定位、误报与工具使用",
+   "tags": {
+    "application": "静态分析检查器开发",
+    "architecture": "LLM agent + checker scaffold",
+    "innovation": "用297个CVE构造300个可执行检查器合成任务，并用CheckerLab独立重建提交的检查器进行评测",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "CheckerBench：长时程智能体能否合成静态分析检查器？"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07578@p1": {
+  "data": {
+   "challenge": "现有 MARL 假设智能体同时参与，既不识别对未来决策有用的信息，也不训练后续智能体如何利用这些信息",
+   "future": "",
+   "problem": "交错参与下早期智能体的动作通过所留信息及使用它的后续策略影响回报，形成跨时间、跨智能体的学习依赖",
+   "results": "60 组 MPE/RWARE 骨干设置对比中 SPL 全部取得更高的平均任务完成率，平均高出 14.1%；并扩展至 8 智能体团队与 Isaac Lab 的 UAV-UGV 环境",
+   "solution": "SPL 把问题拆成两部分：对先参与智能体施加前瞻性获取监督以产生有用信息，对后参与智能体用结果监督学习接收并使用该信息",
+   "tags": {
+    "application": "多智能体协作任务",
+    "architecture": "Multi-agent RL training augmentation",
+    "innovation": "训练期增强：早期智能体接受前瞻性信息获取监督，后续智能体接受结果监督的接收者学习",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "与未来协作者合作：交错参与下的多智能体 RL"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07594@p1": {
+  "data": {
+   "challenge": "现有基准控制器与观测不一致，方法间无法公平对比，也难以分辨失败来自任务本身还是实现差异",
+   "future": "跨工作区堆叠仍开放；多物体运输对模仿学习、demo 驱动 RL 与编码智能体均困难",
+   "problem": "人形家务操作需在保持平衡、迈步与变姿的同时用双臂操作，缺少控制器与观测统一的评测基准",
+   "results": "九任务均值 VLA 微调最高；智能体开发程序优于全部 demo 驱动 RL 基线并领先双臂到达；跨工作区堆叠未解决，π0.5 在 pick-box 偏低",
+   "solution": "基于 Unitree G1 构建 BiGym 2.0：20 项家务任务、统一全身控制器，每任务 60 条人类 VR 演示，含同步多相机视角与全身执行记录，所有方法共用 onboard 观测与本体感知",
+   "tags": {
+    "application": "人形机器人家务操作",
+    "architecture": "Humanoid benchmark + whole-body control…",
+    "innovation": "统一全身控制器与本体观测，同预算下公平对比 VLA 微调、模仿学习、demo 驱动 RL 与编码智能体开发程序",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "BiGym 2.0：面向人形家务操作的学习策略与智能体开发策略基准评测"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07639@p1": {
+  "data": {
+   "challenge": "现有框架安全设置多为可选且闭源证据缺失，缺少同时衡量攻击效果与任务效用的隔离评测",
+   "future": "需让安全设置可验证、测试替代执行路径，并同时评估攻击效果、任务效用与执行成本",
+   "problem": "编码智能体框架的安全机制是否真正有效、其运行时效果与任务效用代价缺乏系统刻画",
+   "results": "auto-approve 使攻击成功率从 29.2% 升至 95.6%；网络隔离/只读模式效用损失大，命令允许/拒绝列表损失小或有增益",
+   "solution": "构建十机制分类并人工+LLM 评审 400 个框架-机制单元；设计 23 任务覆盖五攻击面，用独立确定性 oracle 在六框架九机制上对照安全设置做 2500 次试验",
+   "tags": {
+    "application": "编码智能体安全评测",
+    "architecture": "Coding agent harness benchmark",
+    "innovation": "提出十机制分类法与 23 任务五攻击面基准，用独立 oracle 同时测任务效用与攻击效果",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "HarnessSecurity-Bench：安全机制真的能保护编码 Agent Harness 吗？"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07704@p1": {
+  "data": {
+   "challenge": "现有方法只能从已实现的回报反推失败原因，无法在同一状态下前瞻性比较不同候选动作引发的队友与对手反应，奖励信号高度歧义。",
+   "future": "",
+   "problem": "完全去中心化的独立学习只用局部信息，标量回报无法区分表现差是自身动作无效、队友不配合还是对手有效应对。",
+   "results": "在 multi-particle 的 Tag、Spread、Adversary 上各 30 个配对种子，平均最终得分最高，分别超最强基线 10.67、6.46、0.33 归一化分。",
+   "solution": "离线预训练局部动力学世界模型建模局部轨迹与部分可观测；用反事实模拟器 rollout 训练语义-社会世界模型预测候选动作的任务与社会后果；在线冻结二者，用预测 logits 上下文引导独立 PPO。",
+   "tags": {
+    "application": "去中心化多智能体协作对抗",
+    "architecture": "World-model-guided independent PPO",
+    "innovation": "离线世界模型为候选动作预测任务与社会后果，冻结后做局部 PPO 的上下文引导",
+    "training": [
+     "预训练",
+     "RL"
+    ]
+   },
+   "title_zh": "基于反事实语义-社会世界模型的独立多智能体强化学习"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07757@p1": {
+  "data": {
+   "challenge": "检索与文档方法只提供通用上下文，智能体仍需自行判断哪些规范适用、何时有例外",
+   "future": "",
+   "problem": "编码智能体的改动能通过功能测试，却不满足仓库贡献规范，而规范分散在仓库各处且含条件与例外",
+   "results": "NCR 较 Raw 提升 7.42-10.77%，Contribution NCR 提升 31.64-45.44%，均优于 CodeWiki。",
+   "solution": "RepoNorm 独立于编码任务获取显式与隐式规范，用仓库证据校验规范内容与适用性，必要时查询 Git 历史，并以规范包形式交给既有编码智能体",
+   "tags": {
+    "application": "仓库贡献规范合规",
+    "architecture": "Coding agents + norm module",
+    "innovation": "独立于编码任务抽取显式/隐式仓库规范，并用仓库证据与 Git 历史校验其内容与适用性",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "为编码智能体获取与验证仓库规范"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07832@p1": {
+  "data": {
+   "challenge": "交互历史不断变长导致上下文爆炸与语义漂移，大仓库中任务相关组件更是难以识别",
+   "future": "",
+   "problem": "长程工作流中程序状态分散在源码、配置、测试、依赖与运行时，agent 需反复重建状态",
+   "results": "四个软件工程基准平均超匹配 harness 基线 12.4%；Qwen3-8B 原语配置距 GPT-5.6 Sol 同构配置 4.5% 内，Terminal-Bench 4.0 推理成本降 26.2%",
+   "solution": "以 Dev-Primitives 将构件变为主动参与者，通过依赖感知动态激活机制在仓库级实例化，并用缺陷诊断机制把执行证据映射回待修改组件",
+   "tags": {
+    "application": "仓库级软件工程任务自动化",
+    "architecture": "Multi-agent LLM + tool harness",
+    "innovation": "把仓库构件与常驻 LLM 配对成可执行原语，赋予构件 agent 原生接口、组件间通信与局部自改能力",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "面向软件工程的 Harness Engineering：模块化可执行 Dev-Primitives"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07881@p1": {
+  "data": {
+   "challenge": "缺少他人私有奖励时，独立学习者难以评估他人结果，因而在需要自愿付出、公共品贡献和资源克制的场景中难以形成合作。",
+   "future": "",
+   "problem": "现有多智能体社会偏好方法要求智能体观察同伴的奖励信号，而现实中通常只能看到他人行为与结果，无法获得其私有奖励。",
+   "results": "在 Escape Room、Clean Up、Commons Harvest 三个序贯社会困境中无需观察他人奖励即学会合作；收益分配常比可获真实奖励者更公平；部分可观测下策略加权仍支持合作。",
+   "solution": "每个智能体学习自身奖励模型，并应用于他人观测到的状态转移，从自身视角估计他人结果；这些自参照评价或并入学习奖励，或用于加权策略更新。",
+   "tags": {
+    "application": "序贯社会困境合作",
+    "architecture": "Multi-agent RL",
+    "innovation": "用各智能体自学的自身奖励模型评估他人观测转移，生成自参照结果评价再接入社会偏好",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "自参照社会偏好：无需观察他人奖励的合作"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.07898@p1": {
+  "data": {
+   "challenge": "前置执行结果决定下一轨迹是否生成，失败执行又决定其条件上下文，使恢复轨迹难以纳入同组训练",
+   "future": "",
+   "problem": "GRPO 类方法对每个 issue 独立采样多条轨迹、比较终端奖励，却不把失败补丁的验证器反馈复用为后续尝试的上下文，浪费诊断信息",
+   "results": "SWE-bench Verified 500 任务（verifier 辅助协议），Qwen3.5-4B+SWE-agent 达 41.7% Resolved@1、52.8% Resolved@2，优于 GRPO 的 38.9%/48.5%；11 次尝试预算下达 70.7% Re…",
+   "solution": "验证失败后恢复仓库到初始状态，以失败补丁与验证器反馈为上下文生成恢复轨迹；轨迹局部奖励保留各次验证结果，活跃集优势估计用实际执行的初始与恢复轨迹组成比较组",
+   "tags": {
+    "application": "仓库级 SWE 修复",
+    "architecture": "LLM agent + tool harness",
+    "innovation": "把失败补丁与验证器反馈作为恢复轨迹的条件上下文，并改造 GRPO 适配轨迹链",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "FC-SWE：面向长时程软件工程智能体的失败条件强化学习"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.08430@p1": {
+  "data": {
+   "challenge": "现有增量系统或重实现放置规则、拼装完整张量、算术重建数值，或用跨集群集合通信，且无法从重配中途失败恢复",
+   "future": "",
+   "problem": "智能体 RL 将训练与 rollout 分离，每次策略更新须在下一批前送达 rollout 集群，1T 全量重配跨区耗时 87.5 分钟",
+   "results": "30B–1T 模型在 3%、5% 变更率下比仅传输的全量检查点参考快 12–40×；1T 中继树 3% 重配 150 秒 vs 87.5 分钟",
+   "solution": "仿射映射把训练分片变更投影到检查点标准坐标，残差转换覆盖其余；XOR 掩码承载可压缩变更并保持存储位，其余用覆盖写；接收端原地应用，重试覆盖部分写，联合提交绑定下一 delta",
+   "tags": {
+    "application": "跨集群智能体 RL 权重重配",
+    "architecture": "Disaggregated RL refit system",
+    "innovation": "只传权重变化却位精确：仿射映射定位 + XOR 掩码压缩，接收端原地应用",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "NeMo-DCR：面向万亿参数规模可扩展智能体 RL 的位精确增量压缩重配"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.08514@p1": {
+  "data": {
+   "challenge": "已有自蒸馏把转移支持与证据量混在一起，权重无法随观测数自适应，概率估计偏差大",
+   "future": "",
+   "problem": "编码智能体用执行反馈自我修正时，修正样本的学习权重应如何同时体现转移支持与证据量",
+   "results": "观测从 1 增至 8 使未来结果 NLL 降 55.0-59.3%；CodeARC all-tests Pass@1 由 15.0% 升至 20.4%（95% bootstrap [+2.8,+8.0]pp）",
+   "solution": "用归一化执行相关性给出相对转移支持与有效伪计数质量；Dirichlet 后验产生不确定性惩罚权重用于 KL 锚定修正学习，对称先验下改质量保持类别排序",
+   "tags": {
+    "application": "代码自修正与修复",
+    "architecture": "Coding agent + Dirichlet weighting",
+    "innovation": "将执行证据的支持度与证据量分离，用 Dirichlet 后验生成不确定性惩罚权重",
+    "training": [
+     "蒸馏"
+    ]
+   },
+   "title_zh": "编码智能体的自我修正应携带多少证据？面向自蒸馏的自适应 Dirichlet 证据"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.08651@p1": {
+  "data": {
+   "challenge": "测试、监控与审查智能体本身会失效：监控测代理指标而非结果、审计静默失败、检查从结果中消失、自动修复引发运营中断",
+   "future": "",
+   "problem": "编码智能体产出的代码量超过专家可有效审查的范围，穷尽式代码审查无法作为人类控制的可靠依据",
+   "results": "定性案例：即便测试、监控与审查智能体均可能失效，人类控制仍取决于目标、证据、权限与最终人工决策的一致性",
+   "solution": "构建人类主导元智能体系统，一个智能体写码、其他智能体监督审查，项目规则传递经验，并将预期结果、判定证据、代理权限与人工决策绑定到同一目标",
+   "tags": {
+    "application": "医疗平台AI编码监管",
+    "architecture": "Human-led meta-agent system",
+    "innovation": "人类主导元智能体系统：写码、监督、审查分工，用项目规则沉淀经验",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "保障 AI 编写软件的案例研究"
+  },
+  "saved": "2026-10-08"
+ },
+ "2610.08662@p1": {
+  "data": {
+   "challenge": "现有评估从分散视角考察相关行为，无法统一衡量处置是否被证据支持，也难判断能力提升是否带来更恰当的处置。",
+   "future": "",
+   "problem": "编码智能体自主执行真实任务时，其风险处置是否必要缺乏统一评估框架，现有工作各自为政。",
+   "results": "8 个模型大规模实验中，即使证据明确仍有 11.2%-58.7% 运行出现不必要风险处置；任务能力更强不等于处置更恰当，违规显著损害开发者体验。",
+   "solution": "以 Avoidance-Transfer-Mitigation-Acceptance 框架操作化四类处置，构建证据受控的仓库级任务对，配套违规与证据响应性指标及人校准智能体评委。",
+   "tags": {
+    "application": "仓库级编码智能体",
+    "architecture": "LLM + agentic coding harness",
+    "innovation": "基于 ATMA 风险管理框架构建 200 对仅差治疗定义证据的仓库级任务对，并用人校准的智能体评委度量风险治疗违规与证据响应性",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "ParanoiaEval：基准测试智能体编程中不必要的防御性工作"
+  },
+  "saved": "2026-10-08"
  }
 }
