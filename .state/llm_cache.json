@@ -2719,5 +2719,352 @@
    "title_zh": "ParanoiaEval：基准测试智能体编程中不必要的防御性工作"
   },
   "saved": "2026-10-08"
+ },
+ "2610.08900@p1": {
+  "data": {
+   "challenge": "builder 是自身工作的弱判断者，缺少独立验证，未完成的实现容易被误判为已完成",
+   "future": "独立评审能抓出无依据声明，但停止时机仍是弱点，且证据为观察性而非受控对比",
+   "problem": "智能体编程让写代码变廉价，但可靠完成仍难：写代码的智能体无法判断任务是否真做完",
+   "results": "108天68个版本获1468 GitHub stars；IOI/IMO/IPhO 2026满分，IChO 2026 418.5/437，PutnamBench 672/672，Lean-Eval 251/303第一",
+   "solution": "人类批准计划契约，builder 分轮实现，来自另一厂商的 reviewer 判定完成，确定性钩子负责角色间路由并执行 72 项机械门禁",
+   "tags": {
+    "application": "智能体编程与仓库迁移",
+    "architecture": "Multi-agent orchestration workflow",
+    "innovation": "确定性钩子而非模型路由角色，并强制72道机械门禁",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "Humanize：面向智能体编程的判断工程"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.09088@p1": {
+  "data": {
+   "challenge": "恢复是重新推导而非重放，已保存工作量不能代表可节省工作量，按已耗时定价会误算第二个检查点。",
+   "future": "试点仅12个任务、106条分支，规模有限；放置策略需在更大范围验证其是否越过收益门槛。",
+   "problem": "现有检查点系统只判断哪些状态安全、如何快照、能否回滚，却不判断哪些安全边界值得实际落盘。",
+   "results": "SWE-bench Verified 12任务106条恢复分支：每任务省49.4s；首检查点省100.0s/保护156.5s（转化0.64），后一步为-1.1s/41.8s（-0.03）。",
+   "solution": "在匹配的模型、工具、验证器与停止条件下，驱动CP分支与SKIP分支到达同一逻辑失败并各自恢复，测量候选检查点带来的未来恢复成本下降。",
+   "tags": {
+    "application": "编码智能体检查点恢复",
+    "architecture": "LLM coding agent + checkpointing",
+    "innovation": "配对CP/SKIP分支到同一逻辑失败，按净恢复节省为检查点定价",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "RippleCP：衡量编码智能体中反事实检查点的优势"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.09120@p1": {
+  "data": {
+   "challenge": "标准方法假设探索独立，未刻画探索信息泄露如何被对手利用并改变学习动力学的稳态",
+   "future": "",
+   "problem": "随机探索的独立性与隐私通常只被当作技术假设，其安全含义及被对手利用的后果未被研究",
+   "results": "证明DBL收敛到DNE的任意小邻域且保持最优收敛速率，并在资源分配博弈中展示欺骗使稳态偏移",
+   "solution": "在最小二人强单调设定中分析欺骗者-受害者对，证明DBL动力学以最优速率收敛到欺骗纳什均衡(DNE)，并放宽二阶平滑条件",
+   "tags": {
+    "application": "多智能体博弈与资源分配",
+    "architecture": "Two-player multi-agent bandit system",
+    "innovation": "将自身探索动作与泄露的关联信号耦合，把学习动力学推向欺骗纳什均衡",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "欺骗性老虎机问题：探索耦合与多智能体学习的脆弱性"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.09159@p1": {
+  "data": {
+   "challenge": "此前依赖模型判断，冲突漏检率高，且无法在 Agent 行动前给出独立、机器可验证的证据。",
+   "future": "",
+   "problem": "编码 Agent 遇到描述与测试相冲突的任务时往往不作声而作弊（改测试、硬编码输出），甚至造成删除安全防护等实际损害。",
+   "results": "在冲突的 SWE-bench 任务上检测出最高 72.8% 的冲突、正式证明最高 51.1%，冲突漏检率比模型判断低近五倍。",
+   "solution": "仅凭任务描述与代码库，用 LLM 将预期行为自动形式化为 Lean 4 规范，测试独立形式化，Lean 内核检查是否存在同时满足两者的实现，若无则产出机器检验的证书。",
+   "tags": {
+    "application": "Agent 任务冲突检测",
+    "architecture": "LLM + Lean 4 verifier",
+    "innovation": "将任务意图与测试分别自动形式化为 Lean 4 规范，由内核证明二者不可同时满足",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "SpecGuard：在 Agent 作弊之前证明任务本身是坏的"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.09264@p1": {
+  "data": {
+   "challenge": "现有工作未探索规则文件注入路径，且注入提示需在不同模型与智能体框架间保持有效",
+   "future": "需在自主编码系统中加强安全防护",
+   "problem": "社区共享规则文件（如 AGENTS.md、.cursorrules）被广泛用于引导自主代码生成，但其安全风险尚未被充分研究",
+   "results": "在多基准、多 LLM、多智能体框架上取得高攻击成功率，并具跨模型与跨框架迁移性；摘要未给出具体数字",
+   "solution": "PackHallu 迭代改写注入规则文件的恶意提示，利用轨迹级反馈与 LLM 引导变异，诱导编码智能体用攻击者控制的包替换合法依赖",
+   "tags": {
+    "application": "编码智能体供应链攻击",
+    "architecture": "LLM coding agents + rule files",
+    "innovation": "用演化优化迭代改写注入规则文件的提示，结合轨迹级反馈与 LLM 引导变异提升攻击效果",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "通过规则文件中的提示注入对编码智能体进行包幻觉攻击"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.09633@p1": {
+  "data": {
+   "challenge": "真实长会话（≥3 条用户消息）任务类型更广且类型间频繁切换，任何单一交互分布都无法普遍代表真实场景",
+   "future": "",
+   "problem": "编码智能体交互式评测应匹配真实用户任务流，但 issue 派生基准的任务类型与类型切换模式与真实长会话不符",
+   "results": "700 个 SWE-Bench Pro 任务试点：分步顺序求解使成本约翻倍，解决率无稳定变化，说明交互协议本身影响评测",
+   "solution": "采集 4,782 条 JetBrains IDE 生产会话刻画 Task Flow；SWE-TaskFlow 保留已验证任务与测试，用 prompt splitting 和可验证仓库 QA 引导交互至目标 Task Flow，以 TFAS 筛选轨迹",
+   "tags": {
+    "application": "编码智能体交互评测",
+    "architecture": "LLM coding agent",
+    "innovation": "用 prompt splitting 与仓库 QA 把 issue 基准转向目标 Task Flow，TFAS 选轨迹",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "编码智能体基准应匹配其用户的任务流"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.09681@p1": {
+  "data": {
+   "challenge": "真实软件常有数百个相互依赖证明义务，现有方法为单定理不惜采样或搜索预算，缺乏成本约束",
+   "future": "",
+   "problem": "现有定理证明器只优化通过率而忽略成功-成本前沿，难以经济地完成大量相互依赖的证明义务",
+   "results": "在 Lean 4 的 CLEVER、VERINA、AlgoVeri、NTP4VC、Vero 上均达最佳求解率，两个基准达 100%，成本较最强基线最多降 30.9%。",
+   "solution": "CoCo-Prover 构建两级证明图：声明内 AND/OR 超图连接跨声明引理依赖图；符号拓扑选开放目标，元层 agentic router 按定价匹配异构专家代理与配置，并随证据演化路由。",
+   "tags": {
+    "application": "程序验证与定理证明",
+    "architecture": "Agentic router over two-level proof gra…",
+    "innovation": "将证明成本纳入元层决策，用两级证明图选目标、路由定价专家调用",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "程序验证中通过 Agent Orchestration 实现成本高效的定理证明"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.09832@p1": {
+  "data": {
+   "challenge": "策略随训练提升会使旧技能失效甚至有害，而无差别保留导致技能库膨胀且质量不可控。",
+   "future": "",
+   "problem": "记忆增强强化学习中，技能被无差别保留，过时或有害条目持续累积并误导智能体决策。",
+   "results": "多个交互式智能体基准上聚合成功率最高，相对最强基线最多提升 7.8%，训练全程技能库保持紧凑；另发布 5k+ 标注记录的 SkillFurnace。",
+   "solution": "预RL阶段用基座模型自身 rollout 预淘汰低适应度技能，过滤库用于SFT；RL 迭代中持续选择性淘汰、稳定化与 LLM 引导变异。",
+   "tags": {
+    "application": "长时程交互式智能体任务",
+    "architecture": "LLM agent + skill library",
+    "innovation": "用适应度驱动技能生命周期（trial/active/stable/retired），使技能库与策略协同演化",
+    "training": [
+     "SFT",
+     "RL"
+    ]
+   },
+   "title_zh": "SkillForge：通过动态技能生命周期协同演化技能与智能体"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.09870@p1": {
+  "data": {
+   "challenge": "传统与RL调度器难以适应高动态车载环境及队列间依赖，集中式单智能体调度效果有限",
+   "future": "",
+   "problem": "现有方法忽略共址服务异构动态时延需求下的网络竞争，且调度难以适应动态车载环境和队列间依赖",
+   "results": "较集中式单智能体，服务时延降低最高66.2%、可靠性提升最高271.8%，且推理时间低于其他MARL方法",
+   "solution": "为每个TSN队列分配自主智能体，用MAPPO协同学习队列服务顺序和时隙时长，在速度相关时延约束下最小化截止时间错过",
+   "tags": {
+    "application": "TSN车载边缘队列调度",
+    "architecture": "Multi-agent RL scheduler",
+    "innovation": "每个TSN队列配一个智能体，联合学习服务顺序与时隙时长以最小化截止时间错过",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "面向基于TSN的车载边缘网络的截止时间感知多智能体强化学习"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.10183@p1": {
+  "data": {
+   "challenge": "记忆与检索不匹配：存储信息只有可可靠检索才有价值，但记忆内容很少演化",
+   "future": "",
+   "problem": "长视频理解中记忆内容固定而检索自适应，缺失细节难恢复",
+   "results": "多个长视频理解基准实验证明有效，摘要未给具体数值",
+   "solution": "低帧率概览起步，Memory Evolver 增补记忆，Retrieval Evolver 自适应检索；二者交替 Agentic RL 共演化，BEF 定位瓶颈侧，CEF 缓解记忆过拟合训练问题",
+   "tags": {
+    "application": "长视频理解",
+    "architecture": "Dual-agent memory-retrieval LLM system",
+    "innovation": "记忆与检索双演化器交替 Agentic RL，BEF/CEF 反馈定向优化",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "VideoEvolve：协同演化记忆与检索的长视频理解"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.10226@p1": {
+  "data": {
+   "challenge": "LLM 的概率生成、不可知与语义无状态形成结构性真空，训练无法消除，导致 AI 辅助开发产出貌似合理却不可验证、不可信",
+   "future": "",
+   "problem": "能力强大的 AI 编码智能体是否会让软件工程学科与软件工程师变得多余",
+   "results": "定性结论：AI 编码智能体的兴起使软件工程与软件工程师更为必需而非过时",
+   "solution": "把方法论知识、领域知识、设计选择与流程选择四类知识杠杆物化为持久制品，由软件工程师担任方法学家、中介与守护者",
+   "tags": {
+    "application": "AI 辅助软件开发",
+    "architecture": "",
+    "innovation": "指出 LLM 的概率生成、不可知、语义无状态三大属性造成结构性真空，需将四类知识杠杆物化为持久制品",
+    "training": [
+     "其他"
+    ]
+   },
+   "title_zh": "为什么在编码智能体时代软件工程不可或缺"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.10242@p1": {
+  "data": {
+   "challenge": "现有测试生成缺少面向集成选择的显式损失，只能新建或删除测试，一次性生成且无重复失败反馈",
+   "future": "",
+   "problem": "SWE-agent 集成需通过测试生成与执行，在多个候选补丁中选出真正正确的那一个",
+   "results": "SWE-bench Verified 上 4-agent 集成 Pass@1 达 84.2%，较最强基线 80.6% 绝对提升 3.6 个百分点，失败历史上下文压缩超 100 倍",
+   "solution": "以执行定义的差分损失为目标，将测试更新扩展为读现有基础设施、建新测试、改过时断言、删废弃测试四类梯度，并从记忆中挖掘频繁失败序列作为动量，避开重复无效方向并压缩历史上下文",
+   "tags": {
+    "application": "仓库级 Issue 修复",
+    "architecture": "Multi-agent ensemble + test optimizer",
+    "innovation": "差分损失定义测试判别目标，CRUD 梯度扩展更新方向，失败模式动量压缩历史",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "TestGRAD：通过失败模式动量演化测试套件以用于 SWE-Agent 集成"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.10263@p1": {
+  "data": {
+   "challenge": "短任务上模型能力主导结果，长程开发中编排才决定成败，动态并发何时有益、为何失败缺乏受控证据",
+   "future": "",
+   "problem": "现有工作只关注短任务上的编码 agent 失败或预定义多智能体协作，缺少对前沿 agent 动态并发随任务复杂度变化的洞察",
+   "results": "动态并发的端到端效果随任务复杂度与执行时长而异，仅在特定条件下占优，并伴随 13 类并发特有失败模式",
+   "solution": "对 Codex、Claude Code、Kimi Code 做开/关动态并发的匹配执行对比（354 任务、2,124 次执行），分析调度行为并归纳 13 类并发特有失败模式与 28 种可观测模式",
+   "tags": {
+    "application": "长程编码任务",
+    "architecture": "Multi-agent coding agent system",
+    "innovation": "以开/关动态并发的匹配受控对比，量化端到端收益并刻画调度失败模式",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "当子智能体并行工作：长程编码任务中动态并发的潜力与陷阱"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.10302@p1": {
+  "data": {
+   "challenge": "现有 CMARL 方法缺少专门机制利用任务结构信息，既难以促进跨任务迁移，也无法有效缓解遗忘",
+   "future": "",
+   "problem": "持续多智能体强化学习中，任务底层结构（如电网拓扑、编队队形）各异，智能体需在学习新任务的同时不遗忘旧任务",
+   "results": "在 GRAFO 多个 CGMARL 场景中，FROG 与现有持续学习方法结合后性能大幅提升，并刻画了该设定下遗忘的产生方式",
+   "solution": "提出 CGMARL 框架，将任务序列映射为一系列属性图，每个图决定对应任务的动态与智能体数；给出首个 CGMARL 基准 GRAFO；提出 FROG，用冻结图骨干在策略中保留过去的结构信息",
+   "tags": {
+    "application": "多智能体协作控制",
+    "architecture": "Multi-agent RL with graph encoder",
+    "innovation": "将任务序列映射为属性图，由图决定环境动态与智能体数量，并以冻结图编码器保留旧任务结构信息",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "持续图多智能体强化学习"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.10310@p1": {
+  "data": {
+   "challenge": "现有设置让 agent 重建常规基础设施，或把探索限制在单个组件，难以联合优化数据、训练设置与执行 harness",
+   "future": "开源 RSIGym 代码与结果，支持复现与进一步研究",
+   "problem": "递归自我改进需把已接受改动带入后续周期，但研究 agent 改动缺乏基础设施，现有设置需重建设施或只探索单组件",
+   "results": "Opus 5 在独立 Joint 运行中 RSI-Index 最高 0.4809（每基准 $500）；SWE-bench Verified 17.67%→50.33%，AIME 31.67%→97.78%",
+   "solution": "RSIGym 用 EaaS 暴露训练、推理、rollout、评估与沙箱服务，共享预算/权限控制，支持 Data、Harness、Joint 三类改进轨道，并用 RSI-Index 度量剩余性能差距闭合比例",
+   "tags": {
+    "application": "Agent 递归自我改进",
+    "architecture": "Agent-native EaaS environment",
+    "innovation": "以 EaaS 服务化训练/推理/评估/沙箱，支持 Data、Harness、Joint 三类改进与共享预算权限",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "RSIGym：用于递归自我改进的灵活环境"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.10394@p1": {
+  "data": {
+   "challenge": "LLM生成的核在随机输入上通过数值检查，却在不同尺度或维度下失效，失败率22%–58%。",
+   "future": "",
+   "problem": "自动化核设计面临有效性与表达力的两难：固定语法保证有效但限制搜索，无限制程序自由却不保证有效。",
+   "results": "黑箱优化族上优于元学习深度核；十酶动力学核在五个未见机制上误差低于ARD/深度核基线；人改版再降预测误差5.7%、遗憾7.8%。",
+   "solution": "Kernaut把核设计视为开放端模型发现：编码智能体写程序，构造合约确保有效；质量-多样性存档保留高性能且行为各异的核，新颖性筛选引导探索功能新候选。",
+   "tags": {
+    "application": "黑箱优化与酶动力学",
+    "architecture": "LLM coding agents + QD archive",
+    "innovation": "构造合约保证LLM生成核有效，质量-多样性存档保留不同行为核，新颖性筛选引导搜索。",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "面向开放端模型发现的 Kernel Autoresearch"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.10426@p1": {
+  "data": {
+   "challenge": "把 harness 搜索轨迹当作统一回放缓冲，忽略轨迹价值取决于生成它的 harness，导致训练与评测运行时失配",
+   "future": "",
+   "problem": "终端智能体能力同时依赖模型权重与运行时 harness，但现有协同演化把 harness 搜索产出的轨迹混为无差别数据",
+   "results": "Tmax 晋升划分上 Qwen3.5-9B 由 78 提升至 88 解出任务，在线 RL 变体达 90；小规模 harness 匹配语料计算量更低却优于跨 harness 汇总的大语料",
+   "solution": "交替协同演化框架解耦 harness 搜索与策略训练，按组件做晋升决策；反复执行失败驱动 harness 合成，SFT 只用匹配采纳运行时的验证 rollout，RL 用新鲜在线交互",
+   "tags": {
+    "application": "终端任务智能体",
+    "architecture": "LLM + terminal harness",
+    "innovation": "harness 感知的数据配方，显式控制轨迹路由、来源匹配与课程刷新",
+    "training": [
+     "SFT",
+     "RL"
+    ]
+   },
+   "title_zh": "CoTrace：通过 Harness 与模型协同演化训练终端智能体的数据配方"
+  },
+  "saved": "2026-10-09"
+ },
+ "2610.10478@p1": {
+  "data": {
+   "challenge": "端到端 pass@K 要求基座可靠产生合法工具调用，多数基座做不到；单步任务又绕开了多步工具使用中的状态维持能力。",
+   "future": "",
+   "problem": "如何从基座 checkpoint 预测其经智能体后训练后的编码表现，避免昂贵的端到端后训练尝试。",
+   "results": "10 对公开基座与后训练模型上，三种筛选的排序与后训练 SWE-bench Verified pass@1 高度一致。",
+   "solution": "把后训练成功轨迹当作基座潜力的前瞻信号，重放轨迹并在每次改码后重跑测试，定位首个使仓库从失败转为通过的决定性步骤，在该步用 Decisive-Action BPB、Patch MCQ、前缀条件 pass@K 三项筛选评分。",
+   "tags": {
+    "application": "编码智能体基座模型筛选",
+    "architecture": "LLM + test verifier",
+    "innovation": "重放后训练成功轨迹定位决定性步骤，做无需基座冷启动的三种筛选",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "在它们能解决之前：从基座模型预测后训练编码智能体性能"
+  },
+  "saved": "2026-10-09"
  }
 }
