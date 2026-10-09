@@ -3066,5 +3066,353 @@
    "title_zh": "在它们能解决之前：从基座模型预测后训练编码智能体性能"
   },
   "saved": "2026-10-09"
+ },
+ "2610.10787@p1": {
+  "data": {
+   "challenge": "两者直接衔接时推理开销大，每次语言模型决策需 3-19 秒，机器人无法通过中断应对突发真实事件",
+   "future": "",
+   "problem": "语言模型有长时程推理能力却无法提供低延迟连续控制，动作策略能密集控制却缺乏长时程推理与目标追求",
+   "results": "R2R-CE 达 81.51 SR 创 SOTA，RxR-CE 90.43 SR、78.47 nDTW 匹配人类（90.4 SR、77.7 nDTW），每回合 1 分 22 秒；单独 8B VLA 为 74.51/78.19 SR；最小反应时间从 3-19 秒降至 0.5-1 …",
+   "solution": "上层运行时以线程化推理/执行/监控并支持中断与线程切换，下层 NavGPT VLA 按场景变化用 codec 分配视觉 token 执行低延迟动作",
+   "tags": {
+    "application": "视觉语言导航",
+    "architecture": "Hierarchical LLM + VLA navigation runti…",
+    "innovation": "类操作系统运行时将推理、执行、监控拆为独立上下文与权限的线程，并调度其争夺机器人运动控制权",
+    "training": [
+     "RL",
+     "其他"
+    ]
+   },
+   "title_zh": "NavGPT-3：在分层导航运行时中利用上下文"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.11345@p1": {
+  "data": {
+   "challenge": "既有任务过易变得平凡、过难则无信息量，能力与训练分布不匹配使自我改进收益递减",
+   "future": "",
+   "problem": "自进化 LLM 依赖静态数据或独立更新的合成模型，训练经验与智能体能力脱节，难以持续自我提升",
+   "results": "八个数学推理基准上整体最强，显著优于现有合成数据方法与受控基线，多数增益来自此前未解问题。",
+   "solution": "两个独立参数化智能体：合成器按推理器能力状态构造任务，推理器从 rollout 学习；正确性奖励优化推理器，任务质量/答案可靠性/可教性奖励优化合成器，更新反馈至下一轮。",
+   "tags": {
+    "application": "数学推理数据合成",
+    "architecture": "Multi-agent RL (Synthesizer+Reasoner)",
+    "innovation": "合成器与推理器协同强化学习，按任务可教性生成样本，使训练分布随能力共同进化",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "SynCo：通过多智能体强化学习进行自进化 LLM 的数据合成协同训练"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.11447@p1": {
+  "data": {
+   "challenge": "嵌入式固件正确性取决于传感、时序与安全约束下的闭环运行行为，静态源码质量无法反映真实达标情况",
+   "future": "",
+   "problem": "嵌入式编码智能体评测有限，多侧重一次性代码合成或离线源码正确性，缺乏对设备闭环行为的考察",
+   "results": "5 个嵌入式控制任务、4 种反馈场景、7 个 GPT/Qwen 配置、每条件 3 次重复共 420 次运行；gpt-5.4 通过率最高但未饱和，qwen3.5-27B 为最强本地模型，小模型通过率与搜索效率大幅下降",
+   "solution": "每任务给出纯文本工程描述、受限工作区与可见构建运行接口，智能体需将需求转成实现与自验证步骤并迭代至设备行为达标；以模拟 ESP32 固件保证可复现",
+   "tags": {
+    "application": "嵌入式固件闭环开发评测",
+    "architecture": "LLM coding agent benchmark harness",
+    "innovation": "设四种反馈场景（一次性生成、自验证、CI 红绿、oracle 详细反馈）闭环评测嵌入式编码智能体",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "面向嵌入式软件开发的 LLM 智能体闭环评测"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.11450@p1": {
+  "data": {
+   "challenge": "模型冻结、跨轮无状态，只能靠写下的产物积累知识；脚本常嵌入当前关卡状态，难以跨任务复用",
+   "future": "",
+   "problem": "编码智能体在连续无指令任务间如何保留、改写或丢弃知识，缺乏可白盒追踪的手段",
+   "results": "630 次脚本引用仅 33 次跨任务；74% 脚本在任务边界前被放弃；笔记只增不删、矛盾靠日志裁决；代价最大的是硬编码值迁移后失效",
+   "solution": "记录智能体写入的 Python 脚本与文本笔记及 harness 全量动作日志，将每条规则定位到其形成任务与被修正或放弃任务，不访问模型内部",
+   "tags": {
+    "application": "交互式抽象推理游戏",
+    "architecture": "Frozen LLM coding agent harness",
+    "innovation": "以文件为单位的想法溯源协议，追踪每条规则从形成任务到被修正或放弃任务",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "追踪玩 ARC-AGI-3 的编码智能体的思维：持续学习的经验启示"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.11451@p1": {
+  "data": {
+   "challenge": "科研失败原因分散在检索与证据选择、科学假设与推理、长程规划与修订等环节，难以定位并定向生成训练任务",
+   "future": "",
+   "problem": "开源模型在文献调研、科学编程与多步科研工作流上能力不足，缺少针对性补足能力缺口的训练数据与开发闭环",
+   "results": "在多项科研任务上表现具竞争力，参数量远小于领先开源权重模型（35B 总参数、3B 激活）",
+   "solution": "前沿模型智能体分析失败并依据论文集合与科学代码仓库构造问题、交互轨迹及带环境工具的可执行任务，多轮循环后经 SFT、专家训练、多教师 on-policy 蒸馏与智能体 RL 训练",
+   "tags": {
+    "application": "文献与科学编程研究",
+    "architecture": "MoE LLM + agentic loop",
+    "innovation": "用前沿模型智能体诊断自身失败案例，自动构造训练任务、交互轨迹与可执行环境形成迭代闭环",
+    "training": [
+     "SFT",
+     "蒸馏"
+    ]
+   },
+   "title_zh": "SAIL：通过科学感知循环实现的科学智能体智能"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.11480@p1": {
+  "data": {
+   "challenge": "现有方法只积累被选中分支的执行经验，缺少反事实分支结果，无法比较各技能族的责任归属",
+   "future": "",
+   "problem": "具身编码智能体组合模块化技能与冻结策略时，无法预判当前物理状态下哪个策略族会成功",
+   "results": "100个单回合任务总体成功率77.0%；RoboSuite 90.0%、LIBERO-Pro 73.8%、RoboTwin双臂 90.0%，优于code-as-policy与VLA-harness基线",
+   "solution": "P^5把技能统一为五个语义阶段并构成分层MDP；SCB恢复同一训练状态为每个可容许族生成并执行代码块；EAL用MCTS结合Q学习把这些结果蒸馏成族条件价值，部署时按可观测上下文选族",
+   "tags": {
+    "application": "具身机器人技能编排",
+    "architecture": "Coding agent + skill coordinator",
+    "innovation": "状态锁定反事实分支(SCB)在同一训练状态执行各族代码块，暴露被选中分支看不到的结果",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "RoboAware：从反事实结果中学习协调具身技能"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.11578@p1": {
+  "data": {
+   "challenge": "相关经验分散在描述关注点各异的多个关联变更中，扁平语义检索只能召回少量有用卡片。",
+   "future": "",
+   "problem": "代码智能体难以利用仓库历史 PR 中蕴含的设计决策、兼容约束与实现经验。",
+   "results": "SWE-Bench Verified 平均解决率 69.2%→72.9%，MiniMax M2.5 达 79.8%；SWE-Bench Pro 48.3%→51.7%；FEA-Bench Lite 41.0%→43.5%。",
+   "solution": "把合并 PR 蒸馏成结构化经验卡，建代码级、开发者意图、组织关系图；语义搜索定位入口卡后加权多跳扩展检索，供变更与验证策略智能体生成补丁，演化管家据历史择优。",
+   "tags": {
+    "application": "仓库级 Issue 修复",
+    "architecture": "Multi-agent + typed memory graph",
+    "innovation": "将已合并 PR 蒸馏为经验卡，用代码/意图/组织类型化关系图连接并加权多跳检索。",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "Chronos：让代码智能体推理软件演化"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.11593@p1": {
+  "data": {
+   "challenge": "既有拆分研究忽略提交有序且须保持可运行；仅做语法比对来声称维护收益，未验证对故障修复的实际帮助",
+   "future": "智能体如何主动利用软件历史做出更好的开发决策",
+   "problem": "编程智能体生成的大补丁混杂多种开发目的，难以评审与维护，现有拆分方法不保证拆分后代码可运行",
+   "results": "131 个智能体补丁上 RucTangle 历史全部可运行，基线 20.6%–37.4% 不可运行；453 个回归补丁上 pass@1 绝对提升 5.2%",
+   "solution": "RucTangle 用智能体逐步拆分补丁并在每步执行验证以保持可运行；TangleEval 通过回归修复任务量化拆分历史对编程智能体的收益",
+   "tags": {
+    "application": "提交拆分与缺陷修复",
+    "architecture": "LLM agent + runnable verifier",
+    "innovation": "首个保证每次提交后代码均可运行的智能体式提交拆分方法 RucTangle",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "面向编程智能体的可运行提交拆分"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.11613@p1": {
+  "data": {
+   "challenge": "改变组件与评测及后续使用脱节，改进难以沉淀复用，也难区分组件改进与最终任务成功。",
+   "future": "独立任务迁移与总开发成本仍未解决。",
+   "problem": "智能体能完成任务却不改进自身，任务经验难以转化为可复用能力，因为改变的组件与评测、后续使用未连接。",
+   "results": "SWE-bench Pro Public 报告 82.08% 解决率，高于无进化基线；六个案例显示能力保留至后续网站、游戏、研究任务，也记录未完成目标与失败策略。",
+   "solution": "八个实体族暴露可复用操作、方法、智能体、控制流、接口与状态，经统一版本化生命周期修订；共享 Runtime 协调工作，持久规划与可恢复上下文保留任务方向与证据。",
+   "tags": {
+    "application": "软件工程任务执行与能力积累",
+    "architecture": "Self-evolving multi-agent system",
+    "innovation": "八类实体族经统一版本化生命周期支持可复用组件修订，基础模型保持冻结。",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "AgentEvolver：通过任务执行实现系统级自我进化"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.11618@p1": {
+  "data": {
+   "challenge": "不同粒度与语言的生成目标差异大，缺少统一的可执行评测协议，导致各方法结果不可比、结论片面",
+   "future": "",
+   "problem": "现有代码生成基准在语言覆盖、任务粒度与评测协议上彼此割裂，无法对模型能力做系统性横向比较",
+   "results": "函数、文件、仓库正确率最高仅 71.7%、76.7%、31.0%，跨语言差异显著；方法排名随粒度与语言变化；同文件相关函数的实现上下文可提升函数级可执行正确率",
+   "solution": "从 58 个真实可执行开源仓库构造 2590 个跨 5 种语言、覆盖函数/文件/仓库粒度的任务，针对各生成目标设计集成流程，并在统一执行协议下评测前沿 LLM、专用方法与编码 agent",
+   "tags": {
+    "application": "多语言代码生成评测",
+    "architecture": "LLM + execution harness",
+    "innovation": "统一函数到仓库的多粒度基准：2590 任务取自 5 种语言 58 个可执行仓库，按生成目标定制集成流程并统一执行验证",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "PolyCodeEval：从函数到仓库的多语言代码生成基准评测"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.11647@p1": {
+  "data": {
+   "challenge": "任务完成率指标无法发现冲突，因为替代技能仍能完成表面任务，且最终回复很少指明实际使用的技能。",
+   "future": "基准应评分独占核心功能，平台应守护首次技能读取并显示实际运行的技能。",
+   "problem": "独立来源的 agent skills 共同安装时，功能相似的技能会在运行时被模型择优替代，导致已装技能的核心约束失效。",
+   "results": "近1/4已装技能同功能共装；相似技能在20%运行中替代，丢失超1/3独占核心功能；仅0.9%回复指明所用技能。",
+   "solution": "用仓库快照挖掘相似技能对，LLM 判定后在三模型运行确认对，定位冲突发生在首次技能读取，并证明 pre-tool hook 可恢复独占核心功能。",
+   "tags": {
+    "application": "编码 Agent 技能冲突检测",
+    "architecture": "Coding agent + skill harness",
+    "innovation": "首个共装技能冲突实证研究，挖掘82万候选对并在3模型运行312对确认实验",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "One Skill Too Many：编码 Agent 中共同安装技能的冲突"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.11858@p1": {
+  "data": {
+   "challenge": "现有 LLM 依据执行反馈生成修订的方法难以把修订落到实处，缺少证据与技能内容之间的显式对应关系。",
+   "future": "",
+   "problem": "Agent 技能中不完整或不适用的指导会削弱任务执行，而人工精炼技能代价高。",
+   "results": "在 SWE-Skills-Bench 和 CannBot 上，演化后技能的 trial 级准确率与执行一致性均高于原始技能及四种现有技能演化方法；AI 运维开发团队已采纳 6 个技能修订 PR。",
+   "solution": "在抽象轨迹上跨重复运行与任务对比失败/成功证据，并纳入演化循环间变化以识别可疑动作，据此定位技能中的编辑位置并生成对应修订。",
+   "tags": {
+    "application": "Agent 技能自动演化",
+    "architecture": "LLM agent + skill evolution",
+    "innovation": "先跨轨迹对比失败与成功证据定位可疑动作，再映射到技能编辑点生成修订",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "面向 Agent 技能演化的轨迹引导故障定位"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.11899@p1": {
+  "data": {
+   "challenge": "标签多为厂商营销用语，研究文献与产品文档之间缺少可比的结构化描述词汇",
+   "future": "agentic RAG 等形态仅被部分刻画，语料也显示各形态存在能力边界",
+   "problem": "chatbot、copilot、RAG、agent 等标签究竟是真实架构形态还是品牌营销，缺乏系统评估",
+   "results": "22 个系统语料；copilot 为 router-worker 架构、需用户逐步确认；agent 转为 AI 规划多步执行；四家厂商 coding agent 共用 reason-and-act 循环并委派 subagent",
+   "solution": "用统一 agent/工具词汇描述 LLM 聊天、自定义 agent、RAG、AI 增强工作流、copilot、coding agent、agentic RAG 七种形态，并从架构模式、执行控制与用户介入点、每任务 agent 调用次数、工具使用四维刻画",
+   "tags": {
+    "application": "LLM 应用架构分类",
+    "architecture": "Agent + tool application taxonomy",
+    "innovation": "以 agent 与工具为统一词汇，按四个结构维度刻画七种 LLM 应用形态",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "LLM 集成应用的形态：从 LLM 聊天到自主 AI Agent 系统"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.12061@p1": {
+  "data": {
+   "challenge": "判断当前推理是否仍支持后续动作需昂贵生成式验证；推理可跨轮复用，固定每轮推理带来冗余成本。",
+   "future": "",
+   "problem": "智能体每轮动作前都推理，但并非每轮必要；如何在不做昂贵生成式验证的情况下判断已有推理是否仍足够。",
+   "results": "在四个代表性智能体基准上大幅降低推理成本，同时保持或提升任务表现。",
+   "solution": "提出RACE训练方法，含LoGiC：逐步移除影响有限的推理轮次，将移除信号注入SFT与智能体RL，使策略学会何时推理、何时直接行动。",
+   "tags": {
+    "application": "多轮智能体决策",
+    "architecture": "LLM-based agent policy",
+    "innovation": "用移除推理后参考动作似然变化检测可省略的推理轮次，并用于SFT与RL",
+    "training": [
+     "SFT",
+     "RL"
+    ]
+   },
+   "title_zh": "智能体何时应该思考？通过跨轮估计的自适应推理"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.12269@p1": {
+  "data": {
+   "challenge": "固定检查间隔会在严重失误时漏掉及时引导、在健康执行时产生无谓开销；刚性启发式规则难以识别复杂推理错误",
+   "future": "",
+   "problem": "LLM 编码智能体的运行时监控依赖静态触发方案，无法在正确时机给出引导，导致可靠性提升受限",
+   "results": "在 300 个 SWE-bench Lite 任务上解决率最高：mini-swe-agent 较原始智能体提升 25.33%（+76 任务），Moatless 提升 15.67%（+47 任务），token 效率与最优基线相当",
+   "solution": "两级干预模块对正常执行与轻微失误给建议级引导、对严重失误给替换级引导；调度器据干预级别收紧或放松后续检查频率",
+   "tags": {
+    "application": "仓库级 Issue 修复",
+    "architecture": "LLM agent + runtime monitor",
+    "innovation": "按智能体实时执行健康度自适应调度检查，并以两级（建议级/替换级）引导强度反向调节检查频率",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "Cadence：面向编码智能体的策略性引导"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.12289@p1": {
+  "data": {
+   "challenge": "单一参考无法覆盖多种有效实现，使漏测行为、无效断言与错误构造被掩盖",
+   "future": "",
+   "problem": "现有测试评估只对照单一参考解，忽略其他合法实现，导致测试质量被高估",
+   "results": "14 个基线配置 Joint Success 仅 28.00%，单参考成功 59.67%；两模型上 TestHelix 提升 8.67–9.00 个百分点",
+   "solution": "TestHelix 异构合成测试-修复对，结合同伴交叉验证与递归自我改进（RSI），替代原生 harness 比较",
+   "tags": {
+    "application": "LLM 测试生成与评估",
+    "architecture": "LLM coding agent harness",
+    "innovation": "用 Joint Success Function 要求测试拒绝初始程序、接受全部有效实现、拒绝全部无效实现",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "TestPrism：超越单一参考实现的测试评估再思考"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.12375@p1": {
+  "data": {
+   "challenge": "守护 agent 每步都增加成本与延迟；事后日志评估在算力耗尽、损害已造成后才给结论",
+   "future": "",
+   "problem": "LLM agent 自主执行不可逆动作带来成本与安全风险，缺乏实时监控手段",
+   "results": "SWE-bench 轨迹前 8 步失败轨迹排序 AUROC 比内容相似度高 0.057；中止策略节省约 18% 算力，83% 中断正确",
+   "solution": "把 agent 步骤与依赖结构化，用流式结构感知最优传输对比历史成功轨迹，检测计划违规、循环、停滞与重复工具调用",
+   "tags": {
+    "application": "Agent 轨迹实时监控干预",
+    "architecture": "Streaming structure-aware OT monitor",
+    "innovation": "用结构感知最优传输流式比对步骤依赖与历史成功轨迹，毫秒级告警或阻断",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "OnTrack：基于流式结构感知最优传输的 LLM Agent 轨迹实时监控与干预"
+  },
+  "saved": "2026-10-10"
+ },
+ "2610.12452@p1": {
+  "data": {
+   "challenge": "需从离散零件库选件，并同时推理局部与全局约束；现有智能体设计仍逊于人类",
+   "future": "",
+   "problem": "如何让智能体根据文本生成既满足语义与设计标准、又物理可搭建的 LEGO 积木装配",
+   "results": "领先智能体基本满足可验证物理与语义要求，但设计质量仍不如人类设计",
+   "solution": "提供 BrickBench 基准，在三种规模与零件可用性设置下评分有效性、对齐与设计；并发布 BrickAgent 环境供编码智能体构建、检查和验证设计",
+   "tags": {
+    "application": "文本条件积木设计",
+    "architecture": "Agent benchmark + environment",
+    "innovation": "发布可搭建性校验基准与 BrickAgent 环境，联合评估有效、对齐和设计",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "BrickBench：评估智能体积木设计"
+  },
+  "saved": "2026-10-10"
  }
 }
