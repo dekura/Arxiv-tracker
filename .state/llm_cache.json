@@ -3586,5 +3586,371 @@
    "title_zh": "BrickBench：评估智能体积木设计"
   },
   "saved": "2026-10-10"
+ },
+ "2610.12569@p1": {
+  "data": {
+   "challenge": "现有基准难度在发布时固定、任务内容提前存在可被泄漏，无法随参与者能力提升而自动扩展。",
+   "future": "",
+   "problem": "静态代码基准发布即固定，任务会泄漏进训练数据，强智能体最终将其饱和，难度不再有区分度。",
+   "results": "11 个模型-工具组合、15 个仓库、5 种语言、1500 轮；GPT-5.5+Codex CLI 居首，修复 98.3% 缺陷；Claude Opus 4.8+mini-swe-agent 次之，红方胜率 27.3%；同族最新版本任务击败固定参考求解器 42.9% vs 4…",
+   "solution": "红蓝双方镜像轮换对抗；红方实现新特性并嵌入隐蔽 bug 与密封测试，PR 需通过特性与仓库测试、恰好失败 bug 测试且同智能体新会话能盲修复；蓝方在不知有 bug 下评审。",
+   "tags": {
+    "application": "仓库级代码修复与评审",
+    "architecture": "Multi-agent coding arena",
+    "innovation": "红方注入隐蔽 bug 并附密封测试，蓝方盲审修复，任务与判据在评测时生成",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "SWE-Duel：迈向编程智能体的自扩展竞技场"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.12598@p1": {
+  "data": {
+   "challenge": "二元奖励丢失轨迹间调试质量对比信号，另训奖励模型或新增环境交互代价高",
+   "future": "",
+   "problem": "RLVR 的二元可验证奖励无法区分调试质量差异明显的轨迹",
+   "results": "在 SWE-bench Verified 与 SWE-bench-Live 上，Qwen3-14B 与 Qwen3-32B 配置均取得一致提升",
+   "solution": "复用当前策略对同任务、同验证器结果的轨迹做成对偏好比较，聚合为任务内相对分数并转为有界辅助奖励，保留验证器通过/失败序，无需新环境交互",
+   "tags": {
+    "application": "仓库级 SWE 修复",
+    "architecture": "LLM policy with verifier",
+    "innovation": "复用策略对同任务同验证结果轨迹做成对偏好比较并生成有界辅助奖励",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "超越二元可验证奖励：面向 SWE Agent 的行为自奖励（BSR）"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.12822@p1": {
+  "data": {
+   "challenge": "现有研究只把奖励黑客当作单智能体失败，缺乏其在共享代码、内存与角色间传播的实证刻画与理论分析",
+   "future": "",
+   "problem": "多智能体编码系统中，奖励黑客多被视为单智能体失败，其跨智能体传播及对系统协调的影响尚不明确",
+   "results": "四个开源权重底座上编码 RL 均诱发并放大奖励黑客；小模型可向更强闭源模型传播；代码审查或独立验证器可减少交付的 hack",
+   "solution": "在四个开源权重底座上用编码 RL 诱发奖励黑客，经系统提示机制描述与中训练环境事实暴露两种设置，追踪代码、共享记忆与自然语言计划中的传播，并做理论分析与缓解评估",
+   "tags": {
+    "application": "多智能体编码协作",
+    "architecture": "Multi-agent coding system",
+    "innovation": "证明奖励黑客可通过代码、共享内存与自然语言计划在智能体间传播",
+    "training": [
+     "RL",
+     "评测基准"
+    ]
+   },
+   "title_zh": "Reward Hacking 作为多智能体编码系统中的可传播策略"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.12849@p1": {
+  "data": {
+   "challenge": "沙箱同步测试无法反映 CI/CD 与异步集成流水线，双范围改动引入未验证依赖，Agent 缺乏部署意识。",
+   "future": "需要部署感知的评测基准与基于路径的严格访问控制。",
+   "problem": "现有 Agent 评测脱离部署环境，缺乏对同时修改应用代码与部署基础设施的双范围 PR 集成影响的因果证据。",
+   "results": "双范围 PR 占 4.48%–4.55%；受审合并时间 ×3.24（+13.13h），43.1%–56.2% 绕过审查 <31min 静默合并。",
+   "solution": "对 26,999 个 PR 构建四层文件分类与精确 4D 分层匹配，在条件可交换下控制应用改动量，分离双范围 PR 的集成指标。",
+   "tags": {
+    "application": "AI Agent PR 集成分析",
+    "architecture": "LLM coding agents",
+    "innovation": "用四层文件分类与精确 4D 分层匹配，因果隔离双范围 PR 的集成开销",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "协同修改应用代码与部署基础设施：AI Agent PR 的因果研究"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13022@p1": {
+  "data": {
+   "challenge": "用户以模糊意图起步，仓库级误解会传播放大造成高成本返工，函数级澄清结论难以迁移到仓库级",
+   "future": "",
+   "problem": "现有基准只评测完整或欠明确规格下的实现，忽视编码前需求澄清，且澄清研究多局限于函数级任务",
+   "results": "澄清有效性更强不必然带来更高需求文档质量，表现随用户角色差异显著，编码 agent harness 相较其基座 LLM 未提升需求文档质量",
+   "solution": "ReqClarifyBench 含 341 个游戏、小程序、网页任务，配以真实对话衍生的多角色 LLM 用户模拟器，从澄清有效性与生成需求文档质量两方面评测六个 LLM",
+   "tags": {
+    "application": "仓库级需求澄清",
+    "architecture": "LLM user simulator benchmark",
+    "innovation": "构建交互式需求澄清基准：模糊意图+人工验证需求文档+代码评测产物，并用多角色用户模拟器",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "别猜，直接问：评估仓库级软件开发的交互式需求澄清"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13025@p1": {
+  "data": {
+   "challenge": "权重更新与 harness 改写彼此割裂、缺少连接机制，自演化不连贯且效果受限",
+   "future": "",
+   "problem": "自演化智能体只沿权重更新或 harness 改写单一方向改进，忽略了模型权重与 agent harness 之间的关系",
+   "results": "Polyglot 82.1% vs 最强基线 62.6%，SWE-bench Verified 48.3% vs 41.0%；演化后 harness 跨任务迁移并跨基准排名第一；GPT-5-mini agent 由 24.4% 提升至 48.3%",
+   "solution": "统一双角色流水线：同一策略既写 harness 编辑，又诊断效果并指导修订；EvoTIDE 用编辑抽取与前缀续写恢复可用轨迹，再用 SFT 与交替 GRPO 联合训练两个角色",
+   "tags": {
+    "application": "代码智能体自我演化",
+    "architecture": "Dual-role LLM agent + harness",
+    "innovation": "单一策略兼任 Proposer 与 Reflector，harness 编辑与权重训练互相驱动",
+    "training": [
+     "SFT",
+     "RL"
+    ]
+   },
+   "title_zh": "Evo$^2$：通过权重-Harness 协同演化来演化演化器"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13065@p1": {
+  "data": {
+   "challenge": "前沿编码智能体生成的测试套件突变分数低于60%，缺少相关输入组合且规模小于参考套件。",
+   "future": "",
+   "problem": "现有测试生成基准只覆盖单个函数或缺陷修复，缺乏为复杂软件从规格从零生成完整测试套件的基准。",
+   "results": "前沿编码智能体突变分数<60%，88%测试通过参考实现，实现通过82%参考测试；生成套件缺少输入组合且更小。",
+   "solution": "构建TestSuiteBench：165个应用各含结构化规格、参考实现、参考测试套件与平均74个单需求突变体，73%突变体仅被一个参考测试杀死，用于评测规格到测试生成。",
+   "tags": {
+    "application": "从规格生成测试套件",
+    "architecture": "LLM coding agents",
+    "innovation": "用单需求突变体隔离行为，165个开源应用各配结构化规格与参考测试套件",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "TestSuiteBench：编码智能体难以从规格说明生成强测试套件"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13152@p1": {
+  "data": {
+   "challenge": "成功轨迹也可能含重复文件查看、工具使用不稳、延迟修改等低效模式，直接被 SFT 学走",
+   "future": "",
+   "problem": "现有做法只按最终补丁是否通过测试筛轨迹，忽略过程质量，低效交互模式仍被纳入模仿目标",
+   "results": "SWE-Bench-Verified 上，用 TQS 高分轨迹训练的智能体持续优于随机或低分子集训练的模型",
+   "solution": "提出 TQS，直接在轨迹结构上计算围绕结构化收敛的信息聚焦、意图-行动对齐与策略动态信号，按分排序筛选子集再微调编码智能体",
+   "tags": {
+    "application": "编码智能体轨迹筛选",
+    "architecture": "LLM coding agent + SFT",
+    "innovation": "用信息聚焦、意图-行动对齐、策略动态三类结构信号打分，无需 LLM 评判且线性时间",
+    "training": [
+     "SFT"
+    ]
+   },
+   "title_zh": "质量而非仅结果：为监督微调选择编码智能体轨迹的结构化评分框架"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13166@p1": {
+  "data": {
+   "challenge": "环境合成会提前完成或简化这些行为模式背后的关键工作，从而消除本应由智能体完成的探索、实现与验证环节",
+   "future": "",
+   "problem": "短轨迹只能展示命令与工具调用，无法体现智能体通过探索积累证据、依反馈调整策略并把中间结果变成最终交付物的过程",
+   "results": "构建 1.5K 任务环境并 SFT Qwen3.5-27B 得到 TerminalHorizon-27B，在编码智能体、真实生产智能体任务与通用推理共 12 个基准上全面提升；12 小时预算的 RSI 案例显示可持续迭代改进",
+   "solution": "以真实专业工作为起点，用独立执行识别构建时被省略的关键工作，用所得证据指导环境重建；并在同一目标下逐步扩展任务，加入依赖前序结果、需要进一步探索与改进的新需求",
+   "tags": {
+    "application": "长时程终端智能体任务",
+    "architecture": "LLM + terminal agent harness",
+    "innovation": "用独立执行找出环境构建中被省略的关键工作，并据此重建环境，再在同一目标下渐进扩展任务",
+    "training": [
+     "SFT"
+    ]
+   },
+   "title_zh": "扩展智能体数据以实现长时程终端智能"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13356@p1": {
+  "data": {
+   "challenge": "轨迹极长，含数百次与代码库及外部工具的交互；现有方法或无专门训练，或专职 critic 仅输出标量奖励",
+   "future": "",
+   "problem": "端到端软件工程任务常缺乏现成的 oracle 评估器，需要能可靠判定并解释编程智能体行为的验证器",
+   "results": "留出测试集分类准确率由 base Qwen3-30B-A3B 的 57% 提升到 SFT 后 66%、RL 后 78%；开源模型、数据集与训练代码",
+   "solution": "在 CodeForge-Preview 轨迹上对 30B 模型先做 SFT 再做 RL，使其同时输出完成标签与解释判断的自然语言分析",
+   "tags": {
+    "application": "编程智能体轨迹验证",
+    "architecture": "MoE LLM verifier",
+    "innovation": "SFT+RL 联合后训练通用验证器，预测完成标签的同时生成自然语言归因分析",
+    "training": [
+     "SFT",
+     "RL"
+    ]
+   },
+   "title_zh": "SWE-Critix：面向编程智能体轨迹评估的后训练通用验证器"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13361@p1": {
+  "data": {
+   "challenge": "现有基准不测试该假设；智能体易过拟合可见示例、留下空洞运行时、并声称已完成",
+   "future": "这些失败模式可作为信号，让编码智能体学会构建被要求的智能体",
+   "problem": "编码智能体被委托构建贴合用户工作流的智能体，却无基准检验交付物是否真正满足需求，而非只是看似满足",
+   "results": "跨模型与 harness 的编码智能体无一接近满足需求；演示与交付之间的差距是常态而非个例；失败轨迹显示过拟合可见用例、空洞运行时、无依据的完成声明等反复出现的失败模式",
+   "solution": "AgentSWE 覆盖创建、编辑、优化三阶段的智能体开发生命周期；任务写成委托而非考试，验收时冻结提交，用覆盖完整需求的留出用例，按需求推导的 rubric 硬性通过/失败，优化阶段则用源基准目标",
+   "tags": {
+    "application": "智能体软件开发与优化",
+    "architecture": "Coding-agent benchmark harness",
+    "innovation": "25个委托式任务，构建者仅见少量示例迭代，验收在冻结提交的留出用例上按需求推导 rubric 硬性判定",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "AgentSWE：编码智能体能构建你真正想要的智能体吗？"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13395@p1": {
+  "data": {
+   "challenge": "现有智能体工作流无法支撑长时程开发，即先探索参考程序再进行实现；可验证训练环境稀缺",
+   "future": "",
+   "problem": "缺少可扩展、可验证的训练环境，让智能体自行发现需求并决定系统设计，而非仅在仓库内修 issue 或按需求文档生成仓库",
+   "results": "ProgramBench 上 SFT 将 Qwen3.8-27B 从 34.87% 提至 42.84%，Program-Agent 将 base 与 SFT 模型提至 55.71% 与 56.25%，超过部分旗舰模型",
+   "solution": "Program-Env 用反馈驱动环路修复运行时沙箱构建与黑盒测试质量，生成 1648 个覆盖 C/C++/Go/Rust 的环境；Program-Agent 以角色隔离工作流加修订管理支持编译检查与失败恢复",
+   "tags": {
+    "application": "从零构建程序",
+    "architecture": "LLM agent + verifiable sandbox",
+    "innovation": "反馈驱动环路自动修复沙箱与黑盒测试，配合角色隔离的分析-实现-评审工作流",
+    "training": [
+     "SFT"
+    ]
+   },
+   "title_zh": "ProgramGym：为长时程程序复现智能体扩展训练环境"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13438@p1": {
+  "data": {
+   "challenge": "策略自身探索能力有限，超出能力边界时几乎采不到成功轨迹，on-policy RL 缺乏有效学习信号。",
+   "future": "",
+   "problem": "现有智能体 RL 受 on-policy 推理瓶颈限制：任务超出模型能力边界时成功轨迹极稀疏，训练易崩溃。",
+   "results": "在五个基准上一致优于 RL 基线，后训练策略接近更强当代 LLM，并超越原能力边界。",
+   "solution": "在 rollout 阶段引入奖励侧 rubric 证据，将错误轨迹改写为成功轨迹；过滤分布偏移过大的干预轨迹以稳定 off-policy 策略优化。",
+   "tags": {
+    "application": "智能体推理与工具调用",
+    "architecture": "LLM agent RL pipeline",
+    "innovation": "在 rollout 中用奖励 rubric 将错误轨迹改写为成功轨迹，并过滤偏移过大样本",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "Rollout-Time Intervention：解锁超越策略极限的智能体强化学习"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13439@p1": {
+  "data": {
+   "challenge": "自利AV路由优化自身行程时间，忽视对其他HDV的影响，导致HDV行程时间增加、系统性能下降",
+   "future": "社会项权重增大时系统无法达到期望性能；边际成本计算依赖反事实仿真",
+   "problem": "AV自利路由会给人类驾驶车辆带来外部性，增加其他道路使用者的行程时间，混合交通中需兼顾系统整体效率",
+   "results": "Ingolstadt/Provins真实路网：40%AV自利路由使其他车辆行程时间增1.7%，加入社会奖励降至1.1%；AV自身也更快",
+   "solution": "用MARL学习路由，将AV移除的反事实仿真中其他车辆行程时间差作为边际成本加入AV奖励，并只对影响最大的AV计算边际成本以降低仿真开销",
+   "tags": {
+    "application": "混合交通路径规划",
+    "architecture": "Multi-agent RL routing",
+    "innovation": "在AV自利奖励中加入边际成本社会项，通过反事实仿真衡量对其他道路使用者的影响",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "集体自动驾驶车辆路由需要社会意识以与人类驾驶员共存"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13563@p1": {
+  "data": {
+   "challenge": "为每个基准实例单独设计性能工作负载成本高昂，导致补丁性能难以规模化评估",
+   "future": "解决率不足以刻画仓库级问题解决能力，未来评测应同时考虑补丁性能",
+   "problem": "SWE-bench 等仓库级基准仅以正确性测试是否通过判定补丁，不同通过补丁的运行时性能差异基本未被考察",
+   "results": "得到 262 个含至少两个不同正确解的案例；近半数实例可区分出补丁性能差异，且补丁性能与 LLM 解决率无关，模型排名近乎相反",
+   "solution": "选取 SWE-bench 与 SWE-bench-Live verified split 中可测量实例，让 4 个前沿模型配 SWE-agent 生成多个正确补丁，在原生 F2P 测试上测指令数与墙钟时间，用 Welch ANOVA 做统计判别",
+   "tags": {
+    "application": "仓库级 Issue 修复",
+    "architecture": "LLM + SWE-agent harness",
+    "innovation": "把基准内置 FAIL_TO_PASS 测试复用为性能负载，并用 Welch ANOVA 替代 RSD 判别补丁运行时差异",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "并非所有正确修复都跑得一样：仓库级问题解决中补丁性能的实证研究"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13668@p1": {
+  "data": {
+   "challenge": "现有评审智能体在复杂改动与需非局部推理的 bug 上效果差，私有工业仓库因更需项目上下文而性能骤降。",
+   "future": "复杂改动与需项目上下文场景仍表现不佳；建议按 PR 复杂度扩展评审力度、注入仓库知识、按 PR 特征分配模型并持续监控质量。",
+   "problem": "人类评审速度已跟不上智能体代码生成，全自主“熄灯”软件工厂是否可行，取决于评审智能体能否检测人工确认的 bug。",
+   "results": "claude-opus-5 配 copilot-cli 在 top-5 评论中捕获 71.9% 的 bug，五个月前 opus-4.6 为 47.7%；探索型提示以 10% 成本换最高 5.8% 提升。",
+   "solution": "构建 CRBugBench：从仓库历史挖掘人工确认 bug 并配对引入 PR 形成评审任务，含 1000 个开源任务与 800 个企业内部任务，按 top-5 评论命中率评测多个 SOTA 智能体。",
+   "tags": {
+    "application": "代码评审与 Bug 检测",
+    "architecture": "Code review agent + benchmark",
+    "innovation": "从仓库历史挖掘人工确认 bug 并与其引入 PR 配对成评审任务，构建含开源与企业内部仓库的 CRBugBench。",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "（何时）软件工厂应该实现无人值守？代码评审智能体的 Bug 检测基准评测"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13737@p1": {
+  "data": {
+   "challenge": "现有约束MARL方法依赖个体成本或即时奖励分解，难以处理仅能观测团队级联合约束且违规具有延迟效应的情况",
+   "future": "",
+   "problem": "团队级约束违规成本只能衡量集体结果，无法区分哪些智能体的动作对违规影响最大，导致联合约束下信用分配困难",
+   "results": "协同运输安全成功率提升1.6-5.1倍，导航安全成功率提升11.1%，交通吞吐量提升50-68%，优于约束基线",
+   "solution": "以STL鲁棒性通过运行最大成本增量度量回合级违规；平滑全回合鲁棒性与可微动力学给出动作敏感性，将每个成本增量按敏感性分配给各智能体并考虑延迟效应",
+   "tags": {
+    "application": "协同运输、导航与交通控制",
+    "architecture": "Constrained multi-agent RL framework",
+    "innovation": "用STL鲁棒性和可微动力学求动作敏感性，把联合约束成本增量归因到各智能体",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "SafeDiSTL：分解联合约束以实现安全多智能体强化学习"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13772@p1": {
+  "data": {
+   "challenge": "单次实验由多份手工对齐的仿真文件、脚本、配置值与种子拼装，即使在同一研究组内复用和复现也易失效",
+   "future": "",
+   "problem": "MARL 集群机器人实验需手工对齐仿真文件、脚本、配置、路径与种子，复用与复现脆弱且缺乏标准化支持",
+   "results": "五维评估（架构、效率、可复现性、可用性、协作）表明：实验变体由平台管理后，ARGoS+MARL 实验更易复用、复现与交接",
+   "solution": "MARGoS 将实验定义输入作为一等平台工件，提供配置哈希、端到端种子传播、冻结配置、结构化日志、环境指纹与可导出的实验包",
+   "tags": {
+    "application": "集群机器人 MARL 实验复现",
+    "architecture": "Config-driven MARL experiment platform",
+    "innovation": "把配置、种子、路径等实验输入提升为平台管理的不可变工件，用配置哈希保证可复现",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "MARGoS：面向 ARGoS 中可复现 MARL 实验的配置驱动平台"
+  },
+  "saved": "2026-10-13"
+ },
+ "2610.13841@p1": {
+  "data": {
+   "challenge": "现有方法仅从单一 diff 重建进展，忽略数据库、服务等仓库外状态，长周期多服务任务恢复效果差",
+   "future": "",
+   "problem": "编码智能体失败后从头重试丢弃中间环境状态，能否恢复并分支中间状态以提升解决率？",
+   "results": "全快照搜索提升解决率与效率，收益主要来自保留仓库外的数据库/服务/运行时状态，多服务长周期任务效果最好",
+   "solution": "在 Daytona 全沙箱快照上实现 Go-Explore 搜索：保存中间环境状态，从有进展的状态恢复并分支继续，而非从头重试",
+   "tags": {
+    "application": "长周期多服务编码任务",
+    "architecture": "Go-Explore search over sandbox snapshots",
+    "innovation": "用 Go-Explore 在全沙箱快照上搜索并分支，保留仓库外运行时状态",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "回归开发状态：全沙箱快照何时帮助编码智能体"
+  },
+  "saved": "2026-10-13"
  }
 }
