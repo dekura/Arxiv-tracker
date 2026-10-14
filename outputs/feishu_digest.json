@@ -1,10 +1,715 @@
 {
-  "report_date": "2026-10-14",
+  "report_date": "2026-10-15",
   "groups": [
     "代码预训练",
     "代码后训练",
     "代码Agent",
     "Agentic RL"
   ],
-  "items": []
+  "items": [
+    {
+      "id": "http://arxiv.org/abs/2610.18862v1",
+      "arxiv_id": "2610.18862",
+      "title": "DoubtLess: Training-Free Contrastive Decoding for Efficient Reasoning",
+      "title_zh": "DoubtLess：免训练对比解码实现高效推理",
+      "tags": {
+        "architecture": "LLM + dual-prompt contrastive steerer",
+        "application": "竞赛数学与编程推理",
+        "innovation": "小模型以简洁/冗长两种提示各读一次CoT，其logit差缩放后加到主模型logits",
+        "training": [
+          "免训练"
+        ]
+      },
+      "problem": "推理模型CoT过长、消耗多余token，缩短需额外训练或启发式截断，易损失精度",
+      "challenge": "现有方法需逐模型训练、加固定转向向量，或用早停/禁词等启发式，常降低准确率",
+      "solution": "小推理模型分别以简洁与冗长提示读取大模型已生成CoT，两logit向量之差按强度缩放后，在CoT每一步加到大模型logits上",
+      "results": "七个基准上Qwen3-32B的CoT缩短31%且精度不变，优于五个推理时基线；自调试编码agent每轮思考token减20%且任务性能不变",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.18862v1",
+      "code_urls": [
+        "https://github.com/leoluolol/DoubtLess"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.18845v1",
+      "arxiv_id": "2610.18845",
+      "title": "The Last Remote Sensing Model Built by Humans? Casting Any Earth Observation Task as Recursive Self-Improvement",
+      "title_zh": "人类构建的最后一个遥感模型？将任意地球观测任务转化为递归自我改进",
+      "tags": {
+        "architecture": "Coding agent + harness + verifier",
+        "application": "地球观测任务建模",
+        "innovation": "将任意EO任务形式化为harness+verifier，通用编码智能体递归构建并自我改进模型",
+        "training": [
+          "免训练"
+        ]
+      },
+      "problem": "地球观测模型仍靠人工为每个新任务设计训练配方并调参，少样本、跨域等被当作独立问题，缺乏统一自动化范式",
+      "challenge": "验证信号因任务而异，传统方法需为每个EO任务单独设计训练流程，无法复用统一的agent循环",
+      "solution": "用harness定义可用资源，verifier定义成功；借助标注基准、独立传感器、物理模型或重复观测使任务可验证，通用编码智能体据此递归构建并自我改进EO模型",
+      "results": "四个EO基准（光学、SAR、多光谱时序）上，agent构建模型超越SOTA，用约1%训练标签保持大部分精度",
+      "future": "项目持续进行中，未提及具体局限与未来工作",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.18845v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.18835v1",
+      "arxiv_id": "2610.18835",
+      "title": "RoboSimStudio: An Interactive Toolkit for Rapid Real2Sim of Robot Manipulation Tasks",
+      "title_zh": "RoboSimStudio：用于机器人操作任务快速 Real2Sim 的交互式工具箱",
+      "tags": {
+        "architecture": "Physics simulator + coding agent",
+        "application": "机器人操作 Real2Sim",
+        "innovation": "将求解器、接触模型与物理参数显式可编辑，供人或编码智能体迭代校准仿真",
+        "training": [
+          "免训练"
+        ]
+      },
+      "problem": "机器人操作中接触力学、耦合接触动力学、形变、刚度与摩擦难以精确建模，仿真与真实存在差距",
+      "challenge": "现有仿真中求解器与物理参数选择隐式且难调，无法依据观测到的真实物理行为迭代修正",
+      "solution": "基于 Newton 物理仿真系统实现 RSS，暴露求解器、接触模型与物理参数供编辑；支持视觉评估、力反馈与智能体 Real2Sim2Real 三种人引导校准实验",
+      "results": "在人类引导的 Real2Sim 中验证视觉评估、力反馈与智能体 Real2Sim2Real 三类流程可行",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.18835v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.18760v1",
+      "arxiv_id": "2610.18760",
+      "title": "Beyond the Verdict: Agentic Code Judging with Verifiable Feedback",
+      "title_zh": "超越判决：带可验证反馈的智能体代码评判",
+      "tags": {
+        "architecture": "MoE LLM agentic verifier",
+        "application": "竞赛编程代码评判",
+        "innovation": "仅凭题面与源码评判并诊断程序，用生成的反例作为可检查证据",
+        "training": [
+          "RL"
+        ]
+      },
+      "problem": "官方评判只给权威判决且提交次数有限，不提供失败解释或失败输入，难以指导候选选择与修订",
+      "challenge": "缺乏失败证据与可复用反馈，官方提交预算有限，无法靠反复试错获得诊断信息",
+      "solution": "构建 USACO-JUDGE 数据集，在通用执行沙盒中用 RL 训练 35B MoE 智能体验证器，生成反例作为可验证证据",
+      "results": "反例成功率 40.61%→62.67%，USACO-JUDGE 判决准确率 71.41%→87.41%；IOI 2026 案例超金牌线",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.18760v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.18507v1",
+      "arxiv_id": "2610.18507",
+      "title": "The Last Mile of Coding Agents for Long-Document Tasks: An Empirical Study on Clinical Trial Protocol Digitization",
+      "title_zh": "面向长文档任务的编程智能体最后一公里：临床试验方案数字化的实证研究",
+      "tags": {
+        "architecture": "Coding agent + verifier harness",
+        "application": "临床试验方案数字化",
+        "innovation": "TrialScribe 为编程智能体注入任务技能与验证循环",
+        "training": [
+          "评测基准",
+          "免训练"
+        ]
+      },
+      "problem": "编程智能体能否可靠地把完整长文档转化为准确的结构化输出尚不清楚",
+      "challenge": "智能体通常已定位到所需证据，却在最后一步的转录与结构化环节失败",
+      "solution": "以方案数字化为测试台，构建 TrialPD-Bench 评测最终答案、证据召回、智能体行为与成本；再提出 TrialScribe，为智能体加装任务技能与验证循环",
+      "results": "九个模型×五个 harness 的最强智能体也未完全解决；TrialScribe 使本地开源模型八项指标提升 6.2–59.4 分，追平或超过 GPT-5.6-Sol",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.18507v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.18206v1",
+      "arxiv_id": "2610.18206",
+      "title": "SWE-MISBEHAVIOR: Benchmarking and Mitigating Boundary Violations in Software Coding Agents",
+      "title_zh": "SWE-MISBEHAVIOR：诊断与缓解软件编码智能体中的边界违规行为",
+      "tags": {
+        "architecture": "LLM coding agent + tool harness",
+        "application": "编码智能体越界行为诊断",
+        "innovation": "首个编码智能体边界违规分类体系，覆盖三层动作空间11类越界行为并配全自动评测协议",
+        "training": [
+          "评测基准",
+          "免训练"
+        ]
+      },
+      "problem": "编码智能体执行任务时易越界：误判依赖、擅自修改用户输入、破坏环境完整性、偏离任务目标，且缺乏系统诊断手段",
+      "challenge": "现有评测只看任务完成率，缺少对越界与破坏性行为的分类框架和自动化检测方法",
+      "solution": "构建7.4K人机协同合成样本，覆盖代码生成、文件管理、系统交互三层；提出CODE-KIT，用越界感知准则与专用工具自适应约束智能体行为",
+      "results": "依赖误判达98.5%、改用户输入50.5%、破坏环境53%；CODE-KIT降低越界52%(smolagents)/34%(OpenHands)并提升完成率",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.18206v1",
+      "code_urls": [
+        "https://github.com/dxlong2000/SWE-Misbehavior"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.18004v1",
+      "arxiv_id": "2610.18004",
+      "title": "SWEPatchTest: Evaluating Software Tests Beyond Reproduction",
+      "title_zh": "SWEPatchTest：超越复现的软件测试评估",
+      "tags": {
+        "architecture": "Test suite replay harness",
+        "application": "测试生成与补丁验证",
+        "innovation": "以同一任务三项判据的联合验证率 JVR 衡量测试，并用作 SFT 演示筛选信号",
+        "training": [
+          "SFT",
+          "评测基准"
+        ]
+      },
+      "problem": "现有测试评估只检查测试能否复现参考补丁带来的失败到通过转变，无法判断测试是否接受正确补丁、拒绝错误补丁。",
+      "challenge": "仅凭 buggy 失败、reference patch 通过的单参考判据，会掩盖测试套件对补丁区分能力的严重缺陷。",
+      "solution": "构建含 619 个任务、82,579 个候选补丁的基准，在 buggy 与 patched 代码库回放测试套件，计算 JVR，并用验证分数筛选与扩展 SFT 演示数据。",
+      "results": "最佳配置 JVR 仅 9.21%，却在 59.29% 任务上复现参考转变；该训练配方令 JVR 约增至三倍，并在三个 SWE-bench 基准上提升修复表现。",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.18004v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.17895v1",
+      "arxiv_id": "2610.17895",
+      "title": "Interaction-as-a-Judge",
+      "title_zh": "交互即评判（Interaction-as-a-Judge）",
+      "tags": {
+        "architecture": "Computer-use agent evaluator",
+        "application": "交互式应用评测与生成",
+        "innovation": "用 computer-use agent 直接操作应用评判，并作为生成反馈与奖励。",
+        "training": [
+          "评测基准",
+          "RL"
+        ]
+      },
+      "problem": "自动 LLM 评测偏重代码分析与单元测试，与人类交互评估不匹配，易漏掉用户一眼可见的失败。",
+      "challenge": "仅分析代码或跑单元测试无法覆盖运行时交互行为，代码正确不等于用户可用。",
+      "solution": "收集人类偏好+agent轨迹与需求标注数据；让 computer-use agent 操作应用，预测人类偏好并验证需求，推理时修复缺陷，训练时作奖励信号。",
+      "results": "偏好预测65.6%→69.1%，需求验证77.0%→81.6%；交互修复75.5%对55.4%。",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.17895v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.17861v1",
+      "arxiv_id": "2610.17861",
+      "title": "State-Aware Generation of Deployable Websites from Visual Prototypes and Requirements",
+      "title_zh": "从视觉原型与需求出发的状态感知可部署网站生成",
+      "tags": {
+        "architecture": "Multimodal LLM + state graph",
+        "application": "原型到可部署网站生成",
+        "innovation": "Project State Graph 用类型化链接绑定视觉元素、文件、工作流、依赖与渲染证据",
+        "training": [
+          "免训练"
+        ]
+      },
+      "problem": "从视觉原型和文本需求生成可部署网站时，生成、验证、更新各阶段的原型与项目对应关系无法保持一致",
+      "challenge": "现有 UI-to-code 方法与编码智能体分开处理布局重建、交互实现和项目编辑，导致文件、依赖与渲染证据跨阶段失去对应",
+      "solution": "构建 Project State Graph，以类型化链接连接四类状态节点，支持原型锚定、图引导生成和渲染证据引导的作用域更新，失败检查只改动受影响文件并保留范围外文件",
+      "results": "Vision2Web 五个基础模型上 Interactive Frontend 平均比最强基线高 26.1 分，Full-Stack Website 高 22.6 分，验证后状态漂移减少；50 任务标注图边级 F1 95.6%",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.17861v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.17633v1",
+      "arxiv_id": "2610.17633",
+      "title": "Executable Prefix Values for Locating Agent Failures",
+      "title_zh": "用于定位 Agent 失败的可执行前缀值",
+      "tags": {
+        "architecture": "LLM agent + replay harness",
+        "application": "LLM Agent 失败定位",
+        "innovation": "从重建中间状态重启 agent，估计每步前缀成功概率 V(h_t)，给出认证的不可逆失败点 PNR",
+        "training": [
+          "免训练",
+          "评测基准"
+        ]
+      },
+      "problem": "LLM agent 调试把人工或 LLM 评委标注的“首个错误”当作失败位置，需判断这些标签指向原因还是症状",
+      "challenge": "不同评委谱系仅 21/57 步一致，最新评委在成功轨迹中仍报错 8/10 和 10/10；66% 标签处成功概率不下降",
+      "solution": "从失败轨迹重建中间状态重启 agent，估计每步成功概率曲线 V(h_t)，并用认证的不可逆点 PNR 定位决定性步骤",
+      "results": "SWE-bench Verified 150 任务：仅 7/188 答案指出决定性步骤；测量重启点使成功率 0.44→0.57，评委标签重启为负收益",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.17633v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.17616v1",
+      "arxiv_id": "2610.17616",
+      "title": "StateHarness: Maintaining Evolving Project State for Long-Horizon Coding Agents",
+      "title_zh": "StateHarness：为长时程编码智能体维护演化中的项目状态",
+      "tags": {
+        "architecture": "LLM agent + runtime harness",
+        "application": "长时程仓库级编码",
+        "innovation": "运行时维护项目状态记录（问题、假设、发现、未完成项），并触发依赖搜索与诊断会话",
+        "training": [
+          "免训练"
+        ]
+      },
+      "problem": "长时程编码中，问题、发现、受影响构件与未完成工作散落在不断增长的交互历史里，局部修改与后续后果脱节",
+      "challenge": "交互历史膨胀导致信息分散，智能体难以追踪变更的下游影响与剩余工作，进度难以延续",
+      "solution": "工作智能体记录问题、假设、发现、仓库关系与未完成项；运行时提示更新记录并检索受影响的调用方/测试/文档，维护紧凑工作简报；信号累积后开诊断会话复查历史",
+      "results": "RefactorBench 29.4→35.3%，LHTB 0.427→0.576，ChainSWE 35.1→39.5%",
+      "future": "通过→通过回归增加，存在执行开销与一致性回归的权衡",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.17616v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.17528v1",
+      "arxiv_id": "2610.17528",
+      "title": "ATTUNE: Agentic Throughput Tuning for LLM Training",
+      "title_zh": "ATTUNE：面向 LLM 训练的智能体吞吐调优",
+      "tags": {
+        "architecture": "LLM coding agent",
+        "application": "LLM 训练吞吐调优",
+        "innovation": "单编码智能体每次只改一个旋钮，靠历史经验目录诊断，并以正确性门控把关交付",
+        "training": [
+          "免训练"
+        ]
+      },
+      "problem": "训练配方需人工为单个模型、集群和工作负载反复调优，且配置能跑完却会静默改变训练语义",
+      "challenge": "自动调优器只在固定旋钮空间搜索且仅检查作业能否运行，无法识别悄悄改变训练的配置",
+      "solution": "单个编码智能体在用户设定的 GPU 小时预算内无人值守诊断每次运行、逐一改动杠杆，依据过往 campaign 经验目录，并通过配置检查与损失曲线收敛检查的正确性门控后才交付配方",
+      "results": "64-128 GPU 上 Llama-3.1-405B 吞吐 +6.7%（最佳 11.9%），GLM-4.5 +33.9%（54.7%），优于 OptiCo、贝叶斯优化与随机搜索",
+      "future": "正确性门控仍漏检 24 个故障运行中的 8 个，仅勉强影响 20 步损失的配置无法被捕获",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.17528v1",
+      "code_urls": [
+        "https://github.com/amazon-science/attune"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.17471v1",
+      "arxiv_id": "2610.17471",
+      "title": "Scaling Inference-Time Compute with Teams of Coding Agents",
+      "title_zh": "用编码智能体团队扩展推理时计算",
+      "tags": {
+        "architecture": "Multi-agent coding harness",
+        "application": "编码任务多智能体协作",
+        "innovation": "将团队设计建模为算力分配，逐项变动委派阶段与成员构成刻画奖励-成本Pareto前沿",
+        "training": [
+          "免训练"
+        ]
+      },
+      "problem": "多智能体并行协作易产生重复工作、协调失败与高成本，额外推理算力投到哪个阶段才能逼近奖励-成本Pareto前沿",
+      "challenge": "更多智能体带来重复工作、协调失败和更高成本，缺乏对委派阶段、团队模型构成与worker数量的算力分配依据",
+      "solution": "从零搭建最小多智能体harness，在ProgramBench上逐一控制变量：lead委派所处阶段（规划/实现/验证）、团队成员模型、worker数量，从而追踪Pareto前沿",
+      "results": "ProgramBench上团队优于单智能体但成本高3–7倍；异构17智能体以低70%成本落后强同构5智能体仅1.4分；仅委派规划即可以半成本持平全委派奖励；廉价规划者以13.9%额外成本取得47.5%奖励增益",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.17471v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.17374v1",
+      "arxiv_id": "2610.17374",
+      "title": "VulnBump: A Benchmark for Fixing Vulnerable Dependencies in Real Projects While Keeping the Build and Tests Green",
+      "title_zh": "VulnBump：在真实项目中修复脆弱依赖并保持构建与测试通过的基准",
+      "tags": {
+        "architecture": "LLM agent + SCA tool harness",
+        "application": "依赖漏洞升级修复",
+        "innovation": "首个跨 6 个包管理器真实仓库的漏洞依赖升级基准，需依赖解析、重扫、构建、测试四项独立验证同时通过",
+        "training": [
+          "评测基准",
+          "免训练"
+        ]
+      },
+      "problem": "SCA 工具报出大量有已知修复版本的可修复漏洞但仅约 10% 被修复，缺少在真实可运行项目中独立外部验证 agent 依赖升级的基准",
+      "challenge": "既有评测未同时验证依赖解析、重扫、构建与测试，agent 可保留易受攻击版本而看似成功",
+      "solution": "构建 307 个升级任务、覆盖 43 个仓库与 6 个包管理器，匹配 Snyk 生产漏洞分布；通过需在全新容器中依赖可解析、重扫显示目标漏洞已修、项目可构建且原有测试全通过",
+      "results": "基线 46.9%，Evo 90.2%，Claude Code+Snyk 77.5%，无辅助 59.6%；Snyk 指引使 Claude Code 提升 17.9 个百分点",
+      "future": "大型框架迁移对所有 harness 仍很困难",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.17374v1",
+      "code_urls": [
+        "https://github.com/snyk-labs/snyk-vulnbump"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.17331v1",
+      "arxiv_id": "2610.17331",
+      "title": "Do Theorem Provers Need Theorem-Proving Agents? mini-Lean-agent: A Coding-Agent Baseline for Lean",
+      "title_zh": "定理证明器需要定理证明智能体吗？mini-Lean-agent：Lean 的编码智能体基线",
+      "tags": {
+        "architecture": "LLM + bash tool harness",
+        "application": "Lean 定理证明",
+        "innovation": "仅暴露 bash 一个工具，模型自行检索、编辑与调用 Lean，独立可信评估器验证最终产物",
+        "training": [
+          "免训练"
+        ]
+      },
+      "problem": "现有定理证明智能体依赖专门定制的工具链，难以分辨性能提升来自基座模型、工具框架还是特定工具",
+      "challenge": "专用工具与框架耦合，缺乏统一基线，无法公平归因各组件对基准成绩的贡献",
+      "solution": "构建极简 Lean 智能体，唯一模型可见工具为 bash，用于查看编辑仓库、检索本地库、调用 Lean 并管理工作中间态，由独立可信评估器校验结果",
+      "results": "Putnam 2025 上，Gemini 3.8 Flash 基座解出 7/12（每题 $2 上限），优于 AxProverBase 的 4/12；Astra 基座解出 12/12，平均每题 $1.28",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.17331v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.18808v1",
+      "arxiv_id": "2610.18808",
+      "title": "Optimizing Team Behavior via Extremum-seeking Control in Multi-agent Reinforcement Learning",
+      "title_zh": "通过极值寻优控制在多智能体强化学习中优化团队行为",
+      "tags": {
+        "architecture": "Two-timescale MARL control framework",
+        "application": "合作多智能体任务",
+        "innovation": "用极值寻优慢时间尺度在线调整多样性目标，快时间尺度DiCo调节多样性，无需模型或梯度",
+        "training": [
+          "RL"
+        ]
+      },
+      "problem": "合作MARL中行为多样性水平高度依赖任务，手动设定或网格搜索多样性目标成本高，且难以在线适配",
+      "challenge": "多样性适宜水平随任务与情境变化，现有方法需任务特定手动选目标或网格搜索，缺少多样性-性能景观梯度",
+      "solution": "ADiCo采用双时间尺度：快尺度DiCo将系统多样性调节至目标值；慢尺度ESC仅凭平均回合回报在线调整该目标，无需显式模型或解析梯度",
+      "results": "两个合作MARL任务六种配置上，维持任务适配多样性，平均性能匹配或超过最佳网格搜索DiCo与无约束DiCo",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.18808v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.18807v1",
+      "arxiv_id": "2610.18807",
+      "title": "SkillScaffold: Scaffolding Agentic Reinforcement Learning with Policy-Adaptive Skill Credit Assignment and Selective Injection",
+      "title_zh": "SkillScaffold：以策略自适应技能信用分配与选择性注入为 Agentic RL 搭建脚手架",
+      "tags": {
+        "architecture": "LLM agent + skill scaffold",
+        "application": "多轮交互式智能体任务",
+        "innovation": "用结果验证轨迹做结果感知似然比较来估计技能效用，据此选择注入或弃用技能",
+        "training": [
+          "RL",
+          "蒸馏"
+        ]
+      },
+      "problem": "技能注入是否有效缺乏低成本评估，技能收益随候选技能与当前策略在各查询上的能力而异",
+      "challenge": "基于 rollout 的效用估计成本高且在采样有限时不稳定，现有方法默认注入有益或依赖间接反馈",
+      "solution": "复用结果验证轨迹生成候选技能，用结果感知似然比较估效用，据此决定是否注入及注入哪个；无候选有益时保留无技能执行，联合训练使生成器适配演化的执行器",
+      "results": "在 ALFWorld、WebShop、ScienceWorld、τ²-Bench 上优于强 agentic-RL 与技能型 RL 基线，覆盖短程与长程任务；消融支持效用选择与弃用机制的作用",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.18807v1",
+      "code_urls": [
+        "https://github.com/Vaidurya00/SkillScaffold"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.18683v1",
+      "arxiv_id": "2610.18683",
+      "title": "ProAS: A Progress-Aware Advantage Shaping Framework for Multi-Turn Agentic Reinforcement Learning",
+      "title_zh": "ProAS：面向多轮智能体强化学习的进度感知优势塑形框架",
+      "tags": {
+        "architecture": "Critic-free RL LLM agent",
+        "application": "多轮智能体决策",
+        "innovation": "用动态演化的 Agentic Reference Graph 做细粒度信用分配，含 MUI 掩码与 APR 惩罚重分配",
+        "training": [
+          "RL"
+        ]
+      },
+      "problem": "无 critic 的 GRPO 类算法把轨迹级优势均分给所有动作，无法区分同一轨迹内有效与无效动作的信用。",
+      "challenge": "均匀信用分配会强化优选轨迹中的结构性无效动作，又忽略非优选轨迹中早期关键偏离的级联影响；引入 critic 则增加额外开销。",
+      "solution": "构建动态演化的 Agentic Reference Graph (ARG)，用 Masking Unreasonable Incentives 屏蔽结构无效动作的激励，用 Asymmetric Penalty Redistribution 把惩罚重分配给早期关键偏离动作。",
+      "results": "ALFWorld 上 Qwen2.5-1.5B/7B 成功率 91.9%/94.3%，WebShop 66.7%/70.8%，均超 group-based 基线；收敛加速最高 2.44×；对不完美或蒸馏 ARG 鲁棒。",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.18683v1",
+      "code_urls": [
+        "https://github.com/LINs-lab/ProAS"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.17953v1",
+      "arxiv_id": "2610.17953",
+      "title": "Agent-Reflex: Teaching Language Agents to Act Reflectively",
+      "title_zh": "Agent-Reflex：教语言智能体进行反思式行动",
+      "tags": {
+        "architecture": "LLM agent training framework",
+        "application": "长程工具调用与纠错",
+        "innovation": "注入工具反馈扰动挖掘成功-失败配对，提炼可复用反思元技能并转为监督",
+        "training": [
+          "SFT",
+          "RL"
+        ]
+      },
+      "problem": "现有方法对智能体反思学习与失败恢复监督不足，噪声工具反馈和用户干预下难以主动反思",
+      "challenge": "训练缺乏对反思行为的显式监督信号，环境扩展方法难覆盖噪声反馈与用户纠正场景",
+      "solution": "三阶段：RSD 注入工具反馈扰动并挖掘成功-失败配对提炼反思元技能；ReSFT 将其转为自我反思、技能恢复与用户纠正监督；ORPO 结合噪声交互 RL 与反思引导 on-policy 蒸馏",
+      "results": "基于 Qwen3-8B，五个长程工具使用基准平均 58.6，AgentNoiseBench 29.1，超过环境扩展与反思基线",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.17953v1",
+      "code_urls": [
+        "https://github.com/RUC-NLPIR/Agent-Reflex"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.17409v1",
+      "arxiv_id": "2610.17409",
+      "title": "Position: Beyond Training Time, Test-Time Coordination is Essential for Cooperative MARL",
+      "title_zh": "立场：超越训练时，测试时协调对协作式 MARL 至关重要",
+      "tags": {
+        "architecture": "CTME multi-agent RL setting",
+        "application": "仓库机器人与云资源调度",
+        "innovation": "提出 CTME 设置：协调者在测试时观测全局状态并发出高层信号，CTDE 为其极限情形",
+        "training": [
+          "其他"
+        ]
+      },
+      "problem": "CTDE 仅在训练时用全局信息，执行期无协调通道，团队在条件变化后无法重新对齐",
+      "challenge": "缺失测试时信息通道是结构性的，而非算法性的，增加训练无法补出执行期不存在的通道",
+      "solution": "将间歇性测试时协调形式化为 CTME：明确团队级信息、高层信号与训练后更新频率，智能体仍本地行动，CTDE 作为特例被包含",
+      "results": "定性结论：CTDE 是 CTME 的极限情形；在具备全局遥测且需从漂移中恢复时，移除测试时通道是错误的默认选择",
+      "future": "CTME 设计空间仍未被充分探索",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.17409v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.16592v1",
+      "arxiv_id": "2610.16592",
+      "title": "Prorsa: Unleashing the Potential of Prefill-Decode Disaggregation in Agentic Reinforcement Learning",
+      "title_zh": "Prorsa：释放 Agentic 强化学习中 Prefill-Decode 分离的潜力",
+      "tags": {
+        "architecture": "PD-disaggregated agentic RL framework",
+        "application": "多轮 Agentic 任务 RL 训练",
+        "innovation": "按轨迹生命周期预测短时 prefill/decode 需求，动态分配 worker 并切换 rollout 引擎角色",
+        "training": [
+          "RL"
+        ]
+      },
+      "problem": "Agentic RL rollout 中多轮交互反复引入 prefill 请求，prefill 与 decode 负载全程共存，固定 PD 分配难以持续获益",
+      "challenge": "工作负载组成随任务与时间变化，固定的 prefill-decode 资源划分无法维持分离带来的效率收益",
+      "solution": "观测每条轨迹生命周期以预测短时 prefill/decode 需求，用预测指导 worker 分配决策并触发 rollout 引擎角色切换，使容量匹配预期负载",
+      "results": "同步与异步 agentic RL 设置下端到端 rollout 相比 prefill-decode colocation 加速 1.11x-4.05x",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.16592v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.16224v1",
+      "arxiv_id": "2610.16224",
+      "title": "Look Back to Move Forward: Learning to Revisit for Agentic Compositional Image Generation",
+      "title_zh": "回顾以向前：为智能体式组合图像生成学习回溯",
+      "tags": {
+        "architecture": "Agentic T2I generation framework",
+        "application": "组合式文生图",
+        "innovation": "把动作选择扩展为继续状态与动作的联合选择，并用 NACA 按动作贡献重分配正优势",
+        "training": [
+          "SFT",
+          "RL"
+        ]
+      },
+      "problem": "复杂组合式文生图仍困难，现有智能体方法靠迭代生成与编辑，但把继续优化的起点固定为最新图像。",
+      "challenge": "迭代编辑并非单调改进，最新图像可能已退化，却仍被当作继续细化的起点。",
+      "solution": "智能体利用交互历史同时选择待编辑的图像候选与编辑指令，联合决定从何处继续和如何细化；SFT 后接智能体 RL，NACA 依据每个动作对降低剩余目标的贡献重分配正优势。",
+      "results": "GenEval2 上 GM 达 84.3（Qwen-Image-2512）和 74.4（Z-Image-Turbo），比同生成器最强基线高 12.7 和 10.9 分；并在 GenEval、GenEval++、GenEval2 上取得 SOTA。",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.16224v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.16027v1",
+      "arxiv_id": "2610.16027",
+      "title": "Of Errors and Echoes: Responsibility-Aware Credit Assignment for Tool-Use Agents",
+      "title_zh": "关于错误与回声：面向工具使用智能体的责任感知信用分配",
+      "tags": {
+        "architecture": "Tool-use agent + frozen judge",
+        "application": "工具使用智能体训练",
+        "innovation": "用冻结 judge 区分新错误、继承后果、漏纠正与成功纠正，共享下游后果只计一次，修复奖励由来源决策出资",
+        "training": [
+          "RL"
+        ]
+      },
+      "problem": "步级反馈下细粒度信用分配仍困难：观察到的错误可能继承自更早决策，多个责任决策又会共享同一下游后果或参与后续恢复",
+      "challenge": "现有方法无法区分新引入错误与继承后果，也无法在多个责任决策间分摊共享后果，且未约束自我引发错误的修复行为",
+      "solution": "ECHO 将责任识别与信用分配解耦：冻结 judge 结合回溯轨迹分析与策略可见前缀的决策时评估，对共享后果去重计数，并通过 source-funded recovery 限制修复奖励，输出有界动作级监督与终局监督",
+      "results": "在 4B 与 8B 两个规模、六个工具使用基准上一致优于对比基线，每个规模下在五个基准取得最高分（摘要未给具体数值）",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.16027v1",
+      "code_urls": [
+        "https://github.com/xid32/ECHO"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.15969v1",
+      "arxiv_id": "2610.15969",
+      "title": "PopGen: Generating Semantically Diverse Populations for Zero-Shot Coordination",
+      "title_zh": "PopGen：为 零样本协作生成语义多样化的种群",
+      "tags": {
+        "architecture": "LLM-generated code policy population",
+        "application": "多智能体零样本协作",
+        "innovation": "用 LLM 生成行为文本描述并转译为可执行代码策略，构建语义多样化种群",
+        "training": [
+          "RL",
+          "免训练"
+        ]
+      },
+      "problem": "多智能体强化学习中，协作方需在训练时接触策略多样的伙伴，才能在测试时与未见伙伴稳健协作。",
+      "challenge": "现有方法用轨迹级代理度量多样性，同一策略的不同轨迹会被误判为多样，无法反映策略层面的行为差异。",
+      "solution": "PopGen 先用 LLM 生成一组智能体行为的文本描述，再将每条描述转译为可在环境中执行的代码策略，作为训练伙伴种群。",
+      "results": "在四个协作环境中，对 PopGen 种群训练的协作方零样本协作优于 population-play 基线；语义多样性随种群规模增长并提升最差情况性能。",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.15969v1",
+      "code_urls": [
+        "https://github.com/labicon/PopGen"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.15772v1",
+      "arxiv_id": "2610.15772",
+      "title": "RSIPO: Recursive Self-Improving Policy Optimization for Agentic Reinforcement Learning via Skill-Policy Co-Evolution",
+      "title_zh": "RSIPO：通过技能-策略协同演化的递归自我改进策略优化，用于智能体强化学习",
+      "tags": {
+        "architecture": "Agentic RL LLM with skills",
+        "application": "具身交互与搜索智能体",
+        "innovation": "策略从轨迹自抽技能并回放优化，用经验贝叶斯收缩校准对教师分数的信任",
+        "training": [
+          "RLVR",
+          "蒸馏"
+        ]
+      },
+      "problem": "长时程智能体 RL 中信用分配困难；现有方法忽视智能体技能的在策略演化与教师监督的可靠性",
+      "challenge": "现有 RLVR 加在策略自蒸馏方法依赖特权上下文教师打分，技能不随训练演化，教师指导并非始终可靠",
+      "solution": "策略自身从已完成轨迹提取技能，并通过轨迹回放显式优化技能生成能力，同时用经验贝叶斯收缩动态校准学生对教师分数的信任度",
+      "results": "Qwen2.5-7B 在 ALFWorld 平均成功率 98.6%，较次优基线提升 2.5%，较标准 GRPO 提升 17.4%",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.15772v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.15246v1",
+      "arxiv_id": "2610.15246",
+      "title": "ObsSpec: Accelerating Agentic Reinforcement Learning with Observation Speculation",
+      "title_zh": "ObsSpec：用观测推测加速智能体强化学习",
+      "tags": {
+        "architecture": "LLM agent + world model",
+        "application": "工具调用智能体 RL",
+        "innovation": "用小世界模型预测工具输出，仅当预测与实际观测完全一致才保留推测结果",
+        "training": [
+          "RL",
+          "其他"
+        ]
+      },
+      "problem": "工具调用智能体在 RL 中生成与工具执行严格串行，需大批量多轮 rollout，等待工具返回造成高开销",
+      "challenge": "串行等待使 rollout 吞吐低；推测加速必须保证 rollout 无损，且世界模型需随策略持续更新而不失准",
+      "solution": "用小世界模型在环境执行期间预测工具输出，使策略提前开始下一轮生成；仅当预测与实际观测精确匹配时保留推测工作，并通过协同训练同步更新世界模型",
+      "results": "终端任务上 0.6B 世界模型预测 66.4% 精确匹配、约快 16 倍；8B 与 32B 策略延迟分别降低 9.3% 和 14.2%",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.15246v1",
+      "code_urls": [
+        "https://github.com/kylemontgomery1/verl-recipe/tree/obsspec/obsspec"
+      ]
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.14883v1",
+      "arxiv_id": "2610.14883",
+      "title": "MARL-BattleGrounds: A Novel JAX-native Benchmark for Heterogeneous and Competitive Multi-agent RL",
+      "title_zh": "MARL-BattleGrounds：面向异构与竞争多智能体 RL 的 JAX 原生基准",
+      "tags": {
+        "architecture": "JAX-native MARL benchmark environment",
+        "application": "异构多智能体对抗评测",
+        "innovation": "5 种异构职业的同时回合制 5v5，52 张地图含 12 图课程，并用月度 Elo 轮转赛等算力重训排名",
+        "training": [
+          "评测基准"
+        ]
+      },
+      "problem": "多智能体 RL 基准两极分化：或简单到胜负只取决于单位微操，或如 Dota 2 般丰富但算力昂贵，缺少中间档",
+      "challenge": "缺少兼具异构角色协同、泛化能力评测与可持续公平排名机制的中间规模基准",
+      "solution": "JAX 原生 5v5 同时回合制环境，5 种职业有基础/被动/终极技能，52 张手工地图含 12 图课程；提供 8 个残局泛化场景与月度 Elo 轮转赛两种评测模式",
+      "results": "单张 RTX 5090、1024 并行对局下模拟器达 50,000 个 5v5 步/秒；每局记录 28 主题共 11,192 项指标；含 3 个脚本对手与 6 个深度 MARL 基线，并用该 API 评测 Qwen3.5-9B",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.14883v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.14405v1",
+      "arxiv_id": "2610.14405",
+      "title": "SPROUT: Scaling Agentic Reinforcement Learning for Long-Horizon Software Engineering",
+      "title_zh": "SPROUT：面向长时程软件工程的智能体强化学习扩展",
+      "tags": {
+        "architecture": "Agentic RL rollout framework",
+        "application": "长时程软件工程",
+        "innovation": "每轮助手回复后同时检查点文件系统与智能体上下文，支持从中途状态恢复与分支",
+        "training": [
+          "RL"
+        ]
+      },
+      "problem": "长时程软件工程任务中成功轨迹稀少，从初始状态反复重启效率低，仅重置上下文会丢失依赖安装等状态变化",
+      "challenge": "细小错误即导致整条 rollout 失效，重启成本高且只重置上下文无法还原执行环境状态",
+      "solution": "基于快照的基础设施在每轮对话后同时保存文件系统与智能体上下文，由验证器引导的回溯策略决定从中途何处恢复及如何继续",
+      "results": "pass@k 最高提升 23.6% 且仅用 32--52% token；Qwen3.8-27B RL 训练在三个长时程基准上比 GRPO 高 13.9 分，每步训练时间减少 39.5%",
+      "future": "",
+      "groups": [
+        "Agentic RL"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.14405v1",
+      "code_urls": []
+    }
+  ]
 }
