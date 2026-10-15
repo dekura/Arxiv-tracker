@@ -4109,6 +4109,25 @@
   },
   "saved": "2026-10-15"
  },
+ "2610.16859@p1": {
+  "data": {
+   "challenge": "功能正确但违反工程约束的补丁仍不可接受，而这类约束隐含在真实交互中，难以采集、分层与自动判定",
+   "future": "",
+   "problem": "现有评测只看补丁功能是否正确，忽略开发者对修改范围、流程顺序、验证、工具使用和报告的工程约束",
+   "results": "19种配置、358任务上，最强Claude Opus 4.8+Cline达70.1%原子合规、63.7%关系合规，仅19.0%任务通过全项FCCR；加约束后完成率平均+0.7pp",
+   "solution": "从真实交互提炼10类78叶子约束分类法，自动生成任务相关原子约束并组合成带类型的AND/THEN/PRIORITY关系，用规则与LLM评审同时检查diff和执行轨迹",
+   "tags": {
+    "application": "仓库级智能体编码评测",
+    "architecture": "LLM agent + trajectory evaluator",
+    "innovation": "将真实开发者约束实例化为AND/THEN/PRIORITY层级关系，同时校验代码diff与执行轨迹",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "ANCHOR：评估仓库级智能体编码中的自然约束层级与顺序"
+  },
+  "saved": "2026-10-16"
+ },
  "2610.17331@p1": {
   "data": {
    "challenge": "专用工具与框架耦合，缺乏统一基线，无法公平归因各组件对基准成绩的贡献",
@@ -4496,5 +4515,355 @@
    "title_zh": "DoubtLess：免训练对比解码实现高效推理"
   },
   "saved": "2026-10-15"
+ },
+ "2610.19397@p1": {
+  "data": {
+   "challenge": "现有 on-policy 蒸馏虽在策略诱导状态上引入教师指导，但不直接把 oracle 控制的未来当作训练轨迹，无法监督未触及的深层行为。",
+   "future": "",
+   "problem": "长时程智能体 RL 只能从当前策略实际访问到的未来获得监督，未遇到的状态与动作缺乏信用分配信号。",
+   "results": "ALFWorld 上学习完整可执行续演显著优于仅监督根 oracle 动作，策略可达性加权进一步提升分布外表现；在 ALFWorld 与 WebShop 上用 Qwen2.5-1.5B/7B-Instruct 评测。",
+   "solution": "回放策略真实到达的状态，由训练专用 oracle 继续与环境交互生成观测与动作；以冻结行为策略对前序 oracle 动作的兼容度加权每步 oracle 损失，与基础 RL 估计器分开优化，推理不用 oracle。",
+   "tags": {
+    "application": "交互式智能体任务",
+    "architecture": "LLM + oracle continuation",
+    "innovation": "用训练期 oracle 在真实环境中续演当前策略到达的状态，并按策略可达性加权 oracle 步骤。",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "SERO：从可执行 Oracle 续演中学习长时程智能体强化学习"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.19528@p1": {
+  "data": {
+   "challenge": "何时检索、检索什么难以判断；外部证据多为辅助而非直接译文，语义相似度与下游翻译质量不一致",
+   "future": "",
+   "problem": "现有检索增强翻译对所有输入统一套用预定义检索策略，忽视了许多输入仅靠 LLM 参数知识已足够这一事实",
+   "results": "在习语、知识密集型与文档级翻译（离线/在线检索）上一致优于从不检索与总是检索基线；质量对齐检索器训练在相似度检索不足时带来额外增益",
+   "solution": "SRAT 用智能体强化学习优化直接翻译或检索、检索内容与证据融合，奖励为最终翻译质量；检索器用 joint Plackett-Luce 优化与翻译质量对比训练对齐下游质量",
+   "tags": {
+    "application": "选择性检索增强机器翻译",
+    "architecture": "Agentic RL LLM + retriever",
+    "innovation": "把检索视为可学习的翻译动作，以最终翻译质量作奖励端到端优化检索时机、检索内容与融合方式",
+    "training": [
+     "RL",
+     "偏好优化"
+    ]
+   },
+   "title_zh": "检索有用的内容，且仅在有用时检索：面向选择性检索增强机器翻译的智能体强化学习"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.19725@p1": {
+  "data": {
+   "challenge": "定制流水线依赖大量人工专家和精力，直接推理无法处理领域知识与系统性预测误差",
+   "future": "",
+   "problem": "时间序列基础模型零样本预测强，但实际部署仍需任务特定的输入输出设计，直接推理会忽略领域知识和重复出现的预测误差",
+   "results": "在 TIME 与 FEV-bench 的 198 个任务上，六项点预测与概率预测指标均超过所有提交；受控实验证明反馈引导修订优于非迭代搜索",
+   "solution": "编码智能体将任务描述转为可执行流水线修改，在历史预测窗口上测试每次修订，用观测误差指导后续修订；部署时自适应选择器按相似条件下已完成预测选流水线",
+   "tags": {
+    "application": "时间序列预测部署",
+    "architecture": "LLM coding agent + frozen forecasters",
+    "innovation": "用历史预测误差反馈驱动编码智能体迭代修改流水线，并按相似条件自适应选择",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "TIMERSI：面向时间序列基础模型的自改进智能体部署"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.19789@p1": {
+  "data": {
+   "challenge": "实验条件不一致使报告收益来源不明，各方法的实际优劣及稳定性、成本权衡无法判断",
+   "future": "指向可靠、成本有效的智能体训练改进方向",
+   "problem": "现有自蒸馏智能体RL评测复用不同条件下的已发表基线分数，缺少同期方法直接对比，且忽视训练稳定性与计算成本",
+   "results": "相对GRPO增益范围有限、无方法全面胜出；强最终性能可能掩盖训练不稳定；额外训练成本不必然提升性能",
+   "solution": "在ALFWorld、ScienceWorld、Search-QA、WebShop四个基准、三种模型规模上完成132次训练（12124.4 H800 GPU小时），统一对比十种自蒸馏方法与GRPO，并考察训练进程、稳定性与成本",
+   "tags": {
+    "application": "智能体决策任务",
+    "architecture": "LLM agent + RL training harness",
+    "innovation": "统一设置下对比十种自蒸馏方法与GRPO，多rollout种子重复评测并计量算力成本",
+    "training": [
+     "评测基准",
+     "RL"
+    ]
+   },
+   "title_zh": "更多方法，更好的智能体？对智能体强化学习中自蒸馏的现实检验"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.19810@p1": {
+  "data": {
+   "challenge": "开源工具可能已进入预训练语料，难以区分真实复现与记忆化，且各工具复杂度差异大",
+   "future": "工具开发者公开信息需更谨慎，复现可能损害商业价值或使双用途受控访问策略失效",
+   "problem": "编码智能体在获得有限工具描述时，能否重建已发表的生物 AI 工具，其复现能力边界尚不清楚",
+   "results": "ProteinMPNN、RFdiffusion3 与一闭源分子设计工具中，部分工具复现较好，高度复杂工具能力有限；存在中等记忆化证据且随智能体变化",
+   "solution": "设固定时间与算力预算、无网络安全沙箱，提供训练数据与有限工具信息；用留出数据上的工具专属指标评分，并加入记忆化检查流程",
+   "tags": {
+    "application": "生物 AI 工具复现",
+    "architecture": "Sandboxed coding agent LLM",
+    "innovation": "在无网络沙箱中仅凭有限描述让编码智能体设计、实现并训练生物 AI 工具，并设计记忆化检测方法",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "ReproBAIT：编码智能体能否构建自己的生物 AI 工具？"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.19822@p1": {
+  "data": {
+   "challenge": "整模型换出使权重传输与计算串行化，且无 host-backed KV 恢复，切换时丢弃会话状态",
+   "future": "",
+   "problem": "Agent 由多专家模型编排，其工作集超出 GPU 显存，而现有服务系统默认模型工作集能放入显存",
+   "results": "会话完成时间较最强整模型换出基线降 21.7%；崩溃场景基线均失败而本系统可完成（46 倍差距）；SWE-bench、tau-bench、OSWorld 轨迹最高降 49%，SLO 达成率由 2.8–24.5% 升至 76.8–100%",
+   "solution": "从调用者输出流解析意图信号在生成中触发预取；部分 k* 驻留把切换降为增量层加载；抢占式传输调度器以保底带宽保护活跃会话 KV；carve-out 动态调整权重/KV 分配",
+   "tags": {
+    "application": "多模型 Agent 推理服务",
+    "architecture": "Multi-model agent serving system",
+    "innovation": "把权重分片与 KV 块视为统一内存预算下竞争的驻留对象，按调用意图预取",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "JointServe：在内存受限 GPU 上服务多模型 Agent"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.19843@p1": {
+  "data": {
+   "challenge": "单体循环把分解、执行、验证耦合在同一轨迹，缺乏可复用的技能抽象与跨任务积累机制。",
+   "future": "组件级因果性依赖任务与模型，尚需进一步验证。",
+   "problem": "长时程任务中单体工具调用循环要求单个智能体在一条轨迹内完成分解、执行与验证，难以胜任。",
+   "results": "SWE-bench Verified 500 题上 Qwen3.5-35B-A3B 冻结模型单次评测解决率 58.6%；150 题子集上 mini-SWE-agent 49.3%、Terminus 2 57.3%、LAGO 60.3%；消融显示无分解少 4 题、乱序复用少 2 …",
+   "solution": "meta-agent 从持久选项库检索或新建专用智能体选项，分派子任务并验证结果，将成功的新选项写入库，不更新模型权重。",
+   "tags": {
+    "application": "软件仓库级问题修复",
+    "architecture": "Meta-agent + reusable agent options",
+    "innovation": "将专用语言智能体建模为可复用的时序扩展选项，由 meta-agent 检索或生成并入库，库跨任务增长而不更新权重。",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "LAGO：具备可复用可增长选项的语言智能体"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.19920@p1": {
+  "data": {
+   "challenge": "跨骨架发现需在广阔化学空间做长程探索，而基于LLM的分子智能体通常只做局部结构修饰",
+   "future": "",
+   "problem": "现有分子设计多在已有结构邻域内做局部优化，难以发现骨架全新但保留参考分子功能特征的替代分子",
+   "results": "接入Grok-4.6与DeepSeek-Flash-V4.1后跨骨架联合成功率显著提升；MolHop-9B经智能体RL训练超过GPT-5.6-sol、Claude-5-Opus、Gemini-3.1-Pro等生成基线，且候选分子与参考分子骨架差异更大",
+   "solution": "把商业分子中约160万骨架组织为粗到细层次动作空间，智能体通过骨架导航选择新探索区域、通过分子编辑调节候选性质，并维护历史轨迹记忆支持长程搜索",
+   "tags": {
+    "application": "骨架跃迁分子设计",
+    "architecture": "LLM agent with hierarchical action space",
+    "innovation": "将约160万分子骨架组织为粗到细层次动作空间，用骨架导航加分子编辑进行跨骨架搜索",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "MolHop：基于智能体强化学习的骨架跃迁分子设计"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.19970@p1": {
+  "data": {
+   "challenge": "现有检索、微调和模型编辑方法各自只覆盖问题的一部分，无法同时兼顾知识更新、过时抑制、保留与邻近稳定性。",
+   "future": "",
+   "problem": "仓库专用LLM在代码演化后与仓库现状失配，需同时获取新知识、抑制过时知识、保留仍有效知识并保持邻近知识稳定。",
+   "results": "时间SWE-bench（10切片、255,295条QA）上更新/抑制准确率平均相对提升18%，保留准确率翻倍，邻近准确率约1.5倍；TAFT-KANT再提升3.55%/8.35%/13.00%。",
+   "solution": "从仓库变迁构造时序QA数据，用偏好优化将新增有效知识与过时知识配对，并回放变迁条件下的保留样本以维持仍有效及语义邻近知识。",
+   "tags": {
+    "application": "仓库级代码理解问答",
+    "architecture": "Repository-specialized decoder LLM",
+    "innovation": "把仓库代码变迁当作监督信号，生成时序QA并配对新增与过时知识做偏好优化",
+    "training": [
+     "SFT",
+     "偏好优化"
+    ]
+   },
+   "title_zh": "面向代码理解的时间自适应微调"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.20003@p1": {
+  "data": {
+   "challenge": "报告是监督者唯一信息渠道，未被报告的失败无法被调查；状态虽被提及却缺乏支撑细节，监督相关信息也大量缺失",
+   "future": "",
+   "problem": "监督者只能依赖编码智能体的报告判断进度与是否介入，而失败尝试、变通做法和未解决风险常从例行报告中消失",
+   "results": "仅报告读者恢复 52.0%，完整上下文 92.7%，差 40.7 点；30 个已验证修复终检点差 34.8 点；终端回滚仅 73.6%",
+   "solution": "CTXGAP 在 37 个编码任务上用 4,799 个探针询问任务状态，对比仅报告、完整终端回滚与完整上下文的恢复率，并做人工标注与上下文知情改写对照",
+   "tags": {
+    "application": "编码智能体监督",
+    "architecture": "LLM coding agent harness",
+    "innovation": "用探针量化报告与完整执行上下文之间的任务状态可恢复性差距",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "编码智能体未言明之事：度量执行与报告之间的任务状态差距"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.20068@p1": {
+  "data": {
+   "challenge": "让 LLM 直接读源码或让智能体探索来恢复架构会塞满上下文、难以扩展到多仓库，且只产出单一而非对齐的产物",
+   "future": "LLM 评委认为产物清晰且内部一致，但在正确性和抽象层次上评价较低",
+   "problem": "智能体先设计后实现，但需求与设计产物常缺失、过时或私有，训练和评测数据只偏重实现与测试",
+   "results": "重建 29 个 Commit0 库：留出通过率 33.7% vs 35.8% 无显著差异，模块 F1 从 0.54 升至 0.63",
+   "solution": "从紧凑仓库表示（静态依赖图加关键上下文文件）恢复意图、需求与架构，发布 10,764 个仓库产物，并用 Theseus 往返实验检验产物是否携带设计",
+   "tags": {
+    "application": "设计文档恢复与软件重建",
+    "architecture": "Static dependency graph + LLM agent",
+    "innovation": "以静态依赖图与关键文件为紧凑仓库表示，生成对齐的意图、需求与架构产物",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "忒修斯之代码：智能体能否从恢复的设计文档中重建软件？"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.20116@p1": {
+  "data": {
+   "challenge": "模型撰写的摘要会筛选与改写内容，轻量模型难以靠推理或搜索补回压缩中丢失的信息",
+   "future": "",
+   "problem": "长编程会话超出上下文窗口需压缩历史，摘要式压缩后智能体无法看到哪些信息被丢弃",
+   "results": "在承诺与事实回忆基准上匹配或优于 Pi 默认摘要压缩与 pi-vcc，尤其更少出现把未回忆内容自信断言为真；前沿模型上优势变小",
+   "solution": "为开源 Pi 智能体提供确定性 transparent-compact：用户与助手原文不经模型或算法改动，仅替换历史并标注信息被剥离之处",
+   "tags": {
+    "application": "轻量级编程智能体长会话",
+    "architecture": "Coding agent + deterministic compactor",
+    "innovation": "确定性压缩：人机散文逐字保留，显式标记被压缩丢弃的信息位置",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "最大化上下文压缩的透明性可提升轻量级编程智能体对事实与承诺的保持能力"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.20193@p1": {
+  "data": {
+   "challenge": "开发历史需大量重建；批量构建受共享资源约束，吞吐低、受限额度流式构建接受任务少",
+   "future": "",
+   "problem": "可执行 SWE 训练任务稀缺，开发历史因环境不完整、缺测试、产物不一致而难以直接转化为训练数据",
+   "results": "基于 10,728 仓库构建 80,874 任务、采集 118,688 轨迹；微调 Qwen3-30B-A3B-Thinking-2507 后 SWE-bench Verified 69.0%、Multilingual 49.3%、Pro 45.42%；等预算下 Verifie…",
+   "solution": "渐进验证并复用已有产物，仅在必要时定向补全缺口；弹性调度器异步协调各构建阶段，依据观测负载调整执行预算并流式执行",
+   "tags": {
+    "application": "仓库级代码智能体训练",
+    "architecture": "SWE agent + streaming data pipeline",
+    "innovation": "渐进式验证精炼任务候选并按需定向补全，弹性调度异步协调构建阶段、按负载调整预算",
+    "training": [
+     "SFT",
+     "评测基准"
+    ]
+   },
+   "title_zh": "SWE-Stream：通过渐进式构建与弹性流式执行扩展 SWE 智能体的可执行训练数据"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.20277@p1": {
+  "data": {
+   "challenge": "RNA 功能折叠同时由三级几何与二级碱基配对拓扑决定，仅以几何为目标无法刻画拓扑约束，二级与三级保真度难以兼顾",
+   "future": "",
+   "problem": "现有 3D RNA 设计把目标折叠当成纯几何目标，忽略决定功能折叠的二级碱基配对拓扑，目标建模不完整",
+   "results": "相比最强基线，三级结构性能提升 18.3%，二级结构性能提升 52.7%，并生成多样且新颖的设计",
+   "solution": "分阶段课程：先从二级结构目标学拓扑感知策略，再迁移到三级结构目标训练通用协同设计模型，最后以前沿引导微调权衡二级保真、三级保真与序列多样性",
+   "tags": {
+    "application": "RNA 逆设计",
+    "architecture": "Multi-agent RL framework",
+    "innovation": "把 RNA 逆设计构建为二级拓扑与三级几何的多目标协同设计，用分阶段课程的多智能体 RL 联合优化",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "TANGO：RNA 拓扑与几何协同设计"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.20334@p1": {
+  "data": {
+   "challenge": "现有方法缺乏结构化回溯与分支机制，无法丢弃或重访旧状态，固定遍历顺序与节点打分也限制搜索自由度。",
+   "future": "",
+   "problem": "ReAct 式智能体在单一上下文中累积观测、中间结果与失败尝试，上下文膨胀后过时和偏离路径的信息挤占容量、遮蔽证据。",
+   "results": "深度研究基准 48.8%（flat ReAct 41.5%、FoldAgent 42.8%），Pass@8 高出约 10 分；同源 9B 模型 SWE-bench Verified 解 54.9%（FoldAgent 43.3%、逐步变体 45.2%）。",
+   "solution": "把每个中间状态带摘要存为搜索树节点；Reflection 角色全局选节点并下指令，Execution 角色恢复路径执行至存新节点或提方案，Reflection 审批或改派，并用树感知 GRPO 联合训练导航、任务动作、检查点与提案评审。",
+   "tags": {
+    "application": "深度研究与代码修复",
+    "architecture": "LLM + tree-search harness",
+    "innovation": "单一策略分 Reflection/Execution 双角色，自行决定搜索树遍历，无固定顺序与节点打分",
+    "training": [
+     "RL",
+     "RLVR"
+    ]
+   },
+   "title_zh": "TreeFlex：智能体导航自己的搜索树"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.20344@p1": {
+  "data": {
+   "challenge": "harness 工程涉及跨模块功能拆分与长时程状态维护，缺乏确定性、可隔离的评测手段，固定 harness 会掩盖模型间工程能力差异。",
+   "future": "",
+   "problem": "现有基准在固定 harness 下只测下游任务成功率，无法度量长时程 harness 工程本身的模型能力。",
+   "results": "19 个前沿模型、各 3 次独立构建、328 个测试用例；GPT-6 Astra 通过率最高 53.05%，最弱 27.44%，差距约 26 个百分点；最强模型仍失败近半数用例。",
+   "solution": "Stage 1 中 build model 在固定 builder harness 内，仅凭接口契约骨架与汇总十二种前沿 harness 行为的开发文档，在隔离容器中构建完整候选 harness；Stage 2 将冻结的候选 harness 放入构建环境之外的独立容器（每用例一个），由脚本化 mock model 端到端驱动，按发往模型的请求、磁盘文件、进…",
+   "tags": {
+    "application": "编码代理 Harness 工程",
+    "architecture": "LLM + builder/candidate harness",
+    "innovation": "两阶段评测：固定 builder harness 内构建候选 harness，冻结后由脚本 mock model 在隔离容器中端到端驱动并四通道打分。",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "Doc2Harness：在编码代理长时程 Harness 工程上对 LLM 的基准测试"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.20474@p1": {
+  "data": {
+   "challenge": "现有具身 RSI 只改冻结执行器的 harness 而无法补缺失动作，或在不区分失败来源的情况下持续训练执行器",
+   "future": "",
+   "problem": "预训练 VLA 在未见长程任务中途失败，需判断该改执行器的调用方式还是改其权重",
+   "results": "50 个 RoboCasa365 任务上，未见复合任务成功率 4.6%→13.8%，三套件均提升，GPU 时间仅 28%",
+   "solution": "编码智能体先改进技能与 harness，再从保存状态重试失败子步骤做归因，仅对仍然不可靠的子步骤用自采集演示和跨任务经验微调",
+   "tags": {
+    "application": "长程具身操作任务",
+    "architecture": "Coding agent + VLA executor",
+    "innovation": "从保存状态重试失败子步骤，归因失败来源，只微调仍不可靠的子步骤",
+    "training": [
+     "SFT"
+    ]
+   },
+   "title_zh": "AdaRSI：面向具身智能体的按需递归自我改进"
+  },
+  "saved": "2026-10-16"
+ },
+ "2610.20597@p1": {
+  "data": {
+   "challenge": "value target 源自单一标量信号，observation target 长且噪声大、只前瞻一步",
+   "future": "",
+   "problem": "长时程 rollout 成本高，智能体 RL 仅用终端标量奖励，中间步监督大量浪费",
+   "results": "五个基准上聚合性能优于 GRPO；ScienceWorld 样本效率较 ECHO 高 1.9×、较 GRPO 高 2.0×",
+   "solution": "在成功 on-policy 轨迹上对每个历史监督其后续动作序列，形成时间集成被共享骨干吸收，推理仍单步无额外开销",
+   "tags": {
+    "application": "智能体长时程决策",
+    "architecture": "LLM policy backbone",
+    "innovation": "用多步动作序列预测作辅助目标，与策略共享骨干实现行动-预测协同演化",
+    "training": [
+     "RL",
+     "SFT"
+    ]
+   },
+   "title_zh": "语言智能体的行动与预测协同演化（CoPE）"
+  },
+  "saved": "2026-10-16"
  }
 }
