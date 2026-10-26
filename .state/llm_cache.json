@@ -7047,5 +7047,272 @@
    "title_zh": "同样的运气，不同的选择：面向智能体强化学习的双世界信用分配"
   },
   "saved": "2026-10-24"
+ },
+ "2610.31789@p1": {
+  "data": {
+   "challenge": "现有的 harness 需要人工维护技能与记忆，导致 agent 反复重新发现解法，可靠性低且 token 开销高",
+   "future": "",
+   "problem": "Agent harness 依赖手写技能和人工整理记忆，无法从自身执行中保留并复用知识",
+   "results": "复现任务首次成功率为 93-95%，热启动 token 降为基线 1/4；SWE-bench 由 29%/27% 升至 91%/87%",
+   "solution": "由 MCP 工具与相关技能提出方案，再由工具执行来验证，并根据结果反馈修正，然后写入能力库；遇到失败任务时转为研究，而不是放弃",
+   "tags": {
+    "application": "科学计算性能工程",
+    "architecture": "LLM agent + MCP tool harness",
+    "innovation": "预测-验证-纠错循环把每次执行交互蒸馏为可校验、可复用的能力库",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "Phronix：面向智能体的以能力为中心的学习范式"
+  },
+  "saved": "2026-10-27"
+ },
+ "2610.31809@p1": {
+  "data": {
+   "challenge": "现有方法让模型逐步决定下一步查看什么代码，反复调用模型、token 消耗大，推理耗在导航而非代码比较",
+   "future": "",
+   "problem": "缺陷报告只描述出错现象而不指明应改代码位置，仓库级定位需在庞大代码库中找目标",
+   "results": "SWE-Bench Verified（GPT-5.2）Func@1 59.3%，高于 LocAgent 53.8%、RepoSearcher 56.2%、Agentless 39.6%，token 减少 90.3%；SWE-Bench Lite Func@5 达 83.8%",
+   "solution": "先用紧凑的行为与结构描述表示候选文件符号，在单次规划中联合选择起始符号、要检查的代码关系并形成编辑假设，确定性检索按请求收集源码并据此排序",
+   "tags": {
+    "application": "仓库级故障定位",
+    "architecture": "LLM + planned retrieval",
+    "innovation": "检索前一次性规划起始符号、代码关系与编辑假设，再由确定性检索取源",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "CuraLoc：通过规划式代码检查实现仓库级故障定位"
+  },
+  "saved": "2026-10-27"
+ },
+ "2610.31810@p1": {
+  "data": {
+   "challenge": "语句本意与缺口修复只有作者清楚，自动形式化易歧义并偏离原意",
+   "future": "",
+   "problem": "证明与假设常留小缺口，且难以转成 Lean 可验证的形式化版本",
+   "results": "产出带注释修订稿、变更报告和逐声明对应 Lean 代码，pipeline 运行于 Claude Code 或 Codex",
+   "solution": "从 LaTeX 源建语句依赖图，逐句审计忠实性与歧义，再对 Mathlib 及作者工具库形式化证明；多义或需修复时暂停，向作者提交自然语言与 TeX 提案供接受、拒绝或改向",
+   "tags": {
+    "application": "形式化验证",
+    "architecture": "LLM agent + Lean verifier",
+    "innovation": "以语句依赖图逐句审计，遇歧义或修复即交由作者裁决提案",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "PaperFormalizer：作者参与循环的研究论文 Lean 自动形式化"
+  },
+  "saved": "2026-10-27"
+ },
+ "2610.31854@p1": {
+  "data": {
+   "challenge": "客户无法在长周期开发中持续反馈，且收到回答也不等于正确理解复杂需求",
+   "future": "",
+   "problem": "自由职业场景中编码智能体需将不完整的客户需求变成可交付软件，而需求澄清能力缺乏评测",
+   "results": "九个前沿模型中实现得分最高的 GPT-6 Astra 任务通过率仅67%",
+   "solution": "基于 Upwork 真实委托且单笔报酬≥4000美元构建100个任务：先进行多轮智能体对话澄清，再从同一澄清上下文分叉出代码实现与512题理解测评两条隔离运行",
+   "tags": {
+    "application": "绿地软件外包交付",
+    "architecture": "Coding agent + client agent simulation",
+    "innovation": "把需求澄清放在编码之前，并用512道理解题独立检验澄清效果",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "SWE-Clar：编码智能体能否澄清不完整的客户需求并交付绿地软件？"
+  },
+  "saved": "2026-10-27"
+ },
+ "2610.31882@p1": {
+  "data": {
+   "challenge": "EDA 工具接口复杂、仿真耗时长，版图寄生提取与 EM 验证需多轮跨工具闭环，代理难以稳定贯通全流程",
+   "future": "迈向“text-to-ASIC”式射频/毫米波硬件设计流程",
+   "problem": "射频与毫米波模块设计高度依赖专家手工迭代使用 EDA 工具，能否由 LLM 代理自动驱动工具链完成设计",
+   "results": "90 nm SiGe 240–251 GHz 发射机在 11 GHz 调谐范围内输出 +5.1~+6.3 dBm，1 MHz 处相噪 -80~-88 dBc/Hz，功耗 361 mW",
+   "solution": "由 Claude Opus 4.8 编码代理调用 Virtuoso/Spectre、Calibre、EMX、HFSS，逐块设计并仿真验证 push-push VCO、差分 cascode 功放、倍频器、蝶形天线与级间匹配网络，明确人机分工",
+   "tags": {
+    "application": "射频/毫米波电路设计",
+    "architecture": "LLM agent + EDA toolchain",
+    "innovation": "让 LLM 编码代理直接调用 Virtuoso/Spectre、Calibre、EMX、HFSS 完成电路设计与验证闭环",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "TACS-RF：工具驱动的射频与毫米波模块智能体电路综合"
+  },
+  "saved": "2026-10-27"
+ },
+ "2610.31895@p1": {
+  "data": {
+   "challenge": "所需证据在数步内即已出现，但智能体缺少依据证据决定停止与移交的机制",
+   "future": "触发升级仍非有效移交：工单常点名阻断但缺自身进展与验证状态",
+   "problem": "编码智能体在环境已不可能完成任务时仍持续尝试、绕道甚至虚报成功",
+   "results": "escalation 工具使预算耗尽由 34.0% 降至 6.7%，监视器使环境恢复后成功率近三倍；需外部帮助者几乎都已获足够证据，仍有三分之一耗尽预算",
+   "solution": "ImpasseBench 注入 12 种真实环境阻断，逐轨迹标注证据充分步并据此评分；给出 escalation 工具与外部监视器两种干预；并分析移交工单信息完整性",
+   "tags": {
+    "application": "代码修复中的升级移交",
+    "architecture": "Code LLM + tool harness",
+    "innovation": "ImpasseBench 注入阻断并标注证据充分步，按该步评价过度坚持与移交",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "知道何时该停：编码智能体中的证据-行动鸿沟"
+  },
+  "saved": "2026-10-27"
+ },
+ "2610.32131@p1": {
+  "data": {
+   "challenge": "解决率随 harness 变化达 44 个百分点，harness 排名随模型翻转，失败模式与 token 效率也依赖配对。",
+   "future": "",
+   "problem": "现有榜单只报告固定的 harness-模型配置，缺少跨配对的受控比较，难以指导轻量编码智能体部署选型。",
+   "results": "同一模型跨 harness 解决率差达 44 个百分点；成功任务计费 token 相差超 20 倍；配对改变主导失败模式。",
+   "solution": "在统一服务、计量与评分下，对 6 个开源 harness 与 3 个轻量模型做 100 个 SWE-bench Verified 任务的全因子评测，共 1800 次运行，并用失败分类法分析 1100 次失败轨迹。",
+   "tags": {
+    "application": "仓库级 Issue 修复",
+    "architecture": "LLM + coding agent harness",
+    "innovation": "全因子评测 6 个 harness × 3 个轻量模型 × 100 任务，量化配对交互",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "配对至关重要：轻量级编码智能体的性能、失败与效率"
+  },
+  "saved": "2026-10-27"
+ },
+ "2610.32196@p1": {
+  "data": {
+   "challenge": "变更后需保留仍有效的工作、恢复状态并刷新证据，而不变任务的基准测不出这类失败",
+   "future": "",
+   "problem": "现有仓库级编码基准默认任务与环境在执行期间不变，忽略代码、依赖、运行时与需求中途变更",
+   "results": "17 个系统 Shifted 成功率均低于 Clean；GPT-6 Astra 由 67.35% 降至 24.79%，配对成功 20.34%；工具/会话变更与过期证据配对成功为 0",
+   "solution": "从同一保存历史与工作区出发，一路无干预续跑，一路注入与任务相关的更新；成功需完成任务、保住有效工作并通过状态与证据检查；涵盖 120 场景、12 类变更、9 个干预位点",
+   "tags": {
+    "application": "编码智能体评测",
+    "architecture": "Coding agent benchmark",
+    "innovation": "同一历史分叉出 Clean 与 Shifted 续跑，并在 9 个位点注入变更检验状态保持",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "SWE-Shift：在演进的工作区中评估编码智能体"
+  },
+  "saved": "2026-10-27"
+ },
+ "2610.32313@p1": {
+  "data": {
+   "challenge": "基准假设智能体一次性自主完成任务，缺乏大规模真实会话数据来刻画人类介入的时机、频次与影响",
+   "future": "",
+   "problem": "多数编码智能体研究依赖 SWE-bench 式单条自主轨迹假设，未反映开发者交互式协作的真实使用方式",
+   "results": "58% 的 PR 无人工介入；介入时中位仅 2 轮；首次介入后减少 20.8 次迭代、8.4 分钟；已合并 PR 初始迭代更少",
+   "solution": "收集 7,581 个 Copilot 编写且会话公开的 PR，统计人工介入比例、Human-AI 循环数、迭代与时长变化，并对典型 PR 定性分析",
+   "tags": {
+    "application": "人机协作编码",
+    "architecture": "Human-in-the-loop coding agent",
+    "innovation": "基于 7,581 个 Copilot PR 会话数据，刻画真实开发中人机交互轨迹与介入效果",
+    "training": [
+     "其他"
+    ]
+   },
+   "title_zh": "大规模 GitHub Copilot 轨迹研究"
+  },
+  "saved": "2026-10-27"
+ },
+ "2610.32326@p1": {
+  "data": {
+   "challenge": "通用框架缺领域反馈，推荐专用框架为线性进化；直接结合存在成本盲视与短视评估，丢弃暂时回退的上游创新",
+   "future": "",
+   "problem": "生成式推荐依赖分词、预训练、对齐的级联流水线，如何用 LLM 智能体自动进化整条流水线代码",
+   "results": "Amazon 公开数据集离线指标最高提升 37.4%，Agent4Rec 模拟用户满意度提升 19.7%；腾讯媒体平台离线 Hit@1 相对提升 12.16%，在线 CTR 显著提升 0.40%",
+   "solution": "以 DAG 结构保留多条进化分支并合并互补改动，统一搜索与 GR 诊断反馈；按阶段非对称重训开销规划 GPU 预算，并主动下游协同适配以跨越暂时指标回退",
+   "tags": {
+    "application": "生成式推荐流水线进化",
+    "architecture": "Multi-agent LLM code evolution DAG",
+    "innovation": "将代码进化建模为 DAG 维护多分支并合并互补创新，配阶段感知成本规划与下游协同自适应",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "TGR-EvoDAG：面向腾讯生成式推荐的基于 DAG 的多智能体代码进化框架"
+  },
+  "saved": "2026-10-27"
+ },
+ "2610.32338@p1": {
+  "data": {
+   "challenge": "既有轨迹研究只看重复动作等任务无关行为模式，无法判断智能体是否基于对代码、需求或修复方案的错误理解行事",
+   "future": "",
+   "problem": "推理模型思维链中有多少可核查的任务相关论断、其中多少有误，以及错误论断是否真正导致错误补丁仍不清楚",
+   "results": "任务锚定推理仅占思维链 token 的 18.5%，每条轨迹 191 条论断、至少 9.6% 有误；96.7% 已解决轨迹也含错误论断，但 188 个错误补丁中 2/3 源于错误论断，纠正后 89.0% 修复对应缺陷、11.7% 失败任务被解决",
+   "solution": "在 SWE-bench Pro 上分析 4 个开源推理模型的 400 条轨迹，用 LLM 从思维链抽取原子论断、由 LLM 智能体取证核验，再手动把错误补丁缺陷回溯到错误论断并用论断纠正重放验证因果",
+   "tags": {
+    "application": "编码智能体失败诊断",
+    "architecture": "Reasoning LLM coding agent",
+    "innovation": "抽取思维链中可核查的原子论断，并用补丁缺陷回溯加论断纠正重放验证因果",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "从错误论断到错误补丁：编码智能体任务锚定推理的实证研究"
+  },
+  "saved": "2026-10-27"
+ },
+ "2610.32578@p1": {
+  "data": {
+   "challenge": "现有研究多为单时点或短基准，无法判断规则在失败消失后是否仍有价值",
+   "future": "单仓库探索性结果；演化规则的工具应定期重测并淘汰过时规则",
+   "problem": "AI 编程智能体的规则文件、技能与钩子是否长期有效、何时应淘汰",
+   "results": "漂移为最大失败类（48/118）；单次审计发现约 50% 已知漂移，至少 93% 发现正确；5 项回放中 4 项完成，3 项失败未复现",
+   "solution": "六周单仓库案例：118 条失败台账、47 条陈旧陈述加 20 个植入错误的月度审计、5 个失败在隔离 git clone 中带与不带修复回放，每条件 3 次",
+   "tags": {
+    "application": "编程智能体规则治理",
+    "architecture": "LLM coding agents + harness",
+    "innovation": "用失败台账、文档审计和隔离回放检验规则是否仍必要并可淘汰",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "经验比失败更长寿：AI 编程智能体规则案例研究"
+  },
+  "saved": "2026-10-27"
+ },
+ "2610.32648@p1": {
+  "data": {
+   "challenge": "现有框架依赖执行后反馈进行反应式纠错，浪费运行时资源和 token",
+   "future": "",
+   "problem": "LLM 编码 Agent 会提出访问不存在路径或缺失包等无效工具调用，导致额外交互与 token 消耗",
+   "results": "2,508 动作上检测精度 0.940、F1 0.817，较最强 LLM judge 的 F1 提升 35.3%，延迟从 17.73 s 降至 1.50 ms 且零 token；纠正超 95% 幻觉调用；79 任务执行时间降 15.8%、token 降 11.8%",
+   "solution": "在 harness 边界拦截动作，通过 AST 和命令分析提取状态谓词，对实时仓库做确定性校验，并在执行前返回反馈",
+   "tags": {
+    "application": "编码 Agent 工具调用校验",
+    "architecture": "Coding agent + static validator",
+    "innovation": "在 harness 边界拦截动作，用 AST 与命令分析提取状态谓词并确定性验证",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "StateMirror：编码 Agent 中幻觉工具调用的执行前检测"
+  },
+  "saved": "2026-10-27"
+ },
+ "2610.32686@p1": {
+  "data": {
+   "challenge": "现有方法对 MAS 实验生命周期的端到端支持有限，配置难以复现和跨环境比较",
+   "future": "",
+   "problem": "LLM 多智能体系统的建模、执行、评估、比较与迭代优化缺乏端到端支持",
+   "results": "顺序基线在 SWE-bench Lite 的 77 个问题中修复 12 个；七种重构配置修复效果相近但成本差异显著",
+   "solution": "将智能体、提示、工具、模型、参数和通信拓扑用可导出版本化 JSON 表示，转换为支持多种交互结构的 LangGraph 工作流，并支持本地或云端 LLM 的修改与重评估",
+   "tags": {
+    "application": "软件工程多智能体实验",
+    "architecture": "Configurable multi-agent system",
+    "innovation": "版本化 JSON 描述多智能体配置并编译为 LangGraph 可执行工作流",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "OpenDraco：用于软件工程可配置多智能体架构的工程与实验平台"
+  },
+  "saved": "2026-10-27"
  }
 }
