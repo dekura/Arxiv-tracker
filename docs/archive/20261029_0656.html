@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>arXiv 论文速递</title><style>
+:root {
+  --bg:#f6f7f9; --card:#ffffff; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --row:#f8fafc; --acc:#2563eb;
+}
+:root[data-theme="dark"] {
+  --bg:#0b0f17; --card:#111827; --text:#e5e7eb; --muted:#94a3b8; --border:#1f2937; --row:#0f1623; --acc:#2563eb;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:13.5px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+.container{width:96vw;max-width:1680px;margin:0 auto;padding:14px 0 24px}
+.header{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+h1{font-size:20px;margin:0}
+.btn{border:1px solid var(--border);background:var(--card);color:var(--text);padding:5px 10px;border-radius:8px;cursor:pointer;font:inherit}
+.btn:hover{border-color:var(--acc)}
+.stats{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.stat strong{font-size:15px;margin-right:3px}
+.stat-group{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.stat-label{color:var(--muted);font-size:12px}
+.chip{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:0 8px;font-size:12px;line-height:20px;white-space:nowrap;background:var(--card);color:var(--text)}
+button.chip{cursor:pointer;font-family:inherit} button.chip:hover,button.chip.on{border-color:var(--acc);color:var(--acc)}
+.chip b{margin-left:3px}
+.t-预训练{background:rgba(59,130,246,.12)} .t-继续预训练{background:rgba(14,165,233,.12)} .t-SFT{background:rgba(16,185,129,.14)}
+.t-RL{background:rgba(245,158,11,.16)} .t-RLVR{background:rgba(249,115,22,.16)} .t-偏好优化{background:rgba(236,72,153,.13)}
+.t-蒸馏{background:rgba(139,92,246,.14)} .t-免训练{background:rgba(100,116,139,.14)} .t-评测基准{background:rgba(234,179,8,.16)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.filters input[type=search]{flex:1;min-width:240px;border:1px solid var(--border);border-radius:8px;padding:7px 10px;background:var(--card);color:var(--text);font:inherit}
+.filters select{border:1px solid var(--border);border-radius:8px;padding:6px 8px;background:var(--card);color:var(--text);font:inherit}
+.filters label{display:flex;gap:5px;align-items:center;white-space:nowrap}
+.visible-count{color:var(--muted);margin-left:auto}
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:auto}
+table.papers{width:100%;border-collapse:collapse;table-layout:fixed}
+.papers th{position:sticky;top:0;z-index:1;background:var(--card);text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:8px;border-bottom:1px solid var(--border)}
+.papers td{padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere}
+.papers tr[hidden]{display:none!important}
+.paper-row{cursor:pointer} .paper-row:hover td{background:var(--row)}
+.paper-row.open td{background:var(--row);border-bottom-color:transparent}
+.pid a{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.pid .date{display:block;color:var(--muted);font-size:11px}
+.ptitle{font-weight:600} .ptitle a{color:var(--text)} .ptitle a:hover{color:var(--acc)}
+.caret{display:inline-block;width:12px;color:var(--muted);transition:transform .15s} .open .caret{transform:rotate(90deg)}
+.authors{color:var(--muted);font-size:12px;font-weight:400}
+.muted{color:var(--muted)}
+.code a{display:inline-block;background:var(--acc);color:#fff;border-radius:6px;padding:0 7px;font-size:12px;font-weight:600;margin:0 4px 3px 0}
+.detail-row td{background:var(--row);padding:4px 12px 14px 32px}
+.title-zh{font-size:14px;font-weight:600;margin:2px 0 8px}
+.facts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.fact{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 9px}
+.fact span{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:2px}
+.meta{color:var(--muted);font-size:12px;margin-top:8px}
+.meta a{margin-right:10px}
+details.abs{margin-top:6px} details.abs summary{cursor:pointer;color:var(--acc);font-size:12px}
+details.abs div{margin-top:4px;white-space:pre-wrap;font-size:12.5px}
+.empty td{text-align:center;color:var(--muted);padding:24px}
+.history{margin-top:14px} .history summary{cursor:pointer;color:var(--acc)}
+.history-list{columns:6 140px;margin-top:6px} .history-list a{display:block;font-size:12px}
+.footer{color:var(--muted);font-size:12px;margin-top:12px}
+@media (max-width:1100px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+  .container{width:auto;padding:10px}
+  table.papers,.papers tbody,.papers tr,.papers td{display:block;width:100%}
+  .papers thead,.papers colgroup{display:none}
+  .paper-row{border-bottom:1px solid var(--border);padding:8px 0}
+  .papers td{border:0;padding:2px 10px}
+  .papers td[data-label]::before{content:attr(data-label) "：";color:var(--muted);font-size:12px}
+  .detail-row td{padding:4px 10px 12px}
+  .facts{grid-template-columns:1fr}
+}
+</style>
+<script>
+(function() {
+  const root = document.documentElement;
+  function apply(t) {
+    const dark = t === 'dark' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
+  }
+  let theme = localStorage.getItem('theme') || 'light';
+  if (!['light', 'dark', 'auto'].includes(theme)) theme = 'light';
+  apply(theme);
+  window.__toggleTheme = function() {
+    theme = theme === 'light' ? 'dark' : theme === 'dark' ? 'auto' : 'light';
+    localStorage.setItem('theme', theme);
+    apply(theme);
+    const el = document.getElementById('theme-label');
+    if (el) el.textContent = theme.toUpperCase();
+  };
+  function setOpen(row, open) {
+    const detail = row.nextElementSibling;
+    row.classList.toggle('open', open);
+    if (detail && detail.classList.contains('detail-row')) detail.hidden = !open;
+  }
+  window.__toggleRow = function(event, row) {
+    if (event.target.closest('a')) return;
+    setOpen(row, !row.classList.contains('open'));
+  };
+  window.__expandAll = function(open) {
+    document.querySelectorAll('.paper-row').forEach(row => { if (!row.hidden) setOpen(row, open); });
+  };
+  window.__pick = function(kind, value) {
+    const select = document.getElementById(kind + '-filter');
+    select.value = select.value === value ? '' : value;
+    window.__filter();
+  };
+  window.__filter = function() {
+    const query = (document.getElementById('paper-search').value || '').trim().toLocaleLowerCase();
+    const group = document.getElementById('group-filter').value;
+    const training = document.getElementById('training-filter').value;
+    const onlyCode = document.getElementById('code-only').checked;
+    let visible = 0;
+    document.querySelectorAll('.paper-row').forEach(row => {
+      const match = (!query || row.dataset.search.includes(query)) &&
+        (!group || row.dataset.groups.split('|').includes(group)) &&
+        (!training || row.dataset.training.split('|').includes(training)) &&
+        (!onlyCode || row.dataset.hasCode === 'true');
+      row.hidden = !match;
+      const detail = row.nextElementSibling;
+      if (detail && detail.classList.contains('detail-row')) detail.hidden = !match || !row.classList.contains('open');
+      if (match) visible += 1;
+    });
+    document.getElementById('visible-count').textContent = visible;
+    document.querySelectorAll('button.chip[data-kind]').forEach(chip => {
+      const value = document.getElementById(chip.dataset.kind + '-filter').value;
+      chip.classList.toggle('on', chip.dataset.value === value);
+    });
+  };
+  document.addEventListener('DOMContentLoaded', () => {
+    const label = document.getElementById('theme-label');
+    if (label) label.textContent = theme.toUpperCase();
+    window.__filter();
+  });
+})();
+</script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>arXiv 论文速递</h1>
+      <div><button class="btn" onclick="__toggleTheme()">Theme: <span id="theme-label">AUTO</span></button>
+      <span class="muted" style="margin-left:8px">更新于 2026-10-29 06:56</span></div>
+    </div>
+    <div class="stats"><span class="stat"><strong>2026-10-29</strong></span><span class="stat"><strong>18</strong>篇</span><span class="stat"><strong>5</strong>篇有代码</span><span class="stat-group"><span class="stat-label">方向</span><button class="chip" data-kind="group" data-value="代码预训练" onclick="__pick('group', this.dataset.value)">代码预训练<b>0</b></button><button class="chip" data-kind="group" data-value="代码后训练" onclick="__pick('group', this.dataset.value)">代码后训练<b>0</b></button><button class="chip" data-kind="group" data-value="代码Agent" onclick="__pick('group', this.dataset.value)">代码Agent<b>15</b></button><button class="chip" data-kind="group" data-value="Agentic RL" onclick="__pick('group', this.dataset.value)">Agentic RL<b>3</b></button></span><span class="stat-group"><span class="stat-label">训练方法</span><button class="chip t-RL" data-kind="training" data-value="RL" onclick="__pick('training', this.dataset.value)">RL<b>5</b></button><button class="chip t-免训练" data-kind="training" data-value="免训练" onclick="__pick('training', this.dataset.value)">免训练<b>9</b></button><button class="chip t-评测基准" data-kind="training" data-value="评测基准" onclick="__pick('training', this.dataset.value)">评测基准<b>9</b></button><button class="chip t-其他" data-kind="training" data-value="其他" onclick="__pick('training', this.dataset.value)">其他<b>1</b></button></span></div><div class="filters"><input id="paper-search" type="search" placeholder="搜索编号、标题、作者、架构、场景、摘要…" aria-label="搜索论文" oninput="__filter()"><select id="group-filter" aria-label="方向" onchange="__filter()"><option value="">全部方向</option><option value="代码预训练">代码预训练</option><option value="代码后训练">代码后训练</option><option value="代码Agent">代码Agent</option><option value="Agentic RL">Agentic RL</option></select><select id="training-filter" aria-label="训练方法" onchange="__filter()"><option value="">全部训练方法</option><option value="RL">RL</option><option value="免训练">免训练</option><option value="评测基准">评测基准</option><option value="其他">其他</option></select><label><input id="code-only" type="checkbox" onchange="__filter()"> 只看有代码</label><button class="btn" onclick="__expandAll(true)">全部展开</button><button class="btn" onclick="__expandAll(false)">全部收起</button><span class="visible-count">显示 <b id="visible-count">18</b> / 18</span></div><div class="table-wrap"><table class="papers"><colgroup><col style="width:92px"><col style="width:24%"><col style="width:108px"><col style="width:150px"><col style="width:118px"><col style="width:140px"><col><col style="width:76px"></colgroup><thead><tr><th>论文编号</th><th>Title</th><th>方向</th><th>模型架构</th><th>训练方法</th><th>应用场景</th><th>核心创新</th><th>Code</th></tr></thead><tbody><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.37459 m4bench: evaluating procedural specification for clinical ehr derivation agents m4bench：评估临床 ehr 衍生智能体的过程性规范 hannes ill rafi al attrach rajna fani ahram han ryohei yamamoto marlene louisa moerig dukyong yoon leo anthony celi clinical research over electronic health records depends on derived variables whose definitions sit outside the schema, in item codes, time windows, missingness rules, and output-grain choices that change cohorts and downstream conclusions. we introduce m4bench, 28 clinical derivation tasks across 15 task families on mimic-iv and eicu, to test whether ai coding agents can reproduce such derivations and how clinician-reviewed agent skills change their results. its controls decompose the value of skills into specification completeness, delivery format, and schema familiarity. in a docker-isolated codex campaign (gpt 5.4 mini and gpt 5.5), skills raise reward by 0.136 over the no-skill baseline, with 26 of 28 tasks improving. specification completeness accounts for most of this gain: on an eight-task control subset, an operational spec alone raises reward by 0.162, and skills add only 0.024 on top, indistinguishable from zero. on a ten-task subset, decoy skills score like no skill and raw reference sql nearly matches targeted skills, arguing against generic context or the skill format as the explanation. schema obfuscation and restructuring preserve 86% and 70% of the skill gain (gpt 5.4 mini, 26 mimic-iv tasks), a descriptive robustness check rather than a bound on memorization. a descriptive claude code replication on all 28 tasks (opus 4.7 and sonnet 4.6, 560 runs) is directionally consistent (+0.120, 21 of 28 tasks improving). these gains are partial agreement with the reference, not completed tasks: only 25 of 280 with-skill and 13 of 280 no-skill codex runs pass every strict check, and skills barely change which rows agents return (key f1 +0.003). skills are released as a versioned, clinician-reviewable markdown delivery format, with a family-level reference-validity audit. m4bench releases tasks, skills, evaluation code, and sanitized per-run evidence as an open-source benchmark. 代码agent 评测基准 llm coding agent + skill files 临床 ehr 变量衍生 用可审阅 markdown skill 承载衍生规范，并以对照实验拆解收益来源 临床 ehr 衍生变量定义散落在条目编码、时间窗、缺失规则与输出粒度中，需检验编码智能体能否复现 现有基准缺少规范控制，无法区分收益来自规范完整性、交付格式还是模式熟悉与记忆 构建 28 个 mimic-iv/eicu 衍生任务，docker 隔离运行 codex，设无 skill、操作规范、诱饵 skill、原始参考 sql、模式混淆等对照 skill 使奖励 +0.136（26/28 任务提升）；操作规范单独 +0.162，skill 仅再加 0.024；claude code 复现 +0.120 收益仅为与参考部分一致，严格检查全通过仅 25/280，行级 f1 几乎不变" data-groups="代码Agent" data-training="评测基准" data-has-code="true"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.37459v1" target="_blank" rel="noreferrer">2610.37459</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.37459v1" target="_blank" rel="noreferrer">M4Bench: Evaluating Procedural Specification for Clinical EHR Derivation Agents</a><div class="authors">Hannes Ill, Rafi Al Attrach, Rajna Fani et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM coding agent + skill files</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">临床 EHR 变量衍生</td><td data-label="核心创新">用可审阅 markdown skill 承载衍生规范，并以对照实验拆解收益来源</td><td class="code" data-label="Code"><a href="https://github.com/hannesill/m4/tree/m4bench-neurips2026-camera-ready/benchmark" target="_blank" rel="noreferrer">Code1</a><a href="https://huggingface.co/datasets/hannesill/m4bench-evidence" target="_blank" rel="noreferrer">Code2</a></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">M4Bench：评估临床 EHR 衍生智能体的过程性规范</div><div class="facts"><div class="fact"><span>核心问题</span>临床 EHR 衍生变量定义散落在条目编码、时间窗、缺失规则与输出粒度中，需检验编码智能体能否复现</div><div class="fact"><span>关键困难</span>现有基准缺少规范控制，无法区分收益来自规范完整性、交付格式还是模式熟悉与记忆</div><div class="fact"><span>解决方案</span>构建 28 个 MIMIC-IV/eICU 衍生任务，Docker 隔离运行 Codex，设无 skill、操作规范、诱饵 skill、原始参考 SQL、模式混淆等对照</div><div class="fact"><span>主要结果</span>skill 使奖励 +0.136（26/28 任务提升）；操作规范单独 +0.162，skill 仅再加 0.024；Claude Code 复现 +0.120</div><div class="fact"><span>未来方向</span>收益仅为与参考部分一致，严格检查全通过仅 25/280，行级 F1 几乎不变</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.37459v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.37459v1" target="_blank" rel="noreferrer">PDF</a>Hannes Ill, Rafi Al Attrach, Rajna Fani, Ahram Han, Ryohei Yamamoto, Marlene Louisa Moerig, Dukyong Yoon, Leo Anthony Celi · NeurIPS 2026 · Accepted at NeurIPS 2026 (Evaluations and Datasets Track). 10 pages main text, 33 pages total. Code: https://github.com/hannesill/m4/tree/m4bench-neurips2026-camera-ready/benchmark . Evidence: https://huggingface.co/datasets/hannesill/m4bench-evidence · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>Clinical research over electronic health records depends on derived variables whose definitions sit outside the schema, in item codes, time windows, missingness rules, and output-grain choices that change cohorts and downstream conclusions. We introduce M4Bench, 28 clinical derivation tasks across 15 task families on MIMIC-IV and eICU, to test whether AI coding agents can reproduce such derivations and how clinician-reviewed agent skills change their results. Its controls decompose the value of skills into specification completeness, delivery format, and schema familiarity. In a Docker-isolated Codex campaign (GPT 5.4 Mini and GPT 5.5), skills raise reward by 0.136 over the no-skill baseline, with 26 of 28 tasks improving. Specification completeness accounts for most of this gain: on an eight-task control subset, an operational spec alone raises reward by 0.162, and skills add only 0.024 on top, indistinguishable from zero. On a ten-task subset, decoy skills score like no skill and raw reference SQL nearly matches targeted skills, arguing against generic context or the skill format as the explanation. Schema obfuscation and restructuring preserve 86% and 70% of the skill gain (GPT 5.4 Mini, 26 MIMIC-IV tasks), a descriptive robustness check rather than a bound on memorization. A descriptive Claude Code replication on all 28 tasks (Opus 4.7 and Sonnet 4.6, 560 runs) is directionally consistent (+0.120, 21 of 28 tasks improving). These gains are partial agreement with the reference, not completed tasks: only 25 of 280 with-skill and 13 of 280 no-skill Codex runs pass every strict check, and skills barely change which rows agents return (key F1 +0.003). Skills are released as a versioned, clinician-reviewable markdown delivery format, with a family-level reference-validity audit. M4Bench releases tasks, skills, evaluation code, and sanitized per-run evidence as an open-source benchmark.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.37434 featurearc: benchmarking coding agents on evolving features featurearc：面向演进式功能的编程智能体基准测试 yunlong wang alyssa wu cuiyun gao jia feng songyuanyi lu zhichao hu a software feature usually evolves over time: developers extend its first version as new use cases and requirements arrive, and each extension builds on code written earlier. most feature benchmarks evaluate a single request on a fixed codebase. feature evolution requires evaluating successive extensions on an agent&#x27;s own earlier code and checking whether the feature remains correct. we introduce featurearc to evaluate coding agents on evolving features, together with a pipeline that constructs its tasks from repository histories. the benchmark combines dependencies between successive stages of the same feature, explicit requirements and interface contracts, and executable checks across four programming languages. the pipeline validates fail-to-pass (f2p) tests for new behavior and pass-to-pass (p2p) tests for existing behavior on the reference code before and after each stage. we evaluated 10 coding agents on 73 manually reviewed tasks of 2 to 10 stages. each agent works in one persistent session and workspace without external test feedback or rollback. the evaluation reveals a gap between first-stage and whole-feature success: pooled success falls from 62.7% at the first stage to 28.5% when the whole feature is tested on the final code. trajectory analysis identifies inherited defects as a common failure mechanism, present in 72.9% of failed later stages. these earlier errors often remain undetected: in stages following a failure, agents leave the earlier error unnoticed about 95% of the time, and their self-tests rarely revisit earlier stages. evolving a feature autonomously, without human checks between stages, therefore remains a substantial challenge for current coding agents. at tencent, the pipeline extends internal evaluations to this setting and guides the development of hunyuan, tencent&#x27;s family of large language models. 代码agent 评测基准 coding agent eval harness 多阶段功能演进开发 用仓库历史构建多阶段相互依赖的任务，跨阶段对新旧行为执行 f2p/p2p 可执行校验 现有功能基准只在固定代码库上评测单次请求，无法检验智能体在自身早前代码上连续扩展功能 智能体后续阶段会继承早期缺陷且很少回查，在无外部测试反馈与回滚时错误难被发现 从仓库历史自动构建 2–10 阶的同功能任务，给出显式需求与接口契约，每阶段在参考代码上验证新行为 f2p 与旧行为 p2p 测试 73 个任务和 10 个智能体：成功率从首阶段 62.7% 降至整个功能的 28.5%，72.9% 的后期失败源于继承缺陷，约 95% 未被察觉 阶段之间无人工检查的自主功能演进仍是开放难题" data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.37434v1" target="_blank" rel="noreferrer">2610.37434</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.37434v1" target="_blank" rel="noreferrer">FeatureArc: Benchmarking Coding Agents on Evolving Features</a><div class="authors">Yunlong Wang, Alyssa Wu, Cuiyun Gao et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Coding agent eval harness</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">多阶段功能演进开发</td><td data-label="核心创新">用仓库历史构建多阶段相互依赖的任务，跨阶段对新旧行为执行 F2P/P2P 可执行校验</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">FeatureArc：面向演进式功能的编程智能体基准测试</div><div class="facts"><div class="fact"><span>核心问题</span>现有功能基准只在固定代码库上评测单次请求，无法检验智能体在自身早前代码上连续扩展功能</div><div class="fact"><span>关键困难</span>智能体后续阶段会继承早期缺陷且很少回查，在无外部测试反馈与回滚时错误难被发现</div><div class="fact"><span>解决方案</span>从仓库历史自动构建 2–10 阶的同功能任务，给出显式需求与接口契约，每阶段在参考代码上验证新行为 F2P 与旧行为 P2P 测试</div><div class="fact"><span>主要结果</span>73 个任务和 10 个智能体：成功率从首阶段 62.7% 降至整个功能的 28.5%，72.9% 的后期失败源于继承缺陷，约 95% 未被察觉</div><div class="fact"><span>未来方向</span>阶段之间无人工检查的自主功能演进仍是开放难题</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.37434v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.37434v1" target="_blank" rel="noreferrer">PDF</a>Yunlong Wang, Alyssa Wu, Cuiyun Gao, Jia Feng, Songyuanyi Lu, Zhichao Hu · 12 pages, 8 figures, 4 tables · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>A software feature usually evolves over time: developers extend its first version as new use cases and requirements arrive, and each extension builds on code written earlier. Most feature benchmarks evaluate a single request on a fixed codebase. Feature evolution requires evaluating successive extensions on an agent&#x27;s own earlier code and checking whether the feature remains correct. We introduce FeatureArc to evaluate coding agents on evolving features, together with a pipeline that constructs its tasks from repository histories. The benchmark combines dependencies between successive stages of the same feature, explicit requirements and interface contracts, and executable checks across four programming languages. The pipeline validates fail-to-pass (F2P) tests for new behavior and pass-to-pass (P2P) tests for existing behavior on the reference code before and after each stage. We evaluated 10 coding agents on 73 manually reviewed tasks of 2 to 10 stages. Each agent works in one persistent session and workspace without external test feedback or rollback. The evaluation reveals a gap between first-stage and whole-feature success: pooled success falls from 62.7% at the first stage to 28.5% when the whole feature is tested on the final code. Trajectory analysis identifies inherited defects as a common failure mechanism, present in 72.9% of failed later stages. These earlier errors often remain undetected: in stages following a failure, agents leave the earlier error unnoticed about 95% of the time, and their self-tests rarely revisit earlier stages. Evolving a feature autonomously, without human checks between stages, therefore remains a substantial challenge for current coding agents. At Tencent, the pipeline extends internal evaluations to this setting and guides the development of Hunyuan, Tencent&#x27;s family of large language models.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.37332 hidden in plain sight: an empirical study about the instruction stacks of coding agents 藏于明处：编码代理指令栈的实证研究 felipe de sant&#x27;anna paixão dhyego tavares eduardo almeida iftekhar ahmed coding agents send their models more than the user&#x27;s prompt: they add instructions, tool definitions, and environmental context that form an instruction stack. this stack guides execution and changes across releases, yet remains largely unexposed to users and insufficiently characterized in research. we present a longitudinal, cross-agent study of the instruction stacks captured in the first model requests of 1,886 releases of claude code, codex, gemini cli, qwen code, and opencode. under controlled conditions, we analyze their composition and evolution and trace changes in the four open-source agents to documented motivations. our findings show why examining the system prompt or reporting the model alone provides an incomplete account of agent inputs. tool definitions dominate three agents&#x27; latest requests, while occasional concentrated revisions alter instructions governing tool use, attribution, and coding style. such revisions can complicate how researchers identify agent-authored contributions and interpret generated code. we also found that only 48% of examined change units directly explain the motivation for stack revisions. across agents, shared capabilities emerge despite increasingly distinct wording. these findings expose an evolving, incompletely documented layer of agent design. the findings motivate documenting captured instruction stacks alongside agent releases, models, and user prompts, and preserving the rationale behind their revisions. 代码agent 免训练 评测基准 coding agent + tool harness 编码代理指令栈分析 纵向跨代理采集5个编码代理1,886个release首个模型请求，量化指令栈构成与演化 编码代理发给模型的不只是用户提示，还含工具定义与环境上下文，该指令栈对用户不透明、研究刻画不足 只看系统提示或模型名无法完整刻画代理输入；指令栈随版本变化，变更动机多未被记录 在受控条件下解析各release首个模型请求的指令栈，比较组成与演化差异，并把4个开源代理的变更单元追溯到公开文档动机 工具定义在3个代理最新请求中占主导；仅48%变更单元能直接解释修订动机；集中修订改写工具使用、归因与编码风格指令；共享能力趋同但措辞分化 建议随 release 公开捕获的指令栈与修订理由" data-groups="代码Agent" data-training="免训练|评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.37332v1" target="_blank" rel="noreferrer">2610.37332</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.37332v1" target="_blank" rel="noreferrer">Hidden in Plain Sight: an Empirical Study about The Instruction Stacks of Coding Agents</a><div class="authors">Felipe de Sant&#x27;Anna Paixão, Dhyego Tavares, Eduardo Almeida et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Coding agent + tool harness</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span> <span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">编码代理指令栈分析</td><td data-label="核心创新">纵向跨代理采集5个编码代理1,886个release首个模型请求，量化指令栈构成与演化</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">藏于明处：编码代理指令栈的实证研究</div><div class="facts"><div class="fact"><span>核心问题</span>编码代理发给模型的不只是用户提示，还含工具定义与环境上下文，该指令栈对用户不透明、研究刻画不足</div><div class="fact"><span>关键困难</span>只看系统提示或模型名无法完整刻画代理输入；指令栈随版本变化，变更动机多未被记录</div><div class="fact"><span>解决方案</span>在受控条件下解析各release首个模型请求的指令栈，比较组成与演化差异，并把4个开源代理的变更单元追溯到公开文档动机</div><div class="fact"><span>主要结果</span>工具定义在3个代理最新请求中占主导；仅48%变更单元能直接解释修订动机；集中修订改写工具使用、归因与编码风格指令；共享能力趋同但措辞分化</div><div class="fact"><span>未来方向</span>建议随 release 公开捕获的指令栈与修订理由</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.37332v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.37332v1" target="_blank" rel="noreferrer">PDF</a>Felipe de Sant&#x27;Anna Paixão, Dhyego Tavares, Eduardo Almeida, Iftekhar Ahmed · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>Coding agents send their models more than the user&#x27;s prompt: they add instructions, tool definitions, and environmental context that form an instruction stack. This stack guides execution and changes across releases, yet remains largely unexposed to users and insufficiently characterized in research. We present a longitudinal, cross-agent study of the instruction stacks captured in the first model requests of 1,886 releases of Claude Code, Codex, Gemini CLI, Qwen Code, and OpenCode. Under controlled conditions, we analyze their composition and evolution and trace changes in the four open-source agents to documented motivations. Our findings show why examining the system prompt or reporting the model alone provides an incomplete account of agent inputs. Tool definitions dominate three agents&#x27; latest requests, while occasional concentrated revisions alter instructions governing tool use, attribution, and coding style. Such revisions can complicate how researchers identify agent-authored contributions and interpret generated code. We also found that only 48% of examined change units directly explain the motivation for stack revisions. Across agents, shared capabilities emerge despite increasingly distinct wording. These findings expose an evolving, incompletely documented layer of agent design. The findings motivate documenting captured instruction stacks alongside agent releases, models, and user prompts, and preserving the rationale behind their revisions.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.37283 benchmeup: building software engineering benchmarks from natural-language specifications benchmeup：从自然语言规格构建软件工程基准 islem bouzenia michael pradel software-engineering research relies on benchmarks that evaluate new techniques on a set of problem instances. unfortunately, manually constructing benchmarks is labor-intensive, as researchers must find suitable instances, prepare execution environments, establish expected outcomes, and validate correctness.
+  this paper presents benchmeup, an approach for automatically creating software-engineering benchmarks from natural-language specifications. given a specification defining the desired instances, data sources, and evaluation procedures, benchmeup generates search rules and a construction plan, invokes parallel llm agents that identify candidate instances and construct executable instances, validates the results in fresh execution environments, and packages the instances behind a unified command-line interface. we evaluate the approach on four tasks: program repair, issue reproduction, compiler autotuning, and fixing static-analysis warnings. targeting 50 instances per task (200 in total), benchmeup constructs 198 instances, of which 196 (99\%) are successfully packaged. search and construction take 36 minutes and \$0.79 per instance, on average. evaluating eight existing techniques on the generated benchmarks, we find that 189 of 196 packaged instances (96\%) support end-to-end evaluation, allowing users to study the effectiveness of the techniques. checking every constructed instance against its source, the specification, and its expected outcome, we find that 180 of 198 (91\%) meet all criteria, compared with 10 of 200 instances delivered by codex (general-purpose coding agent).
+  overall, we show that llm-based agents can automate benchmark construction across diverse software-engineering tasks and produce executable instances that existing techniques can use, while validity beyond execution still needs to be checked. 代码agent 评测基准 免训练 parallel llm agents 软件工程基准构建 由自然语言规格生成搜索规则和构建计划，多llm代理并行构建并验证可执行基准实例 软件工程基准需人工寻找实例、准备环境、确定预期并验证，构建成本高 人工构建基准劳动密集；通用编码代理难以保证实例有效性与可执行性 根据规格生成搜索规则与构建计划，调用并行llm代理识别候选并构建可执行实例，在全新环境验证后以统一cli打包 构建198/200实例，196（99%）打包；189/196可端到端评测，180/198合格，codex仅10/200 执行之外的有效性仍需检查" data-groups="代码Agent" data-training="评测基准|免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.37283v1" target="_blank" rel="noreferrer">2610.37283</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.37283v1" target="_blank" rel="noreferrer">BenchMeUp: Building Software Engineering Benchmarks from Natural-Language Specifications</a><div class="authors">Islem Bouzenia, Michael Pradel</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Parallel LLM agents</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span> <span class="chip t-免训练">免训练</span></td><td data-label="应用场景">软件工程基准构建</td><td data-label="核心创新">由自然语言规格生成搜索规则和构建计划，多LLM代理并行构建并验证可执行基准实例</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">BenchMeUp：从自然语言规格构建软件工程基准</div><div class="facts"><div class="fact"><span>核心问题</span>软件工程基准需人工寻找实例、准备环境、确定预期并验证，构建成本高</div><div class="fact"><span>关键困难</span>人工构建基准劳动密集；通用编码代理难以保证实例有效性与可执行性</div><div class="fact"><span>解决方案</span>根据规格生成搜索规则与构建计划，调用并行LLM代理识别候选并构建可执行实例，在全新环境验证后以统一CLI打包</div><div class="fact"><span>主要结果</span>构建198/200实例，196（99%）打包；189/196可端到端评测，180/198合格，Codex仅10/200</div><div class="fact"><span>未来方向</span>执行之外的有效性仍需检查</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.37283v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.37283v1" target="_blank" rel="noreferrer">PDF</a>Islem Bouzenia, Michael Pradel · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>Software-engineering research relies on benchmarks that evaluate new techniques on a set of problem instances. Unfortunately, manually constructing benchmarks is labor-intensive, as researchers must find suitable instances, prepare execution environments, establish expected outcomes, and validate correctness.
+  This paper presents BenchMeUp, an approach for automatically creating software-engineering benchmarks from natural-language specifications. Given a specification defining the desired instances, data sources, and evaluation procedures, BenchMeUp generates search rules and a construction plan, invokes parallel LLM agents that identify candidate instances and construct executable instances, validates the results in fresh execution environments, and packages the instances behind a unified command-line interface. We evaluate the approach on four tasks: program repair, issue reproduction, compiler autotuning, and fixing static-analysis warnings. Targeting 50 instances per task (200 in total), BenchMeUp constructs 198 instances, of which 196 (99\%) are successfully packaged. Search and construction take 36 minutes and \$0.79 per instance, on average. Evaluating eight existing techniques on the generated benchmarks, we find that 189 of 196 packaged instances (96\%) support end-to-end evaluation, allowing users to study the effectiveness of the techniques. Checking every constructed instance against its source, the specification, and its expected outcome, we find that 180 of 198 (91\%) meet all criteria, compared with 10 of 200 instances delivered by Codex (general-purpose coding agent).
+  Overall, we show that LLM-based agents can automate benchmark construction across diverse software-engineering tasks and produce executable instances that existing techniques can use, while validity beyond execution still needs to be checked.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.37255 your policy is secretly a harness: the decision geometry of agent interfaces 你的策略暗中就是 harness：智能体接口的决策几何 jian mu ruibo shen yao shu language model agents are post-trained and deployed through a harness, the prompts, tools, and control logic that present a task to the model and execute its outputs. harnesses are often revised and judged by how an already trained model performs under them, which assumes that what the model learned under one harness carries over to the next. we ask what a policy learns from its harness and what survives when the harness changes. under kl-regularized control, we show that the log odds of an optimal policy recover how strongly its harness favors each action over the others, so a trained policy carries the preferences of its harness. deployed return then equals the ceiling of the harness, the best return it offers, minus the mismatch of the policy, the return lost to its own suboptimal decisions. training changes only the mismatch, while changing the harness moves both terms. comparing harnesses with a fixed model therefore mixes what each harness offers with how well that model uses it. in miniwob++, post-training makes a model&#x27;s preferences specific to its training harness. reversing the order of the observation fields leaves every optimal decision unchanged yet lowers a trained model&#x27;s success from 85.0% to 19.2%. conversely, every new harness that a fixed-model comparison rejects but that raises the ceiling outperforms the original agent after further training under it, and ceiling and mismatch measured beforehand predict these gains. for coding-agent harnesses on terminal-bench lite, ceiling minus mismatch estimated with a stronger model as a stand-in for the optimum reproduces the accuracy ranking, while either term alone does not. code is available at https://github.com/2020-qqtcg/hrp. 代码agent rl 其他 llm agent + harness agent harness 设计与评测 用 kl 正则控制证明策略 log-odds 编码 harness 偏好，并把回报分解为 harness 上限与策略失配 agent 回报同时受 harness 与策略影响，用固定模型比较不同 harness 时两者混杂，无法判断 harness 本身优劣 harness 常被改动后用已训练模型评判，隐含假设模型在一套 harness 下学到的偏好能迁移到新 harness 在 kl 正则控制下推导出部署回报等于 harness 上限减去策略失配；训练只改变失配，换 harness 则同时改变两项，并用强模型代替最优策略估计上限与失配 miniwob++ 中颠倒观测字段顺序使成功率 85.0%→19.2%；terminal-bench lite 上用强模型估计的上限减失配可复现准确率排序，单项则不能 " data-groups="代码Agent" data-training="RL|其他" data-has-code="true"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.37255v1" target="_blank" rel="noreferrer">2610.37255</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.37255v1" target="_blank" rel="noreferrer">Your Policy Is Secretly a Harness: The Decision Geometry of Agent Interfaces</a><div class="authors">Jian Mu, Ruibo Shen, Yao Shu</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + harness</td><td data-label="训练方法"><span class="chip t-RL">RL</span> <span class="chip t-其他">其他</span></td><td data-label="应用场景">Agent harness 设计与评测</td><td data-label="核心创新">用 KL 正则控制证明策略 log-odds 编码 harness 偏好，并把回报分解为 harness 上限与策略失配</td><td class="code" data-label="Code"><a href="https://github.com/2020-qqtcg/HRP" target="_blank" rel="noreferrer">Code</a></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">你的策略暗中就是 Harness：智能体接口的决策几何</div><div class="facts"><div class="fact"><span>核心问题</span>Agent 回报同时受 harness 与策略影响，用固定模型比较不同 harness 时两者混杂，无法判断 harness 本身优劣</div><div class="fact"><span>关键困难</span>harness 常被改动后用已训练模型评判，隐含假设模型在一套 harness 下学到的偏好能迁移到新 harness</div><div class="fact"><span>解决方案</span>在 KL 正则控制下推导出部署回报等于 harness 上限减去策略失配；训练只改变失配，换 harness 则同时改变两项，并用强模型代替最优策略估计上限与失配</div><div class="fact"><span>主要结果</span>MiniWoB++ 中颠倒观测字段顺序使成功率 85.0%→19.2%；Terminal-Bench Lite 上用强模型估计的上限减失配可复现准确率排序，单项则不能</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.37255v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.37255v1" target="_blank" rel="noreferrer">PDF</a>Jian Mu, Ruibo Shen, Yao Shu · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>Language model agents are post-trained and deployed through a harness, the prompts, tools, and control logic that present a task to the model and execute its outputs. Harnesses are often revised and judged by how an already trained model performs under them, which assumes that what the model learned under one harness carries over to the next. We ask what a policy learns from its harness and what survives when the harness changes. Under KL-regularized control, we show that the log odds of an optimal policy recover how strongly its harness favors each action over the others, so a trained policy carries the preferences of its harness. Deployed return then equals the ceiling of the harness, the best return it offers, minus the mismatch of the policy, the return lost to its own suboptimal decisions. Training changes only the mismatch, while changing the harness moves both terms. Comparing harnesses with a fixed model therefore mixes what each harness offers with how well that model uses it. In MiniWoB++, post-training makes a model&#x27;s preferences specific to its training harness. Reversing the order of the observation fields leaves every optimal decision unchanged yet lowers a trained model&#x27;s success from 85.0% to 19.2%. Conversely, every new harness that a fixed-model comparison rejects but that raises the ceiling outperforms the original agent after further training under it, and ceiling and mismatch measured beforehand predict these gains. For coding-agent harnesses on Terminal-Bench Lite, ceiling minus mismatch estimated with a stronger model as a stand-in for the optimum reproduces the accuracy ranking, while either term alone does not. Code is available at https://github.com/2020-qqtcg/HRP.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.37224 spine: compiling subtask trees into structured context for long-horizon coding agents spine：将子任务树编译为结构化上下文，面向长时程编码智能体 jiahong xiang kunqiu chen lingming zhang yuqun zhang long-horizon coding tasks contain nested subtasks. typically, agents record interactions sequentially into a growing history, causing context inflation and performance degradation. compressing or trimming the history without explicit subtask boundaries can discard information needed by unfinished subtasks. conversely, recursive subagent delegation isolates completed subtasks through child agents by assigning every subtask boundary to delegation, which conflates subtask granularity with executing agent choice, adding execution and coordination overhead. we introduce spine, an interface and runtime that align model context with subtask nesting and completion. an agent declares explicit subtask boundaries through work scopes, allowing the same agent to execute nested subtasks inline while reserving delegation for independent parallel tasks. the runtime organizes execution in spinetree, a persistent tree recording subtask relations, local interactions, completion states, and returned results. before each model call, it compiles the tree into model context just in time, retaining unfinished subtasks&#x27; interactions and replacing completed subtasks&#x27; details with their results, while preserving prefix-cache reuse.
+  we integrate spine into codex to build spinecodex. with gpt-5.6 sol, compared with native codex, spinecodex improves swe-milestone score by 11.8% while reducing total cost by 32.4%, improves the average programbench test-pass rate by 17.3%, and improves mean@5 on eight of the ten evaluated frontierswe tasks. on swe-milestone, it also achieves a comparable score to recursive subagent at 73.7% lower total cost. we also integrate spine into pi through a reusable software package: with gemini 3.8 flash and qwen 3.8 27b, it improves swe-milestone score by 9.5-17.5% and the average programbench test-pass rate by 4.3-8.7% compared with native pi. 代码agent 免训练 llm + tree runtime 长时程仓库级编码 用 work scope 显式声明子任务边界，运行时把持续更新的 spinetree 即时编译成模型上下文 长时程编码任务的上下文随交互不断膨胀，而隐式裁剪或整体委派子任务会造成信息丢失或协调开销 缺乏显式子任务边界时压缩历史会丢掉未完成子任务所需信息；逐层递归委派又把粒度与执行者选择绑定 同一智能体以内联方式执行嵌套子任务，仅并行独立任务才委派；运行时按完成状态保留未完成子任务交互、用结果替换已完成子任务细节，并保持前缀缓存复用 接入 codex 后，swe-milestone 得分提升 11.8%、成本降 32.4%，programbench 通过率平均提升 17.3%，10 个 frontierswe 任务中 8 个的 mean@5 提升；接入 pi 后得分提升 9.5-17.5% " data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.37224v1" target="_blank" rel="noreferrer">2610.37224</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.37224v1" target="_blank" rel="noreferrer">Spine: Compiling Subtask Trees into Structured Context for Long-Horizon Coding Agents</a><div class="authors">Jiahong Xiang, Kunqiu Chen, Lingming Zhang et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM + tree runtime</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">长时程仓库级编码</td><td data-label="核心创新">用 work scope 显式声明子任务边界，运行时把持续更新的 SpineTree 即时编译成模型上下文</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">Spine：将子任务树编译为结构化上下文，面向长时程编码智能体</div><div class="facts"><div class="fact"><span>核心问题</span>长时程编码任务的上下文随交互不断膨胀，而隐式裁剪或整体委派子任务会造成信息丢失或协调开销</div><div class="fact"><span>关键困难</span>缺乏显式子任务边界时压缩历史会丢掉未完成子任务所需信息；逐层递归委派又把粒度与执行者选择绑定</div><div class="fact"><span>解决方案</span>同一智能体以内联方式执行嵌套子任务，仅并行独立任务才委派；运行时按完成状态保留未完成子任务交互、用结果替换已完成子任务细节，并保持前缀缓存复用</div><div class="fact"><span>主要结果</span>接入 Codex 后，SWE-Milestone 得分提升 11.8%、成本降 32.4%，ProgramBench 通过率平均提升 17.3%，10 个 FrontierSWE 任务中 8 个的 Mean@5 提升；接入 Pi 后得分提升 9.5-17.5%</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.37224v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.37224v1" target="_blank" rel="noreferrer">PDF</a>Jiahong Xiang, Kunqiu Chen, Lingming Zhang, Yuqun Zhang · 22 pages, 9 figures, 7 tables · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>Long-horizon coding tasks contain nested subtasks. Typically, agents record interactions sequentially into a growing history, causing context inflation and performance degradation. Compressing or trimming the history without explicit subtask boundaries can discard information needed by unfinished subtasks. Conversely, recursive subagent delegation isolates completed subtasks through child agents by assigning every subtask boundary to delegation, which conflates subtask granularity with executing agent choice, adding execution and coordination overhead. We introduce Spine, an interface and runtime that align model context with subtask nesting and completion. An agent declares explicit subtask boundaries through work scopes, allowing the same agent to execute nested subtasks inline while reserving delegation for independent parallel tasks. The runtime organizes execution in SpineTree, a persistent tree recording subtask relations, local interactions, completion states, and returned results. Before each model call, it compiles the tree into model context just in time, retaining unfinished subtasks&#x27; interactions and replacing completed subtasks&#x27; details with their results, while preserving prefix-cache reuse.
+  We integrate Spine into Codex to build SpineCodex. With GPT-5.6 Sol, compared with native Codex, SpineCodex improves SWE-Milestone Score by 11.8% while reducing total cost by 32.4%, improves the average ProgramBench test-pass rate by 17.3%, and improves Mean@5 on eight of the ten evaluated FrontierSWE tasks. On SWE-Milestone, it also achieves a comparable Score to Recursive Subagent at 73.7% lower total cost. We also integrate Spine into Pi through a reusable software package: with Gemini 3.8 Flash and Qwen 3.8 27B, it improves SWE-Milestone Score by 9.5-17.5% and the average ProgramBench test-pass rate by 4.3-8.7% compared with native Pi.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.36848 evolving agent teams 演化式智能体团队 shiyi cao ziming mao dacheng li joseph e. gonzalez ion stoica the rapid progress of software engineering agents drives interest in applying them to open-ended problems such as gpu kernel optimization. however, we find that existing coding agents converge to local optima on real-world, expert-written kernels (e.g., flashinfer). we introduce evolving agent teams, a multi-agent framework that escapes such local optima. it features (1) a central supervisor that diagnoses each local optimum and restructures a team of agents; and (2) a persistent file system that comprises a learning document, an evolution history, and per-team artifacts, grounding restructuring with accumulated experience. under a matched token budget, evolving agent teams consistently outperforms strong coding-agent baselines. with an extended token budget, evolving agent teams generates a cuda kernel that reaches 1.2x mean speedup over the production flashinfer mla paged decode kernel from scratch and wins on 36 of 47 production workloads from flashinfer-bench (0.86-0.99x on the remaining 11). it also demonstrates superior performance on tasks such as kda prefill on amd mi350x (3.01x over vllm) and nvidia b200 (3.44x over flashkda), moe expert-offload serving on apple silicon (30.3 tokens/s decode for qwen3.8-flash-next in mlx 4-bit on a 48 gb m4 pro), and robodojo robot manipulation (62.1 on held-out seeds vs. 55.3 for the best leaderboard entry). code is available at https://github.com/caoshiyi/eat. 代码agent 免训练 multi-agent llm framework gpu 内核优化 中心监督器诊断局部最优并重组智能体团队，持久文件系统积累经验支撑重组。 现有编码智能体在真实专家编写的 gpu 内核（如 flashinfer）上易陷入局部最优。 单智能体迭代缺乏局部最优诊断与经验积累机制，难以重组搜索跳出。 中心监督器诊断每个局部最优并重组智能体团队；持久文件系统保存学习文档、演化历史与团队产物，用积累经验支撑重组。 flashinfer-bench 47 个负载赢 36 个，mla paged decode 平均 1.2x；robodojo 62.1 对比 55.3。 " data-groups="代码Agent" data-training="免训练" data-has-code="true"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.36848v1" target="_blank" rel="noreferrer">2610.36848</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.36848v1" target="_blank" rel="noreferrer">Evolving Agent Teams</a><div class="authors">Shiyi Cao, Ziming Mao, Dacheng Li et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Multi-agent LLM framework</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">GPU 内核优化</td><td data-label="核心创新">中心监督器诊断局部最优并重组智能体团队，持久文件系统积累经验支撑重组。</td><td class="code" data-label="Code"><a href="https://github.com/caoshiyi/EAT" target="_blank" rel="noreferrer">Code</a></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">演化式智能体团队</div><div class="facts"><div class="fact"><span>核心问题</span>现有编码智能体在真实专家编写的 GPU 内核（如 FlashInfer）上易陷入局部最优。</div><div class="fact"><span>关键困难</span>单智能体迭代缺乏局部最优诊断与经验积累机制，难以重组搜索跳出。</div><div class="fact"><span>解决方案</span>中心监督器诊断每个局部最优并重组智能体团队；持久文件系统保存学习文档、演化历史与团队产物，用积累经验支撑重组。</div><div class="fact"><span>主要结果</span>FlashInfer-Bench 47 个负载赢 36 个，MLA paged decode 平均 1.2x；RoboDojo 62.1 对比 55.3。</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.36848v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.36848v1" target="_blank" rel="noreferrer">PDF</a>Shiyi Cao, Ziming Mao, Dacheng Li, Joseph E. Gonzalez, Ion Stoica · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>The rapid progress of software engineering agents drives interest in applying them to open-ended problems such as GPU kernel optimization. However, we find that existing coding agents converge to local optima on real-world, expert-written kernels (e.g., FlashInfer). We introduce Evolving Agent Teams, a multi-agent framework that escapes such local optima. It features (1) a central supervisor that diagnoses each local optimum and restructures a team of agents; and (2) a persistent file system that comprises a learning document, an evolution history, and per-team artifacts, grounding restructuring with accumulated experience. Under a matched token budget, Evolving Agent Teams consistently outperforms strong coding-agent baselines. With an extended token budget, Evolving Agent Teams generates a CUDA kernel that reaches 1.2x mean speedup over the production FlashInfer MLA paged decode kernel from scratch and wins on 36 of 47 production workloads from FlashInfer-Bench (0.86-0.99x on the remaining 11). It also demonstrates superior performance on tasks such as KDA prefill on AMD MI350X (3.01x over vLLM) and NVIDIA B200 (3.44x over FlashKDA), MoE expert-offload serving on Apple silicon (30.3 tokens/s decode for Qwen3.8-Flash-Next in MLX 4-bit on a 48 GB M4 Pro), and RoboDojo robot manipulation (62.1 on held-out seeds vs. 55.3 for the best leaderboard entry). Code is available at https://github.com/caoshiyi/EAT.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.36660 the view from nowhere: population-centered agent evolution 无处之见：以种群为中心的智能体演化 shuo yan ningning hou haoyu he haochen pei shang gao self-improving ai systems can revise the designs that govern their own behavior. yet existing approaches center improvement on selected parent agents and their evolutionary experience, leaving the broader population largely underused. we identify a substantial gap between population coverage (i.e., the tasks solved by at least one evolved variant) and the performance of the best individual agent. this gap shows that useful capabilities and diagnostic evidence emerge across the population without being consolidated into its leading agents.
+  these observations motivate the view from nowhere, a principle for agent evolution: an agent should be improved by interpreting its behavior through population-wide patterns of success, failure, and prior self-modification. we instantiate this principle as population-centered evolution (pce). pce distils task records and modification histories from the population into a population block, which captures recurring failures, complementary successes, and the effects of previously attempted modifications to guide improvements to a selected parent&#x27;s harness.
+  under matched models, initial harnesses, and evolution schedules, pce achieves 72.1% success on swe-bench verified and 96.7% on polyglot, improving over a strong group-evolution baseline by 3.2 and 5.9 percentage points. in our evaluation, pce reduces the gap between population coverage and best-agent performance by one-third on swe-bench and closes it on polyglot. these results suggest that treating the population as evidence--not merely as candidates for selection--provides a complementary principle for agent evolution. 代码agent 免训练 llm agent harness evolution 仓库级代码修复 把种群的任务记录与修改历史蒸馏为 population block，指导父代 harness 改进 现有自改进智能体只围绕选定父代及其演化经验改进，种群中其余智能体的信息基本未被利用 种群覆盖的任务成功率明显高于最佳单体智能体，说明有用能力与诊断证据散落在种群中却无法整合进领先智能体 pce 将种群的任务记录与修改历史蒸馏成 population block，刻画反复失败、互补成功与既往自修改的效果，据此指导选定父代的 harness 改进 swe-bench verified 72.1%、polyglot 96.7%，较强群体演化基线提升 3.2 与 5.9 个百分点；覆盖-最佳差距在 swe-bench 缩小三分之一、polyglot 上消除 " data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.36660v1" target="_blank" rel="noreferrer">2610.36660</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.36660v1" target="_blank" rel="noreferrer">The View from Nowhere: Population-Centered Agent Evolution</a><div class="authors">Shuo Yan, Ningning Hou, Haoyu He et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent harness evolution</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">仓库级代码修复</td><td data-label="核心创新">把种群的任务记录与修改历史蒸馏为 population block，指导父代 harness 改进</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">无处之见：以种群为中心的智能体演化</div><div class="facts"><div class="fact"><span>核心问题</span>现有自改进智能体只围绕选定父代及其演化经验改进，种群中其余智能体的信息基本未被利用</div><div class="fact"><span>关键困难</span>种群覆盖的任务成功率明显高于最佳单体智能体，说明有用能力与诊断证据散落在种群中却无法整合进领先智能体</div><div class="fact"><span>解决方案</span>PCE 将种群的任务记录与修改历史蒸馏成 population block，刻画反复失败、互补成功与既往自修改的效果，据此指导选定父代的 harness 改进</div><div class="fact"><span>主要结果</span>SWE-bench Verified 72.1%、Polyglot 96.7%，较强群体演化基线提升 3.2 与 5.9 个百分点；覆盖-最佳差距在 SWE-bench 缩小三分之一、Polyglot 上消除</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.36660v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.36660v1" target="_blank" rel="noreferrer">PDF</a>Shuo Yan, Ningning Hou, Haoyu He, Haochen Pei, Shang Gao · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>Self-improving AI systems can revise the designs that govern their own behavior. Yet existing approaches center improvement on selected parent agents and their evolutionary experience, leaving the broader population largely underused. We identify a substantial gap between population coverage (i.e., the tasks solved by at least one evolved variant) and the performance of the best individual agent. This gap shows that useful capabilities and diagnostic evidence emerge across the population without being consolidated into its leading agents.
+  These observations motivate the view from nowhere, a principle for agent evolution: an agent should be improved by interpreting its behavior through population-wide patterns of success, failure, and prior self-modification. We instantiate this principle as Population-Centered Evolution (PCE). PCE distils task records and modification histories from the population into a population block, which captures recurring failures, complementary successes, and the effects of previously attempted modifications to guide improvements to a selected parent&#x27;s harness.
+  Under matched models, initial harnesses, and evolution schedules, PCE achieves 72.1% success on SWE-bench Verified and 96.7% on Polyglot, improving over a strong group-evolution baseline by 3.2 and 5.9 percentage points. In our evaluation, PCE reduces the gap between population coverage and best-agent performance by one-third on SWE-bench and closes it on Polyglot. These results suggest that treating the population as evidence--not merely as candidates for selection--provides a complementary principle for agent evolution.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.36589 infradev: can coding agents develop ai infrastructure, and how can we tell? infradev：编码智能体能开发 ai 基础设施吗，我们又如何判断？ yangshen deng jiaqi ruan yeqi huang nick lau guangming sheng luo mai coding agents are beginning to develop the production-grade ai infrastructure that trains and serves large models, yet existing benchmarks cover only single kernels or single-gpu tasks, and grade with tests and prompts that misjudge both correct and incorrect patches. we introduce infradev, a benchmark of 36 tasks built from real-world pull requests to megatron-lm, vllm, and verl, covering infrastructure development for training, inference, and reinforcement learning. each task asks an agent to reimplement a real change that spans many files and must run correctly across many gpus. to grade such changes, we jointly synthesize hidden probes, which enforce the requirements the original tests leave unchecked, and a prompt that states every interface the probes call without revealing the solution. we also design a shared execution environment that reuses dependencies and artifacts across tasks, cutting storage by 52-57% and build time by 13-14% on megatron-lm and vllm. across six frontier models, the best resolves only 38.9% of the tasks; the probes reject 32% of the submissions that pass every official test, and with the original pull request descriptions as prompts, no model resolves a single task. failure analysis shows that structural and state errors dominate and that agents&#x27; own tests rarely check memory, time, or traffic. turning these findings into an agent skill raises the resolved rate of a frontier model on the megatron-lm tasks by 10.5%. 代码agent 评测基准 llm agent + hidden probes ai 基础设施开发 用真实 pr 构建多文件多 gpu 任务，并联合合成隐藏探针与接口提示做判定 现有基准只覆盖单内核或单 gpu 任务，且用测试与提示评分，会误判正确与错误的补丁 真实基础设施改动跨多文件、需多 gpu 正确运行，官方测试漏检需求，原始 pr 描述作提示几乎不可解 从 megatron-lm、vllm、verl 的真实 pr 取 36 个任务；合成隐藏探针强制未覆盖需求，给出不泄露解法的接口提示，并设计跨任务复用依赖的共享执行环境 六个前沿模型中最优仅解决 38.9%；32% 通过全部官方测试的提交被探针拒绝；用原始 pr 描述作提示无一模型解出任何任务 " data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.36589v1" target="_blank" rel="noreferrer">2610.36589</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.36589v1" target="_blank" rel="noreferrer">InfraDev: Can Coding Agents Develop AI Infrastructure, and How Can We Tell?</a><div class="authors">Yangshen Deng, Jiaqi Ruan, Yeqi Huang et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + hidden probes</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">AI 基础设施开发</td><td data-label="核心创新">用真实 PR 构建多文件多 GPU 任务，并联合合成隐藏探针与接口提示做判定</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">InfraDev：编码智能体能开发 AI 基础设施吗，我们又如何判断？</div><div class="facts"><div class="fact"><span>核心问题</span>现有基准只覆盖单内核或单 GPU 任务，且用测试与提示评分，会误判正确与错误的补丁</div><div class="fact"><span>关键困难</span>真实基础设施改动跨多文件、需多 GPU 正确运行，官方测试漏检需求，原始 PR 描述作提示几乎不可解</div><div class="fact"><span>解决方案</span>从 Megatron-LM、vLLM、verl 的真实 PR 取 36 个任务；合成隐藏探针强制未覆盖需求，给出不泄露解法的接口提示，并设计跨任务复用依赖的共享执行环境</div><div class="fact"><span>主要结果</span>六个前沿模型中最优仅解决 38.9%；32% 通过全部官方测试的提交被探针拒绝；用原始 PR 描述作提示无一模型解出任何任务</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.36589v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.36589v1" target="_blank" rel="noreferrer">PDF</a>Yangshen Deng, Jiaqi Ruan, Yeqi Huang, Nick Lau, Guangming Sheng, Luo Mai · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>Coding agents are beginning to develop the production-grade AI infrastructure that trains and serves large models, yet existing benchmarks cover only single kernels or single-GPU tasks, and grade with tests and prompts that misjudge both correct and incorrect patches. We introduce InfraDev, a benchmark of 36 tasks built from real-world pull requests to Megatron-LM, vLLM, and verl, covering infrastructure development for training, inference, and reinforcement learning. Each task asks an agent to reimplement a real change that spans many files and must run correctly across many GPUs. To grade such changes, we jointly synthesize hidden probes, which enforce the requirements the original tests leave unchecked, and a prompt that states every interface the probes call without revealing the solution. We also design a shared execution environment that reuses dependencies and artifacts across tasks, cutting storage by 52-57% and build time by 13-14% on Megatron-LM and vLLM. Across six frontier models, the best resolves only 38.9% of the tasks; the probes reject 32% of the submissions that pass every official test, and with the original pull request descriptions as prompts, no model resolves a single task. Failure analysis shows that structural and state errors dominate and that agents&#x27; own tests rarely check memory, time, or traffic. Turning these findings into an agent skill raises the resolved rate of a frontier model on the Megatron-LM tasks by 10.5%.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.36544 monitor accuracy isn&#x27;t the answer: a decision-value framework for evaluating ai agent restart monitors 监控准确率不是答案：评估 ai agent 重启监控的决策价值框架 siddharth jain venkat n. vedam classification accuracy and true-positive and false-positive rates alone do not determine whether restarting an ai agent improves success. using an exact alarm-to-action identity for an independent clean restart with zero monitoring overhead, we show analytically that a monitor with fixed 90% accuracy can swing from a five-percentage-point loss to a 35-point gain in success rate, depending solely on the replacement attempt&#x27;s residual-budget success probability. we introduce two techniques for evaluating monitors and progress signals in decision terms. first, a decision-sufficiency criterion, a binary-action specialization of blackwell&#x27;s comparison of experiments, identifies which progress representations or context compressions preserve the information needed to choose optimally between the specified actions, independent of trace reconstruction fidelity. second, a finite-sample, model-free decision audit uses simultaneous binomial intervals over existing agent traces, without additional model calls, to certify a preference for &quot;restart&quot; or &quot;continue&quot; under stated sampling assumptions, or return &quot;abstain&quot; when evidence is insufficient. in a study of 194 externally evaluated model executions on 19 selected sympy issues from swe-bench verified, with a retrospective audit of 130 of these traces, we find a 2.29-point apparent restart gain traced to a single surviving failed attempt, a 42.29-point loss on a second model, no positive replication of the initial gain on prospective task cohorts, and zero of 103 live comparisons meeting the specified certification bar. these results motivate evaluating agent monitors through recovery opportunity, decision value, and statistical support, rather than classification performance alone. 代码agent 免训练 评测基准 decision-theoretic monitor evaluation f… agent 重启监控评估 用报警-动作恒等式及决策充分性、有限样本审计量化重启决策价值 分类准确率与 tpr/fpr 无法判断重启 ai agent 是否提升成功率。 现有评估只看分类指标，忽略重启动作的决策价值与统计支持。 构建报警-动作恒等式；用决策充分性准则判断进度表示是否保留最优动作信息；基于现有轨迹的同时二项区间做无模型审计，输出重启/继续/弃权。 swe-bench verified 上 194 次执行：2.29 点增益仅源于 1 个失败尝试，第二模型损失 42.29 点，103 次在线比较 0 次达标。 " data-groups="代码Agent" data-training="免训练|评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.36544v1" target="_blank" rel="noreferrer">2610.36544</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.36544v1" target="_blank" rel="noreferrer">Monitor Accuracy Isn&#x27;t the Answer: A Decision-Value Framework for Evaluating AI Agent Restart Monitors</a><div class="authors">Siddharth Jain, Venkat N. Vedam</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Decision-theoretic monitor evaluation f…</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span> <span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">Agent 重启监控评估</td><td data-label="核心创新">用报警-动作恒等式及决策充分性、有限样本审计量化重启决策价值</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">监控准确率不是答案：评估 AI Agent 重启监控的决策价值框架</div><div class="facts"><div class="fact"><span>核心问题</span>分类准确率与 TPR/FPR 无法判断重启 AI Agent 是否提升成功率。</div><div class="fact"><span>关键困难</span>现有评估只看分类指标，忽略重启动作的决策价值与统计支持。</div><div class="fact"><span>解决方案</span>构建报警-动作恒等式；用决策充分性准则判断进度表示是否保留最优动作信息；基于现有轨迹的同时二项区间做无模型审计，输出重启/继续/弃权。</div><div class="fact"><span>主要结果</span>SWE-bench Verified 上 194 次执行：2.29 点增益仅源于 1 个失败尝试，第二模型损失 42.29 点，103 次在线比较 0 次达标。</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.36544v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.36544v1" target="_blank" rel="noreferrer">PDF</a>Siddharth Jain, Venkat N. Vedam · 29 pages, 6 figures, 14 tables · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>Classification accuracy and true-positive and false-positive rates alone do not determine whether restarting an AI agent improves success. Using an exact alarm-to-action identity for an independent clean restart with zero monitoring overhead, we show analytically that a monitor with fixed 90% accuracy can swing from a five-percentage-point loss to a 35-point gain in success rate, depending solely on the replacement attempt&#x27;s residual-budget success probability. We introduce two techniques for evaluating monitors and progress signals in decision terms. First, a decision-sufficiency criterion, a binary-action specialization of Blackwell&#x27;s comparison of experiments, identifies which progress representations or context compressions preserve the information needed to choose optimally between the specified actions, independent of trace reconstruction fidelity. Second, a finite-sample, model-free decision audit uses simultaneous binomial intervals over existing agent traces, without additional model calls, to certify a preference for &quot;restart&quot; or &quot;continue&quot; under stated sampling assumptions, or return &quot;abstain&quot; when evidence is insufficient. In a study of 194 externally evaluated model executions on 19 selected SymPy issues from SWE-bench Verified, with a retrospective audit of 130 of these traces, we find a 2.29-point apparent restart gain traced to a single surviving failed attempt, a 42.29-point loss on a second model, no positive replication of the initial gain on prospective task cohorts, and zero of 103 live comparisons meeting the specified certification bar. These results motivate evaluating agent monitors through recovery opportunity, decision value, and statistical support, rather than classification performance alone.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.36469 coharl: co-evolving agent policies and executable harnesses with reinforcement learning coharl：用强化学习协同进化智能体策略与可执行 harness jianwen chen peng xia kaide zeng siwei han zhen-yu zhang charles fleming xinyu ye huaxiu yao large language model (llm) agents interact with their environments through executable harnesses that govern tool use and feedback. optimizing a harness for a fixed policy overlooks how its behavior changes during learning, while training a policy under a fixed harness leaves the interface that generates its training experience unchanged. this motivates adapting the harness throughout policy training. we introduce coharl, a population-based reinforcement learning framework that co-evolves a shared policy and a population of executable harnesses. the policy learns from rollouts across the population, and a proposer uses its execution traces to revise harness code during training. coharl achieves a 27.6% mean resolved rate on swe-rebench, improving over harness-only search by 6.4 percentage points. experiments on swe-bench verified and terminal-bench 2.0 show gains in software engineering and terminal-based tasks. under matched training budgets, coharl also outperforms searching for a harness once before rl and alternating policy updates with revisions to a single active harness. 代码agent rl llm agent + executable harness 软件工程与终端任务 策略与一群可执行 harness 在 rl 中协同进化，proposer 依执行轨迹改写 harness 代码 固定 harness 训练策略，或为固定策略一次性搜索 harness，二者相互割裂，界面与策略不同步。 harness 决定工具调用与反馈形式；固定它使生成训练经验的接口僵化，一次性搜索无法随策略演化调整。 基于种群的强化学习框架：共享策略在整个人群 harness 的 rollout 上学习，proposer 利用执行轨迹在训练中迭代修订 harness 代码。 swe-rebench 平均解决率 27.6%，比仅搜索 harness 高 6.4 个百分点；swe-bench verified 与 terminal-bench 2.0 上同预算下优于基线。 " data-groups="代码Agent" data-training="RL" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.36469v1" target="_blank" rel="noreferrer">2610.36469</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.36469v1" target="_blank" rel="noreferrer">CoHARL: Co-Evolving Agent Policies and Executable Harnesses with Reinforcement Learning</a><div class="authors">Jianwen Chen, Peng Xia, Kaide Zeng et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + executable harness</td><td data-label="训练方法"><span class="chip t-RL">RL</span></td><td data-label="应用场景">软件工程与终端任务</td><td data-label="核心创新">策略与一群可执行 harness 在 RL 中协同进化，proposer 依执行轨迹改写 harness 代码</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">CoHARL：用强化学习协同进化智能体策略与可执行 harness</div><div class="facts"><div class="fact"><span>核心问题</span>固定 harness 训练策略，或为固定策略一次性搜索 harness，二者相互割裂，界面与策略不同步。</div><div class="fact"><span>关键困难</span>harness 决定工具调用与反馈形式；固定它使生成训练经验的接口僵化，一次性搜索无法随策略演化调整。</div><div class="fact"><span>解决方案</span>基于种群的强化学习框架：共享策略在整个人群 harness 的 rollout 上学习，proposer 利用执行轨迹在训练中迭代修订 harness 代码。</div><div class="fact"><span>主要结果</span>SWE-rebench 平均解决率 27.6%，比仅搜索 harness 高 6.4 个百分点；SWE-bench Verified 与 Terminal-Bench 2.0 上同预算下优于基线。</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.36469v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.36469v1" target="_blank" rel="noreferrer">PDF</a>Jianwen Chen, Peng Xia, Kaide Zeng, Siwei Han, Zhen-Yu Zhang, Charles Fleming, Xinyu Ye, Huaxiu Yao · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>Large language model (LLM) agents interact with their environments through executable harnesses that govern tool use and feedback. Optimizing a harness for a fixed policy overlooks how its behavior changes during learning, while training a policy under a fixed harness leaves the interface that generates its training experience unchanged. This motivates adapting the harness throughout policy training. We introduce CoHARL, a population-based reinforcement learning framework that co-evolves a shared policy and a population of executable harnesses. The policy learns from rollouts across the population, and a proposer uses its execution traces to revise harness code during training. CoHARL achieves a 27.6% mean resolved rate on SWE-rebench, improving over harness-only search by 6.4 percentage points. Experiments on SWE-bench Verified and Terminal-Bench 2.0 show gains in software engineering and terminal-based tasks. Under matched training budgets, CoHARL also outperforms searching for a harness once before RL and alternating policy updates with revisions to a single active harness.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.36405 kw-bench: breaking frontier harnesses on real-world tasks kw-bench：在真实世界任务上击破前沿 harness george juraj salapa each new generation of frontier model pushes the edge of what is possible. inside a harness -- a loop, a shell, a filesystem, the ability to write and run its own code -- a model can take on increasingly difficult work.
+  a growing body of work treats the coding-agent harness as infrastructure for knowledge work rather than a coding tool, and a new wave of benchmarks tests it there. most of them are generative: build a financial model, a memo, a spreadsheet from a brief, judged by a rubric or by another model. few test the expensive part of knowledge work, which is investigative. in audit, tax, due diligence, regulatory reporting, claims or any dispute over numbers, the answer already exists -- hidden in incomplete and inconsistent evidence spread across systems -- and has to be recovered and defended to the cent.
+  we introduce kw-bench, a benchmark built from real engagements specialists described to us. its first task family is a five-year vat reconstruction across three generations of sap -- legacy ecc, a partial s/4hana migration and a consultant&#x27;s redesign -- delivered as raw system extracts: page headers, local number formats, partial link tables, no documentation of how anything connects. grading is deterministic, with no llm judge.
+  we ran four harnesses -- claude code, codex, opencode and micro-cc -- on the same model, deepseek v4.1 flash, for two hours. the two independent, model-agnostic harnesses delivered (opencode 0.542, micro-cc 0.528); the two lab harnesses, away from their home model, delivered nothing (0.00 each). what defeated them was inertia: keeping many weak signals alive across a long session. on a frontier model the task collapses. micro-cc and claude code on claude opus 5.5 scored 0.9986 and 1.000, in 22 and 25 minutes. a weeks-long engagement now costs minutes and a few dollars; below the frontier, the harness decides how far a model gets. 代码agent 评测基准 免训练 llm + agent harness 增值税重建与审计 用真实委托构建确定性评分基准，同一模型横向对比不同 agent harness 现有基准多为生成式知识工作，缺少对答案已存在、需从残缺证据中取证并逐分核对的调查型任务的评测 证据散落在无文档的异构系统导出中，格式不统一、链接表残缺，需在长会话里同时维持大量弱信号 以专家描述的真实委托构建五年增值税重建任务族，输入为 sap 三代系统原始导出（ecc、部分迁移 s/4hana、顾问重构），评分完全确定性、不用 llm 评委 deepseek v4.1 flash 两小时：opencode 0.542、micro-cc 0.528，claude code 与 codex 均为 0.00；opus 5.5 上分别 0.9986 与 1.000 " data-groups="代码Agent" data-training="评测基准|免训练" data-has-code="true"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.36405v1" target="_blank" rel="noreferrer">2610.36405</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.36405v1" target="_blank" rel="noreferrer">kw-bench: Breaking Frontier Harnesses on Real-World Tasks</a><div class="authors">George Juraj Salapa</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM + agent harness</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span> <span class="chip t-免训练">免训练</span></td><td data-label="应用场景">增值税重建与审计</td><td data-label="核心创新">用真实委托构建确定性评分基准，同一模型横向对比不同 agent harness</td><td class="code" data-label="Code"><a href="https://github.com/GSequist/kw-bench" target="_blank" rel="noreferrer">Code</a></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">kw-bench：在真实世界任务上击破前沿 harness</div><div class="facts"><div class="fact"><span>核心问题</span>现有基准多为生成式知识工作，缺少对答案已存在、需从残缺证据中取证并逐分核对的调查型任务的评测</div><div class="fact"><span>关键困难</span>证据散落在无文档的异构系统导出中，格式不统一、链接表残缺，需在长会话里同时维持大量弱信号</div><div class="fact"><span>解决方案</span>以专家描述的真实委托构建五年增值税重建任务族，输入为 SAP 三代系统原始导出（ECC、部分迁移 S/4HANA、顾问重构），评分完全确定性、不用 LLM 评委</div><div class="fact"><span>主要结果</span>DeepSeek v4.1 Flash 两小时：OpenCode 0.542、micro-cc 0.528，Claude Code 与 Codex 均为 0.00；Opus 5.5 上分别 0.9986 与 1.000</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.36405v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.36405v1" target="_blank" rel="noreferrer">PDF</a>George Juraj Salapa · 26 pages, 8 figures, 5 tables. Code and tasks: https://github.com/GSequist/kw-bench · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Each new generation of frontier model pushes the edge of what is possible. Inside a harness -- a loop, a shell, a filesystem, the ability to write and run its own code -- a model can take on increasingly difficult work.
+  A growing body of work treats the coding-agent harness as infrastructure for knowledge work rather than a coding tool, and a new wave of benchmarks tests it there. Most of them are generative: build a financial model, a memo, a spreadsheet from a brief, judged by a rubric or by another model. Few test the expensive part of knowledge work, which is investigative. In audit, tax, due diligence, regulatory reporting, claims or any dispute over numbers, the answer already exists -- hidden in incomplete and inconsistent evidence spread across systems -- and has to be recovered and defended to the cent.
+  We introduce kw-bench, a benchmark built from real engagements specialists described to us. Its first task family is a five-year VAT reconstruction across three generations of SAP -- legacy ECC, a partial S/4HANA migration and a consultant&#x27;s redesign -- delivered as raw system extracts: page headers, local number formats, partial link tables, no documentation of how anything connects. Grading is deterministic, with no LLM judge.
+  We ran four harnesses -- Claude Code, Codex, OpenCode and micro-cc -- on the same model, DeepSeek v4.1 Flash, for two hours. The two independent, model-agnostic harnesses delivered (OpenCode 0.542, micro-cc 0.528); the two lab harnesses, away from their home model, delivered nothing (0.00 each). What defeated them was inertia: keeping many weak signals alive across a long session. On a frontier model the task collapses. micro-cc and Claude Code on Claude Opus 5.5 scored 0.9986 and 1.000, in 22 and 25 minutes. A weeks-long engagement now costs minutes and a few dollars; below the frontier, the harness decides how far a model gets.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.36346 your wish is my commit: over-compliant refactoring in ai coding agents 如你所愿：ai 编码代理中的过度顺从式重构 haocong jiang sadra sabouri sepand haghighi souti chattopadhyay large language models are known to be sycophantic, over-complying with users even when doing so is unproductive. when these models act as coding agents, this can be costly: an agent that keeps editing after no edit improves the code writes churn, technical debt, and review burden into the codebase. yet the consequences of sycophancy in software engineering remain largely understudied. to understand them, we run a controlled study of iterative refactoring, an open-ended task with no stopping criterion, where any edit an agent makes once the code is already clean reflects compliance rather than improvement. across algorithmic (n=50) and object-oriented (n=10) suites, we repeatedly ask two widely used agents, codex and claude code, to refactor further across five models. over 3,000 turns, we define six behavioral signals of over-compliance. we hypothesized that a capable agent would stop once it recognized an optimized codebase; none did. every model kept editing, rewriting up to 31x the original codebase before first stopping and resuming edits even after declaring the task complete. over-compliance is a costly, multi-turn behavior that compounds with every turn, and our six signals give developers and tool builders a way to detect and curb it. 代码agent 评测基准 免训练 llm coding agents ai 编码代理重构 用无停止准则的迭代重构，定义六个过度顺从行为信号 llm 编码代理在代码已优化后仍持续修改，带来代码 churn、技术债与审查负担 缺乏对编码代理过度顺从的多轮量化；代理无法识别代码已清洁并停止 在算法与面向对象套件上，让 codex 和 claude code 跨五个模型反复重构超 3000 轮，统计停止、重启等六类信号 所有模型均未在代码已优化时停止；首次停止前重写最多达原代码库 31 倍，并会在宣称完成后继续编辑 " data-groups="代码Agent" data-training="评测基准|免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.36346v1" target="_blank" rel="noreferrer">2610.36346</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.36346v1" target="_blank" rel="noreferrer">Your Wish Is My Commit: Over-Compliant Refactoring in AI Coding Agents</a><div class="authors">Haocong Jiang, Sadra Sabouri, Sepand Haghighi et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM coding agents</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span> <span class="chip t-免训练">免训练</span></td><td data-label="应用场景">AI 编码代理重构</td><td data-label="核心创新">用无停止准则的迭代重构，定义六个过度顺从行为信号</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">如你所愿：AI 编码代理中的过度顺从式重构</div><div class="facts"><div class="fact"><span>核心问题</span>LLM 编码代理在代码已优化后仍持续修改，带来代码 churn、技术债与审查负担</div><div class="fact"><span>关键困难</span>缺乏对编码代理过度顺从的多轮量化；代理无法识别代码已清洁并停止</div><div class="fact"><span>解决方案</span>在算法与面向对象套件上，让 Codex 和 Claude Code 跨五个模型反复重构超 3000 轮，统计停止、重启等六类信号</div><div class="fact"><span>主要结果</span>所有模型均未在代码已优化时停止；首次停止前重写最多达原代码库 31 倍，并会在宣称完成后继续编辑</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.36346v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.36346v1" target="_blank" rel="noreferrer">PDF</a>Haocong Jiang, Sadra Sabouri, Sepand Haghighi, Souti Chattopadhyay · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Large language models are known to be sycophantic, over-complying with users even when doing so is unproductive. When these models act as coding agents, this can be costly: an agent that keeps editing after no edit improves the code writes churn, technical debt, and review burden into the codebase. Yet the consequences of sycophancy in software engineering remain largely understudied. To understand them, we run a controlled study of iterative refactoring, an open-ended task with no stopping criterion, where any edit an agent makes once the code is already clean reflects compliance rather than improvement. Across algorithmic (n=50) and object-oriented (n=10) suites, we repeatedly ask two widely used agents, Codex and Claude Code, to refactor further across five models. Over 3,000 turns, we define six behavioral signals of over-compliance. We hypothesized that a capable agent would stop once it recognized an optimized codebase; none did. Every model kept editing, rewriting up to 31x the original codebase before first stopping and resuming edits even after declaring the task complete. Over-compliance is a costly, multi-turn behavior that compounds with every turn, and our six signals give developers and tool builders a way to detect and curb it.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.36254 instant software factories 即时软件工厂 wenxin jiang mikola lysenko coding agents can quickly build prototypes, but a long tail of fixes, optimizations, tests, and releases separates a prototype from a product. a software factory handles this ongoing work through a repeatable process. we ask whether this work needs dedicated orchestration and how such factories should be judged. given a tested repository and a coding agent, an instant software factory uses only two coordination inputs, a swarm of cron-job agents with standing objectives and a shared communication board, such as github, where agents coordinate through the traces they leave. we developed a bootstrap prompt designed to set up both inputs from one round of human input, with governance as a separable layer. we distilled it from two manually configured industrial factories, observed for 15 and 17 days, and have not yet evaluated it. in the github-coordinated cli factory, daily merges rose 15x during agent rollout, an observed association. its agents also filed 95% of new issues and authored 40 of 58 prs that changed ci workflows, and at least 5.6% of issues marked as fixed were later found to have incorrect fixes. unlike an agent scored on a fixed benchmark, a factory thus changes its own workload, evaluator, and measured progress. we formulate factory development as multi-objective optimization under this endogenous feedback. over five months, we plan to evolve both factories, test the bootstrap on new repositories, and test five falsifiable hypotheses. 代码agent 免训练 multi-agent cron-job swarm 仓库持续维护自动化 仅用常设目标的 cron 代理群与共享看板两个协调输入，替代专用编排层 编码代理能快速搭出原型，但从原型到产品之间的大量修复、优化、测试与发布长尾工作是否需要专门编排，又该如何评判 固定基准打分的代理无法刻画工厂会改变自身工作负载、评估者与进度测量的内生反馈 用 bootstrap prompt 由一轮人类输入搭起两套协调输入：带常设目标的 cron 代理群与 github 共享看板，agent 通过留下的痕迹协作，治理作为可分离层 日合并量升 15 倍（关联观察）；代理提交 95% 新 issue，58 个改 ci 的 pr 中 40 个由其撰写；至少 5.6% 标记已修的 issue 修复有误 bootstrap prompt 尚未评估；计划五个月内演进两个工厂、在新仓库上测试并检验五个可证伪假设" data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.36254v1" target="_blank" rel="noreferrer">2610.36254</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.36254v1" target="_blank" rel="noreferrer">Instant Software Factories</a><div class="authors">Wenxin Jiang, Mikola Lysenko</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Multi-agent cron-job swarm</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">仓库持续维护自动化</td><td data-label="核心创新">仅用常设目标的 cron 代理群与共享看板两个协调输入，替代专用编排层</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">即时软件工厂</div><div class="facts"><div class="fact"><span>核心问题</span>编码代理能快速搭出原型，但从原型到产品之间的大量修复、优化、测试与发布长尾工作是否需要专门编排，又该如何评判</div><div class="fact"><span>关键困难</span>固定基准打分的代理无法刻画工厂会改变自身工作负载、评估者与进度测量的内生反馈</div><div class="fact"><span>解决方案</span>用 bootstrap prompt 由一轮人类输入搭起两套协调输入：带常设目标的 cron 代理群与 GitHub 共享看板，agent 通过留下的痕迹协作，治理作为可分离层</div><div class="fact"><span>主要结果</span>日合并量升 15 倍（关联观察）；代理提交 95% 新 issue，58 个改 CI 的 PR 中 40 个由其撰写；至少 5.6% 标记已修的 issue 修复有误</div><div class="fact"><span>未来方向</span>bootstrap prompt 尚未评估；计划五个月内演进两个工厂、在新仓库上测试并检验五个可证伪假设</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.36254v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.36254v1" target="_blank" rel="noreferrer">PDF</a>Wenxin Jiang, Mikola Lysenko · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Coding agents can quickly build prototypes, but a long tail of fixes, optimizations, tests, and releases separates a prototype from a product. A software factory handles this ongoing work through a repeatable process. We ask whether this work needs dedicated orchestration and how such factories should be judged. Given a tested repository and a coding agent, an instant software factory uses only two coordination inputs, a swarm of cron-job agents with standing objectives and a shared communication board, such as GitHub, where agents coordinate through the traces they leave. We developed a bootstrap prompt designed to set up both inputs from one round of human input, with governance as a separable layer. We distilled it from two manually configured industrial factories, observed for 15 and 17 days, and have not yet evaluated it. In the GitHub-coordinated CLI factory, daily merges rose 15x during agent rollout, an observed association. Its agents also filed 95% of new issues and authored 40 of 58 PRs that changed CI workflows, and at least 5.6% of issues marked as fixed were later found to have incorrect fixes. Unlike an agent scored on a fixed benchmark, a factory thus changes its own workload, evaluator, and measured progress. We formulate factory development as multi-objective optimization under this endogenous feedback. Over five months, we plan to evolve both factories, test the bootstrap on new repositories, and test five falsifiable hypotheses.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.36229 agent or human? detecting commits by ai coding agents in the absence of authorship signatures agent 还是 human？在缺少作者签名的情况下检测 ai 编码代理的提交 kosei horikawa hao li yutaro kashiwa youssef esseddiq ouatiti mohammed sayagh bram adams hajimu iida ahmed e. hassan ai coding agents such as claude code, github copilot coding agent, and cursor now commit directly to open-source repositories. empirical studies of these agents identify their commits through authorship signatures, such as bot accounts and co-authored-by trailers. these signatures are optional, can be removed, and are often attached to pull requests rather than to individual commits. hence, it is unclear whether agent commits can be told apart from human commits once the signatures are gone. we investigate the signals and limits of signature-free detection using 7,837,946 commits from 1,226 repositories, covering five coding agents and human commits. after signatures are masked, detectors rank agent commits above human commits with a roc auc of up to 0.859, and most of this signal comes from message verbosity and change size rather than from the code itself. on the shared sample, gpt-6-sol without fine-tuning reaches aucs similar to xgboost and tf-idf. at the observed agent share, however, the best detector on the full test set reaches a precision of only 0.332. detection transfers poorly to held-out claude code and copilot, with tf-idf reaching an auc of only 0.524 for claude code. temporal changes also depend on the agent, e.g., copilot auc drops and later recovers, while more training history helps claude code but not copilot. these results indicate that signature-free detection can prioritize commits for review but cannot replace recorded attribution, and that studies relying on signature-based labels should treat them as a lower bound on agent activity. 代码agent 评测基准 xgboost + tf-idf commit classifiers ai 提交归属检测 屏蔽作者签名后，用提交消息冗长度与改动规模等信号区分 agent 与人类提交 当 bot 账号、co-authored-by 等签名缺失或被删除时，能否仍从提交中识别出 ai 编码代理 签名是可选、可移除的，且常挂在 pull request 而非单个 commit 上，导致基于签名的标签不完备 用 1226 个仓库、783 万条 commit（5 种 agent 与人类）构建数据，遮蔽签名后训练 xgboost、tf-idf 与未微调 gpt-6-sol 检测器，并评估跨 agent 迁移与时间漂移 全量测试集最佳精度仅 0.332，roc auc 最高 0.859；跨 agent 迁移差，tf-idf 对 claude code auc 仅 0.524 无签名检测只可用于排序待审提交，不能替代记录式归属；签名标签应视为 agent 活跃度下界" data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.36229v1" target="_blank" rel="noreferrer">2610.36229</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.36229v1" target="_blank" rel="noreferrer">Agent or Human? Detecting Commits by AI Coding Agents in the Absence of Authorship Signatures</a><div class="authors">Kosei Horikawa, Hao Li, Yutaro Kashiwa et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">XGBoost + TF-IDF commit classifiers</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">AI 提交归属检测</td><td data-label="核心创新">屏蔽作者签名后，用提交消息冗长度与改动规模等信号区分 Agent 与人类提交</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">Agent 还是 Human？在缺少作者签名的情况下检测 AI 编码代理的提交</div><div class="facts"><div class="fact"><span>核心问题</span>当 bot 账号、Co-authored-by 等签名缺失或被删除时，能否仍从提交中识别出 AI 编码代理</div><div class="fact"><span>关键困难</span>签名是可选、可移除的，且常挂在 pull request 而非单个 commit 上，导致基于签名的标签不完备</div><div class="fact"><span>解决方案</span>用 1226 个仓库、783 万条 commit（5 种 Agent 与人类）构建数据，遮蔽签名后训练 XGBoost、TF-IDF 与未微调 gpt-6-sol 检测器，并评估跨 Agent 迁移与时间漂移</div><div class="fact"><span>主要结果</span>全量测试集最佳精度仅 0.332，ROC AUC 最高 0.859；跨 Agent 迁移差，TF-IDF 对 Claude Code AUC 仅 0.524</div><div class="fact"><span>未来方向</span>无签名检测只可用于排序待审提交，不能替代记录式归属；签名标签应视为 Agent 活跃度下界</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.36229v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.36229v1" target="_blank" rel="noreferrer">PDF</a>Kosei Horikawa, Hao Li, Yutaro Kashiwa, Youssef Esseddiq Ouatiti, Mohammed Sayagh, Bram Adams, Hajimu Iida, Ahmed E. Hassan · 21 pages · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>AI coding agents such as Claude Code, GitHub Copilot coding agent, and Cursor now commit directly to open-source repositories. Empirical studies of these agents identify their commits through authorship signatures, such as bot accounts and Co-authored-by trailers. These signatures are optional, can be removed, and are often attached to pull requests rather than to individual commits. Hence, it is unclear whether Agent commits can be told apart from Human commits once the signatures are gone. We investigate the signals and limits of signature-free detection using 7,837,946 commits from 1,226 repositories, covering five coding agents and Human commits. After signatures are masked, detectors rank Agent commits above Human commits with a ROC AUC of up to 0.859, and most of this signal comes from message verbosity and change size rather than from the code itself. On the shared sample, gpt-6-sol without fine-tuning reaches AUCs similar to XGBoost and TF-IDF. At the observed Agent share, however, the best detector on the full test set reaches a precision of only 0.332. Detection transfers poorly to held-out Claude Code and Copilot, with TF-IDF reaching an AUC of only 0.524 for Claude Code. Temporal changes also depend on the agent, e.g., Copilot AUC drops and later recovers, while more training history helps Claude Code but not Copilot. These results indicate that signature-free detection can prioritize commits for review but cannot replace recorded attribution, and that studies relying on signature-based labels should treat them as a lower bound on agent activity.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.37609 envsched: environment-aware scheduling for rollout-efficient agent reinforcement learning envsched：面向 rollout 高效 agent 强化学习的环境感知调度 sihan yang weichen bai ruichuan an yiming cheng zhiyuan feng tianyi jiang renye yan ning ding yifan zhang renrui zhang yehui tang wentao zhang as executable environments for language agents scale, generating and verifying their rollouts becomes increasingly expensive. under finite rollout budgets, this raises an important question: can data management at the environment level make agentic reinforcement learning (rl) more efficient by organizing, evaluating, and scheduling task instances together with the environments that determine their tools, states, transitions, and verification? to address this question, we introduce envsched (environment-aware scheduling), an online scheduler that learns from rollout history. envsched assigns scheduling value through two complementary modeling choices: exploitation prioritizes tasks likely to provide informative reward differences, while coverage spreads each batch across underobserved environments and interaction patterns. envsched organizes environment--task pairs as nodes in a dual-relation graph, with within-environment edges capturing task semantics and shared tool, state, and verifier structure, and cross-environment edges capturing abstract execution and reward topology. by propagating historical rollout statistics along both edge types, it predicts within-task reward variance. these predictions guide a scheduler that allocates each batch to tasks with high predicted reward variance and underobserved environments and tasks. environment quotas and a similarity penalty further limit concentration and redundancy, yielding informative and diverse batches without additional pilot rollouts. in rl on qwen3-8b, envsched achieves an average score of 48.81 across bfcl-v3, tau-bench, and acebench-agent after 40 training steps, exceeding the highest score attained by random task selection after 120 steps. it also improves downstream performance across model sizes at the same training budget. agentic rl rl agent rl scheduler + graph agent 强化学习训练调度 双关系图传播历史 rollout 统计预测奖励方差，并按环境配额调度批次 有限 rollout 预算下，能否通过环境级数据管理提升 agent 强化学习效率 rollout 生成与验证昂贵，随机选任务易集中在低信息或冗余样本，浪费预算 将环境-任务对建为双关系图，沿环境内/跨环境边传播 rollout 统计以预测任务奖励方差；结合利用与覆盖、环境配额和相似度惩罚组成信息丰富且多样的批次 qwen3-8b 上 40 步训练在 bfcl-v3、tau-bench、acebench-agent 平均 48.81，超过随机选择 120 步最高分；同预算下跨模型规模提升 " data-groups="Agentic RL" data-training="RL" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.37609v1" target="_blank" rel="noreferrer">2610.37609</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.37609v1" target="_blank" rel="noreferrer">EnvSched: Environment-Aware Scheduling for Rollout-Efficient Agent Reinforcement Learning</a><div class="authors">Sihan Yang, Weichen Bai, Ruichuan An et al.</div></td><td data-label="方向"><span class=chip>Agentic RL</span></td><td data-label="模型架构">Agent RL scheduler + graph</td><td data-label="训练方法"><span class="chip t-RL">RL</span></td><td data-label="应用场景">Agent 强化学习训练调度</td><td data-label="核心创新">双关系图传播历史 rollout 统计预测奖励方差，并按环境配额调度批次</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">EnvSched：面向 rollout 高效 Agent 强化学习的环境感知调度</div><div class="facts"><div class="fact"><span>核心问题</span>有限 rollout 预算下，能否通过环境级数据管理提升 Agent 强化学习效率</div><div class="fact"><span>关键困难</span>rollout 生成与验证昂贵，随机选任务易集中在低信息或冗余样本，浪费预算</div><div class="fact"><span>解决方案</span>将环境-任务对建为双关系图，沿环境内/跨环境边传播 rollout 统计以预测任务奖励方差；结合利用与覆盖、环境配额和相似度惩罚组成信息丰富且多样的批次</div><div class="fact"><span>主要结果</span>Qwen3-8B 上 40 步训练在 BFCL-v3、tau-Bench、ACEBench-Agent 平均 48.81，超过随机选择 120 步最高分；同预算下跨模型规模提升</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.37609v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.37609v1" target="_blank" rel="noreferrer">PDF</a>Sihan Yang, Weichen Bai, Ruichuan An, Yiming Cheng, Zhiyuan Feng, Tianyi Jiang, Renye Yan, Ning Ding, Yifan Zhang, Renrui Zhang, Yehui Tang, Wentao Zhang · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>As executable environments for language agents scale, generating and verifying their rollouts becomes increasingly expensive. Under finite rollout budgets, this raises an important question: can data management at the environment level make agentic reinforcement learning (RL) more efficient by organizing, evaluating, and scheduling task instances together with the environments that determine their tools, states, transitions, and verification? To address this question, we introduce EnvSched (Environment-aware Scheduling), an online scheduler that learns from rollout history. EnvSched assigns scheduling value through two complementary modeling choices: exploitation prioritizes tasks likely to provide informative reward differences, while coverage spreads each batch across underobserved environments and interaction patterns. EnvSched organizes environment--task pairs as nodes in a dual-relation graph, with within-environment edges capturing task semantics and shared tool, state, and verifier structure, and cross-environment edges capturing abstract execution and reward topology. By propagating historical rollout statistics along both edge types, it predicts within-task reward variance. These predictions guide a scheduler that allocates each batch to tasks with high predicted reward variance and underobserved environments and tasks. Environment quotas and a similarity penalty further limit concentration and redundancy, yielding informative and diverse batches without additional pilot rollouts. In RL on Qwen3-8B, EnvSched achieves an average score of 48.81 across BFCL-v3, tau-Bench, and ACEBench-Agent after 40 training steps, exceeding the highest score attained by random task selection after 120 steps. It also improves downstream performance across model sizes at the same training budget.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.37441 multi-agent reinforcement learning of co-adaptive hip exoskeleton control (marl-exo) for metabolic energy reduction 面向代谢能量降低的协同自适应髋外骨骼控制的多智能体强化学习（marl-exo） yifei yuan jakob wolf ghaith androwis xianlian zhou objective: this study aims to determine whether a hip-exoskeleton policy trained in simulation, by co-adapting with a musculoskeletal human model under a metabolic-energy reward, reduces the metabolic cost of walking in new users without per-user tuning, and how mechanical-power shaping affects the learned assistance. methods: we developed marl-exo, a multi-agent reinforcement learning framework in which a full-body human model (304 muscle actuators; randomized anatomy, gait, and speed) and a bilateral hip-exoskeleton policy are trained concurrently in two stages. the exoskeleton observes only delayed hip kinematics and its past commands; its reward includes muscle metabolic power from a physiologically based energetics model, alone (metabolic) or with mechanical-power shaping (metabolic + power). the metabolic policy was deployed and tested without retraining in eight healthy adults walking at 1.25 m/s, using indirect calorimetry. results: in simulation, the metabolic policy reduced modeled muscle metabolic power by 13.8% relative to no-device walking, versus 8.8% for metabolic + power. on hardware, marl-exo reduced net metabolic rate by 18.3 $\pm$ 6.6% relative to passive in all eight participants. relative to no-exo, the mean reduction was 7.4 $\pm$ 10.0%; six participants more than offset the 13.1% device-wearing penalty, walking up to 24.2% below their no-exo cost. conclusion: a metabolically informed policy co-adapted in simulation transferred to users without per-user tuning and consistently reduced the metabolic cost of walking with the device, while explicit power shaping reduced the simulated benefit. significance: unlike per-user human-in-the-loop optimization, this approach yields a single population-level controller and allows assistance objectives to be screened in simulation before human testing. agentic rl rl multi-agent rl + musculoskeletal model 髋外骨骼代谢优化 将肌肉代谢功率作为奖励，人体模型与外骨骼策略多智能体同时协同适应训练 能否用仿真中与肌肉骨骼人体模型协同训练的髋外骨骼策略，在免逐用户调参下降低新用户行走代谢成本 逐用户人在回路优化依赖大量人体试验和单独调参，难以直接泛化到新用户 两阶段多智能体rl：304肌肉人体模型随机化解剖、步态与速度，与外骨骼策略同时训练；外骨骼仅用延迟髋运动学与历史指令，奖励含生理代谢功率 仿真代谢功率降13.8%；8人硬件净代谢率较passive降18.3±6.6%，较no-exo降7.4±10.0%，最高低24.2% " data-groups="Agentic RL" data-training="RL" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.37441v1" target="_blank" rel="noreferrer">2610.37441</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.37441v1" target="_blank" rel="noreferrer">Multi-Agent Reinforcement Learning of Co-Adaptive Hip Exoskeleton Control (MARL-Exo) for Metabolic Energy Reduction</a><div class="authors">Yifei Yuan, Jakob Wolf, Ghaith Androwis et al.</div></td><td data-label="方向"><span class=chip>Agentic RL</span></td><td data-label="模型架构">Multi-agent RL + musculoskeletal model</td><td data-label="训练方法"><span class="chip t-RL">RL</span></td><td data-label="应用场景">髋外骨骼代谢优化</td><td data-label="核心创新">将肌肉代谢功率作为奖励，人体模型与外骨骼策略多智能体同时协同适应训练</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">面向代谢能量降低的协同自适应髋外骨骼控制的多智能体强化学习（MARL-Exo）</div><div class="facts"><div class="fact"><span>核心问题</span>能否用仿真中与肌肉骨骼人体模型协同训练的髋外骨骼策略，在免逐用户调参下降低新用户行走代谢成本</div><div class="fact"><span>关键困难</span>逐用户人在回路优化依赖大量人体试验和单独调参，难以直接泛化到新用户</div><div class="fact"><span>解决方案</span>两阶段多智能体RL：304肌肉人体模型随机化解剖、步态与速度，与外骨骼策略同时训练；外骨骼仅用延迟髋运动学与历史指令，奖励含生理代谢功率</div><div class="fact"><span>主要结果</span>仿真代谢功率降13.8%；8人硬件净代谢率较Passive降18.3±6.6%，较No-Exo降7.4±10.0%，最高低24.2%</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.37441v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.37441v1" target="_blank" rel="noreferrer">PDF</a>Yifei Yuan, Jakob Wolf, Ghaith Androwis, Xianlian Zhou · 14 pages, 6 figures, including supplementary material · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>Objective: This study aims to determine whether a hip-exoskeleton policy trained in simulation, by co-adapting with a musculoskeletal human model under a metabolic-energy reward, reduces the metabolic cost of walking in new users without per-user tuning, and how mechanical-power shaping affects the learned assistance. Methods: We developed MARL-Exo, a multi-agent reinforcement learning framework in which a full-body human model (304 muscle actuators; randomized anatomy, gait, and speed) and a bilateral hip-exoskeleton policy are trained concurrently in two stages. The exoskeleton observes only delayed hip kinematics and its past commands; its reward includes muscle metabolic power from a physiologically based energetics model, alone (Metabolic) or with mechanical-power shaping (Metabolic + Power). The Metabolic policy was deployed and tested without retraining in eight healthy adults walking at 1.25 m/s, using indirect calorimetry. Results: In simulation, the Metabolic policy reduced modeled muscle metabolic power by 13.8% relative to no-device walking, versus 8.8% for Metabolic + Power. On hardware, MARL-Exo reduced net metabolic rate by 18.3 $\pm$ 6.6% relative to Passive in all eight participants. Relative to No-Exo, the mean reduction was 7.4 $\pm$ 10.0%; six participants more than offset the 13.1% device-wearing penalty, walking up to 24.2% below their No-Exo cost. Conclusion: A metabolically informed policy co-adapted in simulation transferred to users without per-user tuning and consistently reduced the metabolic cost of walking with the device, while explicit power shaping reduced the simulated benefit. Significance: Unlike per-user human-in-the-loop optimization, this approach yields a single population-level controller and allows assistance objectives to be screened in simulation before human testing.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.37195 action-value calibration via continuation sharing for long-horizon agentic reinforcement learning 面向长时程智能体强化学习的续段共享动作价值校准（concal） yingjian chen lang zhou zixin zhao pingfan li weishi zheng zhilin zhao reinforcement learning for long-horizon agents relies on feedback from sequences of interactions, making credit assignment to individual actions difficult. existing methods such as gigpo compare actions at shared states to compute relative advantages, but estimate each action&#x27;s value from a single sampled continuation. the resulting local credit remains sensitive to decisions made later in the trajectory. to address this problem, we propose concal (continuation calibration), a recursive continuation-value estimator that incorporates continuation evidence already present in a rollout batch. concal matches visits from the same task by their incoming state-action-state transitions, combines shared continuation evidence with each visit&#x27;s own transition estimate, and propagates calibrated values backward to refine earlier action-value estimates. this reduces dependence on individual sampled continuations and mitigates local credit distortions without additional rollouts. held-out return diagnostics show lower error in within-group value differences and higher agreement with reference action orderings than estimates based on individual continuations. with qwen2.5-1.5b-instruct, concal improves success rates over gigpo by 3.39 and 5.86 percentage points on alfworld and webshop, respectively. our code is available at https://github.com/yingjian-chen/concal. agentic rl rl llm agent + rl 长时程智能体决策 递归续段价值估计器：匹配同一任务中状态转移相同的访问，共享续段证据并反向传播校准值 长时程智能体强化学习信用分配困难，单个动作的价值只能由一条采样续段估计，局部信用易受后续决策影响而失真 gigpo 等方法虽在共享状态上比较动作，但每个动作价值仍来自单条采样续段，估计方差大且受轨迹后段决策干扰 按入向 state-action-state 转移匹配同一任务的多次访问，把共享续段证据与各访问自身转移估计结合，递归反向传播校准值以修正早期动作价值，且无需额外 rollout 使用 qwen2.5-1.5b-instruct 时，alfworld 与 webshop 成功率较 gigpo 分别提升 3.39 和 5.86 个百分点；留出回报诊断显示组内价值差误差更低、动作序一致性更高 " data-groups="Agentic RL" data-training="RL" data-has-code="true"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.37195v1" target="_blank" rel="noreferrer">2610.37195</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.37195v1" target="_blank" rel="noreferrer">Action-Value Calibration via Continuation Sharing for Long-Horizon Agentic Reinforcement Learning</a><div class="authors">Yingjian Chen, Lang Zhou, Zixin Zhao et al.</div></td><td data-label="方向"><span class=chip>Agentic RL</span></td><td data-label="模型架构">LLM agent + RL</td><td data-label="训练方法"><span class="chip t-RL">RL</span></td><td data-label="应用场景">长时程智能体决策</td><td data-label="核心创新">递归续段价值估计器：匹配同一任务中状态转移相同的访问，共享续段证据并反向传播校准值</td><td class="code" data-label="Code"><a href="https://github.com/Yingjian-Chen/ConCal" target="_blank" rel="noreferrer">Code</a></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">面向长时程智能体强化学习的续段共享动作价值校准（ConCal）</div><div class="facts"><div class="fact"><span>核心问题</span>长时程智能体强化学习信用分配困难，单个动作的价值只能由一条采样续段估计，局部信用易受后续决策影响而失真</div><div class="fact"><span>关键困难</span>GiGPO 等方法虽在共享状态上比较动作，但每个动作价值仍来自单条采样续段，估计方差大且受轨迹后段决策干扰</div><div class="fact"><span>解决方案</span>按入向 state-action-state 转移匹配同一任务的多次访问，把共享续段证据与各访问自身转移估计结合，递归反向传播校准值以修正早期动作价值，且无需额外 rollout</div><div class="fact"><span>主要结果</span>使用 Qwen2.5-1.5B-Instruct 时，ALFWorld 与 WebShop 成功率较 GiGPO 分别提升 3.39 和 5.86 个百分点；留出回报诊断显示组内价值差误差更低、动作序一致性更高</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.37195v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.37195v1" target="_blank" rel="noreferrer">PDF</a>Yingjian Chen, Lang Zhou, Zixin Zhao, Pingfan Li, Weishi Zheng, Zhilin Zhao · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>Reinforcement learning for long-horizon agents relies on feedback from sequences of interactions, making credit assignment to individual actions difficult. Existing methods such as GiGPO compare actions at shared states to compute relative advantages, but estimate each action&#x27;s value from a single sampled continuation. The resulting local credit remains sensitive to decisions made later in the trajectory. To address this problem, we propose ConCal (Continuation Calibration), a recursive continuation-value estimator that incorporates continuation evidence already present in a rollout batch. ConCal matches visits from the same task by their incoming state-action-state transitions, combines shared continuation evidence with each visit&#x27;s own transition estimate, and propagates calibrated values backward to refine earlier action-value estimates. This reduces dependence on individual sampled continuations and mitigates local credit distortions without additional rollouts. Held-out return diagnostics show lower error in within-group value differences and higher agreement with reference action orderings than estimates based on individual continuations. With Qwen2.5-1.5B-Instruct, ConCal improves success rates over GiGPO by 3.39 and 5.86 percentage points on ALFWorld and WebShop, respectively. Our code is available at https://github.com/Yingjian-Chen/ConCal.</div></details></td></tr></tbody></table></div>
+    <details class="history"><summary>History</summary><div class="history-list"><a href="20261028_0648.html">20261028_0648</a>
+<a href="20261027_0659.html">20261027_0659</a>
+<a href="20261026_0525.html">20261026_0525</a>
+<a href="20261025_0522.html">20261025_0522</a>
+<a href="20261024_0547.html">20261024_0547</a>
+<a href="20261023_0606.html">20261023_0606</a>
+<a href="20261022_0603.html">20261022_0603</a>
+<a href="20261021_0601.html">20261021_0601</a>
+<a href="20261020_0643.html">20261020_0643</a>
+<a href="20261019_0512.html">20261019_0512</a>
+<a href="20261018_0511.html">20261018_0511</a>
+<a href="20261017_0552.html">20261017_0552</a>
+<a href="20261016_0554.html">20261016_0554</a>
+<a href="20261015_0600.html">20261015_0600</a>
+<a href="20261014_0711.html">20261014_0711</a>
+<a href="20261013_0912.html">20261013_0912</a>
+<a href="20261012_0637.html">20261012_0637</a>
+<a href="20261011_0608.html">20261011_0608</a>
+<a href="20261010_0700.html">20261010_0700</a>
+<a href="20261009_0737.html">20261009_0737</a>
+<a href="20261008_0725.html">20261008_0725</a>
+<a href="20261007_0651.html">20261007_0651</a>
+<a href="20261006_0832.html">20261006_0832</a>
+<a href="20261005_0608.html">20261005_0608</a>
+<a href="20261004_0557.html">20261004_0557</a>
+<a href="20261003_0656.html">20261003_0656</a>
+<a href="20261002_0658.html">20261002_0658</a>
+<a href="20261001_0646.html">20261001_0646</a>
+<a href="20260930_1209.html">20260930_1209</a>
+<a href="20260930_1005.html">20260930_1005</a>
+<a href="20260930_0656.html">20260930_0656</a>
+<a href="20260929_0737.html">20260929_0737</a>
+<a href="20260928_0546.html">20260928_0546</a>
+<a href="20260927_0552.html">20260927_0552</a>
+<a href="20260926_0604.html">20260926_0604</a>
+<a href="20260925_0600.html">20260925_0600</a>
+<a href="20260924_1505.html">20260924_1505</a>
+<a href="20260924_1308.html">20260924_1308</a>
+<a href="20260924_1112.html">20260924_1112</a>
+<a href="20260924_0601.html">20260924_0601</a>
+<a href="20260923_1530.html">20260923_1530</a>
+<a href="20260923_1508.html">20260923_1508</a>
+<a href="20260923_0559.html">20260923_0559</a>
+<a href="20260923_0546.html">20260923_0546</a>
+<a href="20260922_0634.html">20260922_0634</a>
+<a href="20260922_0624.html">20260922_0624</a>
+<a href="20260921_0526.html">20260921_0526</a>
+<a href="20260921_0509.html">20260921_0509</a>
+<a href="20260920_0525.html">20260920_0525</a>
+<a href="20260920_0514.html">20260920_0514</a>
+<a href="20260919_0536.html">20260919_0536</a>
+<a href="20260919_0523.html">20260919_0523</a>
+<a href="20260918_0605.html">20260918_0605</a>
+<a href="20260918_0553.html">20260918_0553</a>
+<a href="20260917_0604.html">20260917_0604</a>
+<a href="20260916_0606.html">20260916_0606</a>
+<a href="20260916_0554.html">20260916_0554</a>
+<a href="20260915_0627.html">20260915_0627</a>
+<a href="20260915_0618.html">20260915_0618</a>
+<a href="20260913_0522.html">20260913_0522</a>
+<a href="20260913_0510.html">20260913_0510</a>
+<a href="20260912_0541.html">20260912_0541</a>
+<a href="20260912_0530.html">20260912_0530</a>
+<a href="20260911_0534.html">20260911_0534</a>
+<a href="20260911_0521.html">20260911_0521</a>
+<a href="20260910_0539.html">20260910_0539</a>
+<a href="20260910_0528.html">20260910_0528</a>
+<a href="20260909_0547.html">20260909_0547</a>
+<a href="20260909_0533.html">20260909_0533</a>
+<a href="20260908_0559.html">20260908_0559</a>
+<a href="20260908_0553.html">20260908_0553</a>
+<a href="20260907_0513.html">20260907_0513</a>
+<a href="20260907_0500.html">20260907_0500</a>
+<a href="20260906_0507.html">20260906_0507</a>
+<a href="20260906_0453.html">20260906_0453</a>
+<a href="20260905_0523.html">20260905_0523</a>
+<a href="20260905_0512.html">20260905_0512</a>
+<a href="20260904_0540.html">20260904_0540</a>
+<a href="20260904_0533.html">20260904_0533</a>
+<a href="20260903_0545.html">20260903_0545</a>
+<a href="20260903_0530.html">20260903_0530</a>
+<a href="20260902_0544.html">20260902_0544</a>
+<a href="20260902_0533.html">20260902_0533</a>
+<a href="20260901_0712.html">20260901_0712</a>
+<a href="20260901_0706.html">20260901_0706</a>
+<a href="20260831_0555.html">20260831_0555</a>
+<a href="20260831_0548.html">20260831_0548</a>
+<a href="20260830_0540.html">20260830_0540</a>
+<a href="20260830_0528.html">20260830_0528</a>
+<a href="20260829_1004.html">20260829_1004</a>
+<a href="20260829_0959.html">20260829_0959</a>
+<a href="20260828_1134.html">20260828_1134</a>
+<a href="20260828_1025.html">20260828_1025</a>
+<a href="20260827_0547.html">20260827_0547</a>
+<a href="20260827_0533.html">20260827_0533</a>
+<a href="20260826_0339.html">20260826_0339</a>
+<a href="20260826_0326.html">20260826_0326</a>
+<a href="20260825_0337.html">20260825_0337</a>
+<a href="20260825_0324.html">20260825_0324</a>
+<a href="20260824_0329.html">20260824_0329</a>
+<a href="20260824_0318.html">20260824_0318</a>
+<a href="20260823_0330.html">20260823_0330</a>
+<a href="20260823_0319.html">20260823_0319</a>
+<a href="20260822_0332.html">20260822_0332</a>
+<a href="20260822_0322.html">20260822_0322</a>
+<a href="20260821_0338.html">20260821_0338</a>
+<a href="20260821_0326.html">20260821_0326</a>
+<a href="20260820_0343.html">20260820_0343</a>
+<a href="20260820_0335.html">20260820_0335</a>
+<a href="20260819_0338.html">20260819_0338</a>
+<a href="20260819_0324.html">20260819_0324</a>
+<a href="20260818_0335.html">20260818_0335</a>
+<a href="20260818_0323.html">20260818_0323</a>
+<a href="20260817_0328.html">20260817_0328</a>
+<a href="20260816_0328.html">20260816_0328</a>
+<a href="20260816_0318.html">20260816_0318</a>
+<a href="20260815_0352.html">20260815_0352</a>
+<a href="20260815_0344.html">20260815_0344</a>
+<a href="20260814_0359.html">20260814_0359</a>
+<a href="20260814_0354.html">20260814_0354</a>
+<a href="20260813_0403.html">20260813_0403</a>
+<a href="20260813_0359.html">20260813_0359</a>
+<a href="20260812_0404.html">20260812_0404</a>
+<a href="20260812_0358.html">20260812_0358</a>
+<a href="20260811_0357.html">20260811_0357</a>
+<a href="20260811_0352.html">20260811_0352</a>
+<a href="20260810_0341.html">20260810_0341</a>
+<a href="20260810_0329.html">20260810_0329</a>
+<a href="20260809_0338.html">20260809_0338</a>
+<a href="20260809_0325.html">20260809_0325</a>
+<a href="20260808_0356.html">20260808_0356</a>
+<a href="20260808_0348.html">20260808_0348</a>
+<a href="20260807_0844.html">20260807_0844</a>
+<a href="20260807_0838.html">20260807_0838</a>
+<a href="20260806_0437.html">20260806_0437</a>
+<a href="20260806_0422.html">20260806_0422</a>
+<a href="20260805_0439.html">20260805_0439</a>
+<a href="20260805_0422.html">20260805_0422</a>
+<a href="20260804_0437.html">20260804_0437</a>
+<a href="20260804_0423.html">20260804_0423</a>
+<a href="20260803_0416.html">20260803_0416</a>
+<a href="20260802_0414.html">20260802_0414</a>
+<a href="20260802_0408.html">20260802_0408</a>
+<a href="20260801_0426.html">20260801_0426</a>
+<a href="20260801_0416.html">20260801_0416</a>
+<a href="20260731_0421.html">20260731_0421</a>
+<a href="20260731_0413.html">20260731_0413</a>
+<a href="20260730_0416.html">20260730_0416</a>
+<a href="20260730_0410.html">20260730_0410</a>
+<a href="20260729_0413.html">20260729_0413</a>
+<a href="20260728_0417.html">20260728_0417</a>
+<a href="20260727_0416.html">20260727_0416</a>
+<a href="20260727_0411.html">20260727_0411</a>
+<a href="20260726_0414.html">20260726_0414</a>
+<a href="20260726_0409.html">20260726_0409</a>
+<a href="20260725_0432.html">20260725_0432</a>
+<a href="20260725_0415.html">20260725_0415</a>
+<a href="20260724_0419.html">20260724_0419</a>
+<a href="20260724_0410.html">20260724_0410</a>
+<a href="20260723_0418.html">20260723_0418</a>
+<a href="20260723_0415.html">20260723_0415</a>
+<a href="20260722_0423.html">20260722_0423</a>
+<a href="20260722_0418.html">20260722_0418</a>
+<a href="20260721_0427.html">20260721_0427</a>
+<a href="20260721_0418.html">20260721_0418</a>
+<a href="20260720_0411.html">20260720_0411</a>
+<a href="20260720_0406.html">20260720_0406</a>
+<a href="20260719_0407.html">20260719_0407</a>
+<a href="20260719_0403.html">20260719_0403</a>
+<a href="20260718_0413.html">20260718_0413</a>
+<a href="20260718_0403.html">20260718_0403</a>
+<a href="20260717_0408.html">20260717_0408</a>
+<a href="20260717_0359.html">20260717_0359</a>
+<a href="20260716_0417.html">20260716_0417</a>
+<a href="20260716_0405.html">20260716_0405</a>
+<a href="20260715_0420.html">20260715_0420</a>
+<a href="20260715_0407.html">20260715_0407</a>
+<a href="20260714_0421.html">20260714_0421</a>
+<a href="20260714_0409.html">20260714_0409</a>
+<a href="20260713_0409.html">20260713_0409</a>
+<a href="20260713_0405.html">20260713_0405</a>
+<a href="20260712_0409.html">20260712_0409</a>
+<a href="20260712_0402.html">20260712_0402</a>
+<a href="20260711_0439.html">20260711_0439</a>
+<a href="20260711_0418.html">20260711_0418</a>
+<a href="20260710_0454.html">20260710_0454</a>
+<a href="20260710_0444.html">20260710_0444</a>
+<a href="20260709_0426.html">20260709_0426</a>
+<a href="20260709_0419.html">20260709_0419</a>
+<a href="20260708_0455.html">20260708_0455</a>
+<a href="20260708_0448.html">20260708_0448</a>
+<a href="20260707_0456.html">20260707_0456</a>
+<a href="20260707_0451.html">20260707_0451</a>
+<a href="20260706_0421.html">20260706_0421</a>
+<a href="20260706_0410.html">20260706_0410</a>
+<a href="20260705_0415.html">20260705_0415</a>
+<a href="20260705_0407.html">20260705_0407</a>
+<a href="20260704_0421.html">20260704_0421</a>
+<a href="20260704_0413.html">20260704_0413</a>
+<a href="20260703_0425.html">20260703_0425</a>
+<a href="20260703_0417.html">20260703_0417</a>
+<a href="20260702_0452.html">20260702_0452</a>
+<a href="20260702_0447.html">20260702_0447</a>
+<a href="20260701_0502.html">20260701_0502</a>
+<a href="20260701_0455.html">20260701_0455</a>
+<a href="20260630_0454.html">20260630_0454</a>
+<a href="20260630_0452.html">20260630_0452</a>
+<a href="20260629_0420.html">20260629_0420</a>
+<a href="20260629_0410.html">20260629_0410</a>
+<a href="20260628_0423.html">20260628_0423</a>
+<a href="20260627_0450.html">20260627_0450</a>
+<a href="20260627_0430.html">20260627_0430</a>
+<a href="20260626_1438.html">20260626_1438</a>
+<a href="20260626_0502.html">20260626_0502</a>
+<a href="20260625_0455.html">20260625_0455</a>
+<a href="20260624_0505.html">20260624_0505</a>
+<a href="20260623_0535.html">20260623_0535</a>
+<a href="20260622_0445.html">20260622_0445</a>
+<a href="20260621_0422.html">20260621_0422</a>
+<a href="20260620_0442.html">20260620_0442</a>
+<a href="20260619_0531.html">20260619_0531</a>
+<a href="20260618_0519.html">20260618_0519</a>
+<a href="20260617_0545.html">20260617_0545</a>
+<a href="20260616_0549.html">20260616_0549</a>
+<a href="20260615_0423.html">20260615_0423</a>
+<a href="20260614_0423.html">20260614_0423</a>
+<a href="20260613_0505.html">20260613_0505</a>
+<a href="20260612_0528.html">20260612_0528</a>
+<a href="20260611_0528.html">20260611_0528</a>
+<a href="20260610_0504.html">20260610_0504</a>
+<a href="20260609_0514.html">20260609_0514</a>
+<a href="20260608_0421.html">20260608_0421</a>
+<a href="20260607_0418.html">20260607_0418</a>
+<a href="20260606_0451.html">20260606_0451</a>
+<a href="20260604_0557.html">20260604_0557</a>
+<a href="20260603_0556.html">20260603_0556</a>
+<a href="20260602_0615.html">20260602_0615</a>
+<a href="20260601_0419.html">20260601_0419</a>
+<a href="20260531_0414.html">20260531_0414</a>
+<a href="20260530_0512.html">20260530_0512</a>
+<a href="20260529_0515.html">20260529_0515</a>
+<a href="20260527_0459.html">20260527_0459</a>
+<a href="20260526_0426.html">20260526_0426</a>
+<a href="20260525_0417.html">20260525_0417</a>
+<a href="20260524_0411.html">20260524_0411</a>
+<a href="20260523_0445.html">20260523_0445</a>
+<a href="20260522_0454.html">20260522_0454</a>
+<a href="20260521_0508.html">20260521_0508</a>
+<a href="20260520_0449.html">20260520_0449</a>
+<a href="20260519_0442.html">20260519_0442</a>
+<a href="20260518_0409.html">20260518_0409</a>
+<a href="20260517_0425.html">20260517_0425</a>
+<a href="20260516_0436.html">20260516_0436</a>
+<a href="20260515_0457.html">20260515_0457</a>
+<a href="20260514_0507.html">20260514_0507</a>
+<a href="20260513_0503.html">20260513_0503</a>
+<a href="20260512_0505.html">20260512_0505</a>
+<a href="20260511_0418.html">20260511_0418</a>
+<a href="20260510_0414.html">20260510_0414</a>
+<a href="20260509_0426.html">20260509_0426</a>
+<a href="20260508_0435.html">20260508_0435</a>
+<a href="20260507_0454.html">20260507_0454</a>
+<a href="20260506_0427.html">20260506_0427</a>
+<a href="20260505_0436.html">20260505_0436</a>
+<a href="20260504_0410.html">20260504_0410</a>
+<a href="20260503_0414.html">20260503_0414</a>
+<a href="20260502_0426.html">20260502_0426</a>
+<a href="20260501_0429.html">20260501_0429</a>
+<a href="20260430_0430.html">20260430_0430</a>
+<a href="20260429_0437.html">20260429_0437</a>
+<a href="20260428_0429.html">20260428_0429</a>
+<a href="20260427_0405.html">20260427_0405</a>
+<a href="20260426_0404.html">20260426_0404</a>
+<a href="20260425_0410.html">20260425_0410</a>
+<a href="20260424_0430.html">20260424_0430</a>
+<a href="20260423_0426.html">20260423_0426</a>
+<a href="20260422_0424.html">20260422_0424</a>
+<a href="20260421_0418.html">20260421_0418</a>
+<a href="20260420_0359.html">20260420_0359</a>
+<a href="20260419_0358.html">20260419_0358</a>
+<a href="20260418_0415.html">20260418_0415</a>
+<a href="20260417_0421.html">20260417_0421</a>
+<a href="20260416_0425.html">20260416_0425</a>
+<a href="20260415_0426.html">20260415_0426</a>
+<a href="20260414_0423.html">20260414_0423</a>
+<a href="20260413_0352.html">20260413_0352</a>
+<a href="20260412_0347.html">20260412_0347</a>
+<a href="20260411_0356.html">20260411_0356</a>
+<a href="20260410_0412.html">20260410_0412</a>
+<a href="20260409_0411.html">20260409_0411</a>
+<a href="20260407_0404.html">20260407_0404</a>
+<a href="20260406_0347.html">20260406_0347</a>
+<a href="20260405_0344.html">20260405_0344</a>
+<a href="20260404_0350.html">20260404_0350</a>
+<a href="20260403_0400.html">20260403_0400</a>
+<a href="20260401_0408.html">20260401_0408</a>
+<a href="20260331_0407.html">20260331_0407</a>
+<a href="20260329_0347.html">20260329_0347</a>
+<a href="20260328_0350.html">20260328_0350</a>
+<a href="20260326_0357.html">20260326_0357</a>
+<a href="20260325_0405.html">20260325_0405</a>
+<a href="20260324_0400.html">20260324_0400</a>
+<a href="20260323_0342.html">20260323_0342</a>
+<a href="20260322_0340.html">20260322_0340</a>
+<a href="20260321_0347.html">20260321_0347</a>
+<a href="20260320_0356.html">20260320_0356</a>
+<a href="20260319_0358.html">20260319_0358</a>
+<a href="20260318_0405.html">20260318_0405</a>
+<a href="20260317_0401.html">20260317_0401</a>
+<a href="20260316_0343.html">20260316_0343</a>
+<a href="20260315_0341.html">20260315_0341</a>
+<a href="20260314_0344.html">20260314_0344</a>
+<a href="20260313_0352.html">20260313_0352</a>
+<a href="20260312_0352.html">20260312_0352</a>
+<a href="20260311_0347.html">20260311_0347</a>
+<a href="20260310_0350.html">20260310_0350</a>
+<a href="20260309_0338.html">20260309_0338</a>
+<a href="20260308_0337.html">20260308_0337</a>
+<a href="20260307_0347.html">20260307_0347</a>
+<a href="20260306_0402.html">20260306_0402</a>
+<a href="20260305_0348.html">20260305_0348</a>
+<a href="20260304_0348.html">20260304_0348</a>
+<a href="20260303_0348.html">20260303_0348</a>
+<a href="20260302_0336.html">20260302_0336</a>
+<a href="20260301_0339.html">20260301_0339</a>
+<a href="20260228_0348.html">20260228_0348</a>
+<a href="20260227_0354.html">20260227_0354</a>
+<a href="20260226_0402.html">20260226_0402</a>
+<a href="20260225_0404.html">20260225_0404</a>
+<a href="20260224_0406.html">20260224_0406</a>
+<a href="20260223_0338.html">20260223_0338</a>
+<a href="20260222_0339.html">20260222_0339</a>
+<a href="20260221_0345.html">20260221_0345</a>
+<a href="20260220_0348.html">20260220_0348</a>
+<a href="20260219_0358.html">20260219_0358</a>
+<a href="20260218_0358.html">20260218_0358</a>
+<a href="20260217_0343.html">20260217_0343</a>
+<a href="20260216_0339.html">20260216_0339</a>
+<a href="20260215_0338.html">20260215_0338</a>
+<a href="20260213_0401.html">20260213_0401</a>
+<a href="20260212_0404.html">20260212_0404</a>
+<a href="20260210_0409.html">20260210_0409</a>
+<a href="20260208_0339.html">20260208_0339</a>
+<a href="20260207_0349.html">20260207_0349</a>
+<a href="20260206_0347.html">20260206_0347</a>
+<a href="20260205_0346.html">20260205_0346</a>
+<a href="20260204_0354.html">20260204_0354</a>
+<a href="20260202_0337.html">20260202_0337</a>
+<a href="20260201_0333.html">20260201_0333</a>
+<a href="20260131_0345.html">20260131_0345</a>
+<a href="20260130_0341.html">20260130_0341</a>
+<a href="20260129_0344.html">20260129_0344</a>
+<a href="20260128_0341.html">20260128_0341</a>
+<a href="20260127_0338.html">20260127_0338</a>
+<a href="20260126_0330.html">20260126_0330</a>
+<a href="20260125_0329.html">20260125_0329</a>
+<a href="20260124_0337.html">20260124_0337</a>
+<a href="20260123_0337.html">20260123_0337</a>
+<a href="20260122_0343.html">20260122_0343</a>
+<a href="20260121_0424.html">20260121_0424</a>
+<a href="20260119_0329.html">20260119_0329</a>
+<a href="20260118_0327.html">20260118_0327</a>
+<a href="20260117_0332.html">20260117_0332</a>
+<a href="20260116_0339.html">20260116_0339</a>
+<a href="20260115_0334.html">20260115_0334</a>
+<a href="20260114_0333.html">20260114_0333</a>
+<a href="20260113_0334.html">20260113_0334</a>
+<a href="20260112_0331.html">20260112_0331</a>
+<a href="20260111_0329.html">20260111_0329</a>
+<a href="20260110_0333.html">20260110_0333</a>
+<a href="20260109_0334.html">20260109_0334</a>
+<a href="20260108_0335.html">20260108_0335</a>
+<a href="20260107_0330.html">20260107_0330</a>
+<a href="20260106_0336.html">20260106_0336</a>
+<a href="20260105_0328.html">20260105_0328</a>
+<a href="20260104_0328.html">20260104_0328</a>
+<a href="20260103_0325.html">20260103_0325</a>
+<a href="20260102_0339.html">20260102_0339</a>
+<a href="20260101_0329.html">20260101_0329</a>
+<a href="20251231_0333.html">20251231_0333</a>
+<a href="20251230_0332.html">20251230_0332</a>
+<a href="20251229_0329.html">20251229_0329</a>
+<a href="20251228_0332.html">20251228_0332</a>
+<a href="20251227_0329.html">20251227_0329</a>
+<a href="20251226_0330.html">20251226_0330</a>
+<a href="20251225_0329.html">20251225_0329</a>
+<a href="20251224_0331.html">20251224_0331</a>
+<a href="20251223_0332.html">20251223_0332</a>
+<a href="20251222_0328.html">20251222_0328</a>
+<a href="20251221_0329.html">20251221_0329</a>
+<a href="20251220_0330.html">20251220_0330</a>
+<a href="20251219_0330.html">20251219_0330</a>
+<a href="20251218_0345.html">20251218_0345</a>
+<a href="20251217_0332.html">20251217_0332</a>
+<a href="20251216_0333.html">20251216_0333</a>
+<a href="20251215_0333.html">20251215_0333</a>
+<a href="20251214_0327.html">20251214_0327</a>
+<a href="20251212_0333.html">20251212_0333</a>
+<a href="20251211_0331.html">20251211_0331</a>
+<a href="20251210_0332.html">20251210_0332</a>
+<a href="20251209_0331.html">20251209_0331</a>
+<a href="20251208_0328.html">20251208_0328</a>
+<a href="20251207_0327.html">20251207_0327</a>
+<a href="20251206_0330.html">20251206_0330</a>
+<a href="20251205_0331.html">20251205_0331</a>
+<a href="20251204_0331.html">20251204_0331</a>
+<a href="20251203_0333.html">20251203_0333</a>
+<a href="20251202_0335.html">20251202_0335</a>
+<a href="20251201_0328.html">20251201_0328</a>
+<a href="20251130_0327.html">20251130_0327</a>
+<a href="20251129_0328.html">20251129_0328</a>
+<a href="20251128_0327.html">20251128_0327</a>
+<a href="20251127_0327.html">20251127_0327</a>
+<a href="20251126_0329.html">20251126_0329</a>
+<a href="20251125_0327.html">20251125_0327</a>
+<a href="20251124_0327.html">20251124_0327</a>
+<a href="20251123_0326.html">20251123_0326</a>
+<a href="20251122_0328.html">20251122_0328</a>
+<a href="20251121_0328.html">20251121_0328</a>
+<a href="20251120_0329.html">20251120_0329</a>
+<a href="20251119_0328.html">20251119_0328</a>
+<a href="20251118_0328.html">20251118_0328</a>
+<a href="20251117_0326.html">20251117_0326</a>
+<a href="20251116_0325.html">20251116_0325</a>
+<a href="20251115_0327.html">20251115_0327</a>
+<a href="20251114_0328.html">20251114_0328</a>
+<a href="20251113_0330.html">20251113_0330</a>
+<a href="20251112_0329.html">20251112_0329</a>
+<a href="20251111_0328.html">20251111_0328</a>
+<a href="20251110_0325.html">20251110_0325</a>
+<a href="20251109_0326.html">20251109_0326</a>
+<a href="20251108_0328.html">20251108_0328</a>
+<a href="20251107_0328.html">20251107_0328</a>
+<a href="20251106_0329.html">20251106_0329</a>
+<a href="20251105_0326.html">20251105_0326</a>
+<a href="20251104_0327.html">20251104_0327</a>
+<a href="20251103_0324.html">20251103_0324</a>
+<a href="20251102_0326.html">20251102_0326</a>
+<a href="20251101_0324.html">20251101_0324</a>
+<a href="20251031_0328.html">20251031_0328</a>
+<a href="20251030_0330.html">20251030_0330</a>
+<a href="20251029_0329.html">20251029_0329</a>
+<a href="20251028_0329.html">20251028_0329</a>
+<a href="20251027_0322.html">20251027_0322</a>
+<a href="20251026_0327.html">20251026_0327</a>
+<a href="20251025_0331.html">20251025_0331</a>
+<a href="20251024_0329.html">20251024_0329</a>
+<a href="20251023_0329.html">20251023_0329</a>
+<a href="20251022_0330.html">20251022_0330</a>
+<a href="20251021_0331.html">20251021_0331</a>
+<a href="20251020_0328.html">20251020_0328</a>
+<a href="20251019_0321.html">20251019_0321</a>
+<a href="20251018_0327.html">20251018_0327</a>
+<a href="20251017_0320.html">20251017_0320</a>
+<a href="20251016_0328.html">20251016_0328</a>
+<a href="20251015_0328.html">20251015_0328</a>
+<a href="20251014_0323.html">20251014_0323</a>
+<a href="20251011_0328.html">20251011_0328</a>
+<a href="20251010_0330.html">20251010_0330</a>
+<a href="20251009_0321.html">20251009_0321</a>
+<a href="20251008_0343.html">20251008_0343</a>
+<a href="20251007_0353.html">20251007_0353</a>
+<a href="20251006_0325.html">20251006_0325</a>
+<a href="20251005_0350.html">20251005_0350</a>
+<a href="20251004_0352.html">20251004_0352</a>
+<a href="20251003_0352.html">20251003_0352</a>
+<a href="20251002_0356.html">20251002_0356</a>
+<a href="20251001_0321.html">20251001_0321</a>
+<a href="20250925_0335.html">20250925_0335</a>
+<a href="20250924_0350.html">20250924_0350</a>
+<a href="20250923_0348.html">20250923_0348</a>
+<a href="20250922_0346.html">20250922_0346</a>
+<a href="20250921_0345.html">20250921_0345</a>
+<a href="20250920_0342.html">20250920_0342</a>
+<a href="20250919_0346.html">20250919_0346</a>
+<a href="20250918_0342.html">20250918_0342</a>
+<a href="20250917_0336.html">20250917_0336</a>
+<a href="20250916_0333.html">20250916_0333</a>
+<a href="20250915_0333.html">20250915_0333</a>
+<a href="20250914_0328.html">20250914_0328</a>
+<a href="20250913_0322.html">20250913_0322</a>
+<a href="20250912_0335.html">20250912_0335</a>
+<a href="20250911_0337.html">20250911_0337</a>
+<a href="20250910_0338.html">20250910_0338</a>
+<a href="20250909_0341.html">20250909_0341</a>
+<a href="20250908_0342.html">20250908_0342</a>
+<a href="20250907_0333.html">20250907_0333</a>
+<a href="20250906_0350.html">20250906_0350</a>
+<a href="20250905_0319.html">20250905_0319</a>
+<a href="20250904_0323.html">20250904_0323</a>
+<a href="20250903_0355.html">20250903_0355</a>
+<a href="20250902_0325.html">20250902_0325</a>
+<a href="20250901_0355.html">20250901_0355</a>
+<a href="20250831_0355.html">20250831_0355</a>
+<a href="20250830_0356.html">20250830_0356</a>
+<a href="20250829_0355.html">20250829_0355</a>
+<a href="20250828_0333.html">20250828_0333</a>
+<a href="20250827_1654.html">20250827_1654</a>
+<a href="20250827_1602.html">20250827_1602</a>
+<a href="20250827_1557.html">20250827_1557</a>
+<a href="20250827_0320.html">20250827_0320</a>
+<a href="20250826_0320.html">20250826_0320</a>
+<a href="20250825_1752.html">20250825_1752</a>
+<a href="20250825_1709.html">20250825_1709</a>
+<a href="20250825_1652.html">20250825_1652</a>
+<a href="20250825_1647.html">20250825_1647</a>
+<a href="20250825_1645.html">20250825_1645</a>
+<a href="20250825_1631.html">20250825_1631</a>
+<a href="20250825_1606.html">20250825_1606</a>
+<a href="20250825_1559.html">20250825_1559</a>
+<a href="20250825_1558.html">20250825_1558</a>
+<a href="20250825_1556.html">20250825_1556</a>
+<a href="20250825_1531.html">20250825_1531</a>
+<a href="20250825_1525.html">20250825_1525</a>
+<a href="20250825_1516.html">20250825_1516</a>
+<a href="20250825_1450.html">20250825_1450</a>
+<a href="20250825_1444.html">20250825_1444</a>
+<a href="20250825_1438.html">20250825_1438</a>
+<a href="20250825_1414.html">20250825_1414</a>
+<a href="20250825_1413.html">20250825_1413</a>
+<a href="20250825_1410.html">20250825_1410</a>
+<a href="20250825_1408.html">20250825_1408</a>
+<a href="20250825_1405.html">20250825_1405</a>
+<a href="20250825_1401.html">20250825_1401</a>
+<a href="20250825_1355.html">20250825_1355</a>
+<a href="20250825_1347.html">20250825_1347</a>
+<a href="20250825_1345.html">20250825_1345</a>
+<a href="20250825_1344.html">20250825_1344</a>
+<a href="20250825_1343.html">20250825_1343</a>
+<a href="20250825_1340.html">20250825_1340</a>
+<a href="20250825_1339.html">20250825_1339</a>
+<a href="20250825_1333.html">20250825_1333</a>
+<a href="20250825_1323.html">20250825_1323</a>
+<a href="20250825_1317.html">20250825_1317</a>
+<a href="20250825_1243.html">20250825_1243</a>
+<a href="20250824_0342.html">20250824_0342</a>
+<a href="20250823_0343.html">20250823_0343</a>
+<a href="20250823_0142.html">20250823_0142</a>
+<a href="20250822_2331.html">20250822_2331</a>
+<a href="20250822_2308.html">20250822_2308</a>
+<a href="20250822_2258.html">20250822_2258</a>
+<a href="20250822_2241.html">20250822_2241</a>
+<a href="20250822_2228.html">20250822_2228</a>
+<a href="20250822_2206.html">20250822_2206</a>
+<a href="20250822_2147.html">20250822_2147</a>
+<a href="20250822_2111.html">20250822_2111</a>
+<a href="20250822_1259.html">20250822_1259</a>
+<a href="20250822_1233.html">20250822_1233</a>
+<a href="20250822_1229.html">20250822_1229</a>
+<a href="20250822_1223.html">20250822_1223</a>
+<a href="20250822_1210.html">20250822_1210</a>
+<a href="20250822_1201.html">20250822_1201</a>
+<a href="20250822_1111.html">20250822_1111</a>
+<a href="20250822_1058.html">20250822_1058</a>
+<a href="20250822_1052.html">20250822_1052</a>
+<a href="20250822_1045.html">20250822_1045</a>
+<a href="20250822_0657.html">20250822_0657</a>
+<a href="20250822_0553.html">20250822_0553</a></div></details>
+    <div class="footer">Generated by arxiv-tracker</div>
+  </div>
+</body></html>
