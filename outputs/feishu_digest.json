@@ -1,5 +1,5 @@
 {
-  "report_date": "2026-10-29",
+  "report_date": "2026-10-30",
   "groups": [
     "代码预训练",
     "代码后训练",
@@ -8,453 +8,368 @@
   ],
   "items": [
     {
-      "id": "http://arxiv.org/abs/2610.37459v1",
-      "arxiv_id": "2610.37459",
-      "title": "M4Bench: Evaluating Procedural Specification for Clinical EHR Derivation Agents",
-      "title_zh": "M4Bench：评估临床 EHR 衍生智能体的过程性规范",
+      "id": "http://arxiv.org/abs/2610.36188v1",
+      "arxiv_id": "2610.36188",
+      "title": "Skill Dreaming: Evolving Repository Skills through Pull Request Streams",
+      "title_zh": "Skill Dreaming：通过 Pull Request 流演化仓库技能",
       "tags": {
-        "architecture": "LLM coding agent + skill files",
-        "application": "临床 EHR 变量衍生",
-        "innovation": "用可审阅 markdown skill 承载衍生规范，并以对照实验拆解收益来源",
+        "architecture": "LLM agent + skill library",
+        "application": "仓库级 PR 开发维护",
+        "innovation": "从已验证 PR 中抽取可执行技能，并随 PR 流持续精炼仓库技能库",
         "training": [
-          "评测基准"
-        ]
-      },
-      "problem": "临床 EHR 衍生变量定义散落在条目编码、时间窗、缺失规则与输出粒度中，需检验编码智能体能否复现",
-      "challenge": "现有基准缺少规范控制，无法区分收益来自规范完整性、交付格式还是模式熟悉与记忆",
-      "solution": "构建 28 个 MIMIC-IV/eICU 衍生任务，Docker 隔离运行 Codex，设无 skill、操作规范、诱饵 skill、原始参考 SQL、模式混淆等对照",
-      "results": "skill 使奖励 +0.136（26/28 任务提升）；操作规范单独 +0.162，skill 仅再加 0.024；Claude Code 复现 +0.120",
-      "future": "收益仅为与参考部分一致，严格检查全通过仅 25/280，行级 F1 几乎不变",
-      "groups": [
-        "代码Agent"
-      ],
-      "html_url": "https://arxiv.org/abs/2610.37459v1",
-      "code_urls": [
-        "https://github.com/hannesill/m4/tree/m4bench-neurips2026-camera-ready/benchmark",
-        "https://huggingface.co/datasets/hannesill/m4bench-evidence"
-      ]
-    },
-    {
-      "id": "http://arxiv.org/abs/2610.37434v1",
-      "arxiv_id": "2610.37434",
-      "title": "FeatureArc: Benchmarking Coding Agents on Evolving Features",
-      "title_zh": "FeatureArc：面向演进式功能的编程智能体基准测试",
-      "tags": {
-        "architecture": "Coding agent eval harness",
-        "application": "多阶段功能演进开发",
-        "innovation": "用仓库历史构建多阶段相互依赖的任务，跨阶段对新旧行为执行 F2P/P2P 可执行校验",
-        "training": [
-          "评测基准"
-        ]
-      },
-      "problem": "现有功能基准只在固定代码库上评测单次请求，无法检验智能体在自身早前代码上连续扩展功能",
-      "challenge": "智能体后续阶段会继承早期缺陷且很少回查，在无外部测试反馈与回滚时错误难被发现",
-      "solution": "从仓库历史自动构建 2–10 阶的同功能任务，给出显式需求与接口契约，每阶段在参考代码上验证新行为 F2P 与旧行为 P2P 测试",
-      "results": "73 个任务和 10 个智能体：成功率从首阶段 62.7% 降至整个功能的 28.5%，72.9% 的后期失败源于继承缺陷，约 95% 未被察觉",
-      "future": "阶段之间无人工检查的自主功能演进仍是开放难题",
-      "groups": [
-        "代码Agent"
-      ],
-      "html_url": "https://arxiv.org/abs/2610.37434v1",
-      "code_urls": []
-    },
-    {
-      "id": "http://arxiv.org/abs/2610.37332v1",
-      "arxiv_id": "2610.37332",
-      "title": "Hidden in Plain Sight: an Empirical Study about The Instruction Stacks of Coding Agents",
-      "title_zh": "藏于明处：编码代理指令栈的实证研究",
-      "tags": {
-        "architecture": "Coding agent + tool harness",
-        "application": "编码代理指令栈分析",
-        "innovation": "纵向跨代理采集5个编码代理1,886个release首个模型请求，量化指令栈构成与演化",
-        "training": [
-          "免训练",
-          "评测基准"
-        ]
-      },
-      "problem": "编码代理发给模型的不只是用户提示，还含工具定义与环境上下文，该指令栈对用户不透明、研究刻画不足",
-      "challenge": "只看系统提示或模型名无法完整刻画代理输入；指令栈随版本变化，变更动机多未被记录",
-      "solution": "在受控条件下解析各release首个模型请求的指令栈，比较组成与演化差异，并把4个开源代理的变更单元追溯到公开文档动机",
-      "results": "工具定义在3个代理最新请求中占主导；仅48%变更单元能直接解释修订动机；集中修订改写工具使用、归因与编码风格指令；共享能力趋同但措辞分化",
-      "future": "建议随 release 公开捕获的指令栈与修订理由",
-      "groups": [
-        "代码Agent"
-      ],
-      "html_url": "https://arxiv.org/abs/2610.37332v1",
-      "code_urls": []
-    },
-    {
-      "id": "http://arxiv.org/abs/2610.37283v1",
-      "arxiv_id": "2610.37283",
-      "title": "BenchMeUp: Building Software Engineering Benchmarks from Natural-Language Specifications",
-      "title_zh": "BenchMeUp：从自然语言规格构建软件工程基准",
-      "tags": {
-        "architecture": "Parallel LLM agents",
-        "application": "软件工程基准构建",
-        "innovation": "由自然语言规格生成搜索规则和构建计划，多LLM代理并行构建并验证可执行基准实例",
-        "training": [
-          "评测基准",
           "免训练"
         ]
       },
-      "problem": "软件工程基准需人工寻找实例、准备环境、确定预期并验证，构建成本高",
-      "challenge": "人工构建基准劳动密集；通用编码代理难以保证实例有效性与可执行性",
-      "solution": "根据规格生成搜索规则与构建计划，调用并行LLM代理识别候选并构建可执行实例，在全新环境验证后以统一CLI打包",
-      "results": "构建198/200实例，196（99%）打包；189/196可端到端评测，180/198合格，Codex仅10/200",
-      "future": "执行之外的有效性仍需检查",
+      "problem": "仓库专用技能需随代码结构、实现约定与维护需求演化，PR 中积累的经验未被系统复用",
+      "challenge": "新 PR 需遵循仓库实现模式、同步修改相关组件并保持既有测试通过，通用技能难以覆盖",
+      "solution": "从已验证 PR 提取可执行知识构建仓库技能库，随新 PR 持续更新；串联 PR 分析、技能管理、代码执行与 CI 形成闭环",
+      "results": "构建端到端工作流，将学习到的技能用于仓库变更，并把后续 PR 结果回流更新技能；摘要未给出定量结果",
+      "future": "",
       "groups": [
         "代码Agent"
       ],
-      "html_url": "https://arxiv.org/abs/2610.37283v1",
+      "html_url": "https://arxiv.org/abs/2610.36188v1",
       "code_urls": []
     },
     {
-      "id": "http://arxiv.org/abs/2610.37255v1",
-      "arxiv_id": "2610.37255",
-      "title": "Your Policy Is Secretly a Harness: The Decision Geometry of Agent Interfaces",
-      "title_zh": "你的策略暗中就是 Harness：智能体接口的决策几何",
+      "id": "http://arxiv.org/abs/2610.36153v1",
+      "arxiv_id": "2610.36153",
+      "title": "Stratum: Repository Memory for Coding Agents Beyond the Context Window",
+      "title_zh": "Stratum：超越上下文窗口的编码智能体仓库记忆",
       "tags": {
-        "architecture": "LLM agent + harness",
-        "application": "Agent harness 设计与评测",
-        "innovation": "用 KL 正则控制证明策略 log-odds 编码 harness 偏好，并把回报分解为 harness 上限与策略失配",
+        "architecture": "Tiered repository memory + tools",
+        "application": "仓库级缺陷修复",
+        "innovation": "分层仓库记忆借助页安全工具返回内容、剩余与开销，检索百万节点中位 1.7ms",
         "training": [
-          "RL",
+          "免训练"
+        ]
+      },
+      "problem": "编码智能体每次会话都无历史记忆，重复读文件、重试失败方案、遗忘已定位的根因",
+      "challenge": "瓶颈在知识选择而非容量：47% 共编辑文件对无结构连通，KV 缓存存储代价高 10^4–10^5 倍",
+      "solution": "把经验感知的持久记忆与仓库共存，按层存储索引文本，通过明确说明返回内容、剩余内容与代价的页安全工具服务检索",
+      "results": "8 个真实缺陷多会话实验中，继承他模型会话记忆的新智能体 24 次中 21 次定位根因文件，检索基线仅 6/24（Fisher p<1e-4），中位 token 成本低 4.5 倍；八项调查笔记合并后仍 8/8",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.36153v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.36015v1",
+      "arxiv_id": "2610.36015",
+      "title": "Do Coding Agents Still Need a Debugger? Frontier-Model-Based Fault Localization at the Accuracy Ceiling",
+      "title_zh": "编码智能体还需要调试器吗？准确率天花板下基于前沿模型的故障定位",
+      "tags": {
+        "architecture": "LLM coding agent with debugger",
+        "application": "代码故障定位",
+        "innovation": "在610个注入故障和5种语义保持变换上比较有无调试器辅助的故障定位",
+        "training": [
+          "评测基准"
+        ]
+      },
+      "problem": "编码智能体仅凭源码能否准确进行故障定位，调试器辅助能带来多少提升、代价多大，以及可选时智能体是否使用调试器。",
+      "challenge": "早期智能体不擅长静态执行追踪和调试器操作，且调试器交互成本高；变换后程序可能破坏定位，前沿模型下是否仍需调试器不明。",
+      "solution": "向144个LeetCode解答注入610个单行故障，并用5种行为保持变换重写；让Sol 6.1、Luna 6、Qwen 3.8智能体在无/可选/鼓励调试器下定位，记录准确率与token。",
+      "results": "无工具原始/变换程序定位98.2–99.9%/96.7–99.9%；鼓励调试器消除Luna 6和Qwen 3.8剩余变换错误63%/61%，提升2.1/1.3点，token为14.7–27倍；可选时仅0.2–6.2%运行用调试器仍增益1.5/1.3点。",
+      "future": "仅限短小且规格精确的程序；未涉及大型仓库、多行故障和真实开发流程。",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.36015v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.36010v1",
+      "arxiv_id": "2610.36010",
+      "title": "CIVER: Causal Intervention Verification for Reliable Code Review",
+      "title_zh": "CIVER：面向可靠代码评审的因果干预验证",
+      "tags": {
+        "architecture": "LLM reviewer + verifier",
+        "application": "代码评审缺陷验证",
+        "innovation": "用修复导向扰动干预评审，验证缺陷真伪并抑制误报",
+        "training": [
           "其他"
         ]
       },
-      "problem": "Agent 回报同时受 harness 与策略影响，用固定模型比较不同 harness 时两者混杂，无法判断 harness 本身优劣",
-      "challenge": "harness 常被改动后用已训练模型评判，隐含假设模型在一套 harness 下学到的偏好能迁移到新 harness",
-      "solution": "在 KL 正则控制下推导出部署回报等于 harness 上限减去策略失配；训练只改变失配，换 harness 则同时改变两项，并用强模型代替最优策略估计上限与失配",
-      "results": "MiniWoB++ 中颠倒观测字段顺序使成功率 85.0%→19.2%；Terminal-Bench Lite 上用强模型估计的上限减失配可复现准确率排序，单项则不能",
+      "problem": "LLM 代码评审常产生冗长、含大量误报且缺乏证据的不可靠审查意见",
+      "challenge": "现有评审无法区分可行动缺陷与无证据声明，误报会误导开发者与下游编码代理",
+      "solution": "评审模块评估发现，干预模块生成修复导向扰动，验证模块打分；专家迭代联合优化，使真缺陷在针对性修复下响应，无关改动下稳定",
+      "results": "SWE-Review-Bench 正确识别 77% 真缺陷；跨项目与下游修复评测显示可泛化并提升编码代理成功率",
       "future": "",
       "groups": [
         "代码Agent"
       ],
-      "html_url": "https://arxiv.org/abs/2610.37255v1",
-      "code_urls": [
-        "https://github.com/2020-qqtcg/HRP"
-      ]
-    },
-    {
-      "id": "http://arxiv.org/abs/2610.37224v1",
-      "arxiv_id": "2610.37224",
-      "title": "Spine: Compiling Subtask Trees into Structured Context for Long-Horizon Coding Agents",
-      "title_zh": "Spine：将子任务树编译为结构化上下文，面向长时程编码智能体",
-      "tags": {
-        "architecture": "LLM + tree runtime",
-        "application": "长时程仓库级编码",
-        "innovation": "用 work scope 显式声明子任务边界，运行时把持续更新的 SpineTree 即时编译成模型上下文",
-        "training": [
-          "免训练"
-        ]
-      },
-      "problem": "长时程编码任务的上下文随交互不断膨胀，而隐式裁剪或整体委派子任务会造成信息丢失或协调开销",
-      "challenge": "缺乏显式子任务边界时压缩历史会丢掉未完成子任务所需信息；逐层递归委派又把粒度与执行者选择绑定",
-      "solution": "同一智能体以内联方式执行嵌套子任务，仅并行独立任务才委派；运行时按完成状态保留未完成子任务交互、用结果替换已完成子任务细节，并保持前缀缓存复用",
-      "results": "接入 Codex 后，SWE-Milestone 得分提升 11.8%、成本降 32.4%，ProgramBench 通过率平均提升 17.3%，10 个 FrontierSWE 任务中 8 个的 Mean@5 提升；接入 Pi 后得分提升 9.5-17.5%",
-      "future": "",
-      "groups": [
-        "代码Agent"
-      ],
-      "html_url": "https://arxiv.org/abs/2610.37224v1",
+      "html_url": "https://arxiv.org/abs/2610.36010v1",
       "code_urls": []
     },
     {
-      "id": "http://arxiv.org/abs/2610.36848v1",
-      "arxiv_id": "2610.36848",
-      "title": "Evolving Agent Teams",
-      "title_zh": "演化式智能体团队",
+      "id": "http://arxiv.org/abs/2610.35992v1",
+      "arxiv_id": "2610.35992",
+      "title": "Before the First Edit? Measuring When Coding-Agent Guidance Actually Arrives",
+      "title_zh": "在首次编辑之前？测量编码智能体指导实际何时到达",
       "tags": {
-        "architecture": "Multi-agent LLM framework",
-        "application": "GPU 内核优化",
-        "innovation": "中心监督器诊断局部最优并重组智能体团队，持久文件系统积累经验支撑重组。",
-        "training": [
-          "免训练"
-        ]
-      },
-      "problem": "现有编码智能体在真实专家编写的 GPU 内核（如 FlashInfer）上易陷入局部最优。",
-      "challenge": "单智能体迭代缺乏局部最优诊断与经验积累机制，难以重组搜索跳出。",
-      "solution": "中心监督器诊断每个局部最优并重组智能体团队；持久文件系统保存学习文档、演化历史与团队产物，用积累经验支撑重组。",
-      "results": "FlashInfer-Bench 47 个负载赢 36 个，MLA paged decode 平均 1.2x；RoboDojo 62.1 对比 55.3。",
-      "future": "",
-      "groups": [
-        "代码Agent"
-      ],
-      "html_url": "https://arxiv.org/abs/2610.36848v1",
-      "code_urls": [
-        "https://github.com/caoshiyi/EAT"
-      ]
-    },
-    {
-      "id": "http://arxiv.org/abs/2610.36660v1",
-      "arxiv_id": "2610.36660",
-      "title": "The View from Nowhere: Population-Centered Agent Evolution",
-      "title_zh": "无处之见：以种群为中心的智能体演化",
-      "tags": {
-        "architecture": "LLM agent harness evolution",
-        "application": "仓库级代码修复",
-        "innovation": "把种群的任务记录与修改历史蒸馏为 population block，指导父代 harness 改进",
-        "training": [
-          "免训练"
-        ]
-      },
-      "problem": "现有自改进智能体只围绕选定父代及其演化经验改进，种群中其余智能体的信息基本未被利用",
-      "challenge": "种群覆盖的任务成功率明显高于最佳单体智能体，说明有用能力与诊断证据散落在种群中却无法整合进领先智能体",
-      "solution": "PCE 将种群的任务记录与修改历史蒸馏成 population block，刻画反复失败、互补成功与既往自修改的效果，据此指导选定父代的 harness 改进",
-      "results": "SWE-bench Verified 72.1%、Polyglot 96.7%，较强群体演化基线提升 3.2 与 5.9 个百分点；覆盖-最佳差距在 SWE-bench 缩小三分之一、Polyglot 上消除",
-      "future": "",
-      "groups": [
-        "代码Agent"
-      ],
-      "html_url": "https://arxiv.org/abs/2610.36660v1",
-      "code_urls": []
-    },
-    {
-      "id": "http://arxiv.org/abs/2610.36589v1",
-      "arxiv_id": "2610.36589",
-      "title": "InfraDev: Can Coding Agents Develop AI Infrastructure, and How Can We Tell?",
-      "title_zh": "InfraDev：编码智能体能开发 AI 基础设施吗，我们又如何判断？",
-      "tags": {
-        "architecture": "LLM agent + hidden probes",
-        "application": "AI 基础设施开发",
-        "innovation": "用真实 PR 构建多文件多 GPU 任务，并联合合成隐藏探针与接口提示做判定",
+        "architecture": "LLM coding-agent harness",
+        "application": "编码智能体时序审计",
+        "innovation": "审计策略分配、请求资格、触发、计划交付、源码变更五个事件，并逐动作前后哈希 Python 文件，使“首编辑前指导”可测试",
         "training": [
           "评测基准"
         ]
       },
-      "problem": "现有基准只覆盖单内核或单 GPU 任务，且用测试与提示评分，会误判正确与错误的补丁",
-      "challenge": "真实基础设施改动跨多文件、需多 GPU 正确运行，官方测试漏检需求，原始 PR 描述作提示几乎不可解",
-      "solution": "从 Megatron-LM、vLLM、verl 的真实 PR 取 36 个任务；合成隐藏探针强制未覆盖需求，给出不泄露解法的接口提示，并设计跨任务复用依赖的共享执行环境",
-      "results": "六个前沿模型中最优仅解决 38.9%；32% 通过全部官方测试的提交被探针拒绝；用原始 PR 描述作提示无一模型解出任何任务",
+      "problem": "编码智能体框架声称在首次源码编辑前提供指导，但实际拦截的是哪个事件、指导是否真先于首次修改缺乏可验证证据",
+      "challenge": "公开轨迹缺同步文件系统状态，无法定位首次突变；规定动作比较也无法反映智能体收到计划后如何继续执行",
+      "solution": "在公开软件 issue 上运行本地 Qwen2.5-Coder 14B 智能体，对每个已执行动作前后哈希 Python 文件，做 76 臂 pilot 研究并辅以后验局部目标与回归选择器测试",
+      "results": "15 臂跨 7 任务 3 仓库修改 Python 源码；指导均先于首次变更，但未达预注册 20 臂覆盖目标；7 个变更臂通过选择器，其中 4 个回归列表不完整",
+      "future": "数据未证明规划提升修复正确性，也未覆盖 shell 首写；需同步文件系统状态并扩大覆盖",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.35992v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.35987v1",
+      "arxiv_id": "2610.35987",
+      "title": "PROBE: Frontier Coding Agents Find Different Bugs Than Maintainers Fix",
+      "title_zh": "PROBE：前沿编程智能体发现的 bug 与维护者修复的不同",
+      "tags": {
+        "architecture": "Code LLM agent",
+        "application": "仓库级 bug 发现",
+        "innovation": "汇总 20 个仓库 18 个月内 2457 个已修复 bug，并提供候选发现与部分参考集的匹配方法",
+        "training": [
+          "评测基准"
+        ]
+      },
+      "problem": "编码智能体已广泛用于软件工程，但其在整个仓库范围内找出人类维护者会修复的全部 bug 的能力尚未被研究",
+      "challenge": "缺少以维护者实际修复为参考、覆盖整仓库的 bug 发现基准，无法同时衡量召回与精度",
+      "solution": "将 20 个 GitHub 仓库 18 个月内修复的全部 2457 个 bug 作为部分参考集，设计候选发现与参考集的匹配方法，评测前沿模型智能体的召回、精度及发现分布",
+      "results": "召回低于 21%、精度低于 9%；更强模型召回由 8% 升至 17%，精度未提升；85% 候选发现被 LLM 与人工评为有效；各智能体发现分布相近，但显著不同于维护者修复的 bug 分布",
+      "future": "参考集仅为部分 bug 集合，评测止于召回与精度，未给出提升 bug 发现能力的训练方法",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.35987v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.35982v1",
+      "arxiv_id": "2610.35982",
+      "title": "Generation and Verification: Human-Agent Collaboration for Safety-Critical Automotive Software Engineering",
+      "title_zh": "生成与验证：面向安全关键汽车软件工程的人机协作",
+      "tags": {
+        "architecture": "LLM + MCP tool harness",
+        "application": "汽车安全关键软件开发",
+        "innovation": "通过MCP暴露生成、编辑、验证工具，并基于生产代码、需求与UML微调LLM",
+        "training": [
+          "SFT",
+          "免训练"
+        ]
+      },
+      "problem": "通用编码代理侧重生成质量，难以满足汽车安全关键软件对验证、追溯和领域规范的要求",
+      "challenge": "安全关键汽车软件需逐变更审查、需求追溯并符合MISRA/AUTOSAR，且领域数据稀缺，通用LLM不熟悉分层架构与接口约定",
+      "solution": "构建汽车C/C++编码助手：用MCP向开发者提供生成、编辑、验证三工具，可按需验证任意代码；并用提示工程与基于生产代码-需求-UML数据集的微调定制LLM",
+      "results": "两周试点verify最常用；75%偏好提示工程；C上提示工程违规更少，C++上微调架构一致性更好",
       "future": "",
       "groups": [
         "代码Agent"
       ],
-      "html_url": "https://arxiv.org/abs/2610.36589v1",
+      "html_url": "https://arxiv.org/abs/2610.35982v1",
       "code_urls": []
     },
     {
-      "id": "http://arxiv.org/abs/2610.36544v1",
-      "arxiv_id": "2610.36544",
-      "title": "Monitor Accuracy Isn't the Answer: A Decision-Value Framework for Evaluating AI Agent Restart Monitors",
-      "title_zh": "监控准确率不是答案：评估 AI Agent 重启监控的决策价值框架",
+      "id": "http://arxiv.org/abs/2610.35980v1",
+      "arxiv_id": "2610.35980",
+      "title": "UnityBench-Mini3D: Evaluating LLM Agents for 3D Game Development in Unity",
+      "title_zh": "UnityBench-Mini3D：评估 LLM Agent 在 Unity 中进行 3D 游戏开发的能力",
       "tags": {
-        "architecture": "Decision-theoretic monitor evaluation f…",
-        "application": "Agent 重启监控评估",
-        "innovation": "用报警-动作恒等式及决策充分性、有限样本审计量化重启决策价值",
+        "architecture": "LLM agent + Unity test harness",
+        "application": "Unity 3D 游戏开发",
+        "innovation": "用 1,178 个引擎内里程碑测试做确定性评分，按场景结构、组件配置与运行时行为定位失败",
+        "training": [
+          "评测基准"
+        ]
+      },
+      "problem": "现有游戏开发 Agent 基准多集中于 Godot，且依赖 LLM 裁判或粗粒度任务级结果，缺少对引擎状态与运行时行为的细粒度诊断",
+      "challenge": "游戏正确性取决于引擎 API、序列化场景状态与运行时行为的交互，仅看源码或任务级通过率无法区分部分实现与完整解",
+      "solution": "构建 77 个 Unity 项目级任务，覆盖 7 类专家技能与 3 个难度档；每题配完整工程与自然语言需求，用 1,178 个留出里程碑测试在引擎内执行，给出确定性部分分并定位失败",
+      "results": "21 个模型×9 个编码框架：整体通过率 57.7%，简单任务 80.9%，困难任务降至 35.2%",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.35980v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.34847v1",
+      "arxiv_id": "2610.34847",
+      "title": "Ethics by Configuration: AI Ethics Principles in Coding Agent Instructions",
+      "title_zh": "配置即伦理：编码智能体指令中的 AI 伦理原则",
+      "tags": {
+        "architecture": "LLM classifier + repository mining",
+        "application": "编码智能体配置审计",
+        "innovation": "用经验证 LLM 分类量化 4 万份配置文件的伦理表述，并分层抽样定性归纳 30 类考量",
+        "training": [
+          "免训练"
+        ]
+      },
+      "problem": "开发者配置编码智能体时是否、如何体现 AI 伦理原则，此前缺乏大规模实证证据",
+      "challenge": "伦理原则多停留在政策框架层面，配置文件非结构化且分散，缺少可扩展的测量手段",
+      "solution": "用经验证的 LLM 分类器统计 8,893 个仓库 40,079 份配置文件中伦理表述的流行度，再对 679 份文件的 702 个分层样本定性编码，归纳考量类别与涉及对象",
+      "results": "39.4% 文件、61.5% 仓库含伦理表述，集中于问责、透明、隐私、可靠性；识别 30 类考量，多见于 skills 等任务特定文件",
+      "future": "伦理内容多为散文式表述，智能体是否实际遵循这些指令尚未测试",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.34847v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.35971v1",
+      "arxiv_id": "2610.35971",
+      "title": "Continue or Restart? The Limits of Early Failure Prediction in Coding Agents",
+      "title_zh": "继续还是重启？编码智能体早期失败预测的局限",
+      "tags": {
+        "architecture": "Coding agent + failure monitor",
+        "application": "编码智能体提前停止",
+        "innovation": "用147k执行轨迹区分任务难度与尝试轨迹，并代数分解重启收益来源",
+        "training": [
+          "SFT",
+          "评测基准"
+        ]
+      },
+      "problem": "编码智能体能否在早期可靠预测失败并提前停止，从而节省算力",
+      "challenge": "早期前缀对同任务内失败判别接近随机，跨任务排序提升不等于可停止决策",
+      "solution": "对比预执行上下文与5k–20k早期前缀，测试线性计数、初始轮嵌入、任务条件排序器和微调Qwen3-0.6B监控器；在共享token预算下回放重启与继续并做代数分解",
+      "results": "20k token同任务AUC约0.50；75k上限下学习重启仅比随机重启高≤1.98pp，继续在四设置中解率更高且token更省",
+      "future": "需建立尝试级判别并证明相对持续运行的净算力节省",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.35971v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.34763v1",
+      "arxiv_id": "2610.34763",
+      "title": "The Physical Cost of Context: Quality-Constrained Resource Accounting for Coding Agents",
+      "title_zh": "上下文的物理成本：面向编码智能体的质量约束资源核算",
+      "tags": {
+        "architecture": "LLM agent + prefix cache",
+        "application": "编码智能体资源核算",
+        "innovation": "把执行期 prefill 拆为逻辑提示词减去复用前缀，并按质量门槛核算 KV 驻留、时间与能耗",
+        "training": [
+          "免训练"
+        ]
+      },
+      "problem": "现有上下文策略只看省下的提示词 token，忽视调用次数与前缀复用对实际执行成本的影响",
+      "challenge": "更短提示词若重写缓存历史反而更贵，单看 token 无法反映预填充、能耗等真实开销",
+      "solution": "质量门控协议：执行预填充=逻辑提示词−复用前缀，测量 KV 驻留、时间、能耗，并对比预加载检索块、锚定历史压缩、按需检索与历史裁剪策略",
+      "results": "Eager 比 Grep 少 35.7% 调用、33.2% 能耗代理；开启前缀缓存后未缓存预填充降 67.7%；Mask-5 省 33.3% token 却使未缓存预填充增 608.5%",
+      "future": "",
+      "groups": [
+        "代码Agent"
+      ],
+      "html_url": "https://arxiv.org/abs/2610.34763v1",
+      "code_urls": []
+    },
+    {
+      "id": "http://arxiv.org/abs/2610.34745v1",
+      "arxiv_id": "2610.34745",
+      "title": "SceneAgent: An Agentic Pipeline from 3D and 4D Captures to Simulation Environments",
+      "title_zh": "SceneAgent：从3D与4D捕获到仿真环境的智能体流水线",
+      "tags": {
+        "architecture": "LLM agent + simulator tool harness",
+        "application": "场景重建与机器人仿真",
+        "innovation": "用仿真器视觉检查闭环驱动分割、物理参数与铰接修复的智能体流水线",
         "training": [
           "免训练",
           "评测基准"
         ]
       },
-      "problem": "分类准确率与 TPR/FPR 无法判断重启 AI Agent 是否提升成功率。",
-      "challenge": "现有评估只看分类指标，忽略重启动作的决策价值与统计支持。",
-      "solution": "构建报警-动作恒等式；用决策充分性准则判断进度表示是否保留最优动作信息；基于现有轨迹的同时二项区间做无模型审计，输出重启/继续/弃权。",
-      "results": "SWE-bench Verified 上 194 次执行：2.29 点增益仅源于 1 个失败尝试，第二模型损失 42.29 点，103 次在线比较 0 次达标。",
-      "future": "",
+      "problem": "如何把3D/4D视觉捕获自动转换为可交互、物理正确的仿真环境",
+      "challenge": "中间步骤的重建与物理建模错误难以自动发现和纠正，人工修错成本高",
+      "solution": "协调物体分割、物理参数估计、部件分解、铰接与可变形仿真，并通过仿真渲染的视觉检查迭代修复中间错误，同时生成数字孪生变体与脚本演示",
+      "results": "GraspClutter6D杂乱箱场景1cm F1最高60.75%，远超SimFoundry的6.9%；4DCodeBench三动态场景平均动态IoU由0.86%升至99.09%",
+      "future": "仅初步验证真机策略迁移",
       "groups": [
         "代码Agent"
       ],
-      "html_url": "https://arxiv.org/abs/2610.36544v1",
+      "html_url": "https://arxiv.org/abs/2610.34745v1",
       "code_urls": []
     },
     {
-      "id": "http://arxiv.org/abs/2610.36469v1",
-      "arxiv_id": "2610.36469",
-      "title": "CoHARL: Co-Evolving Agent Policies and Executable Harnesses with Reinforcement Learning",
-      "title_zh": "CoHARL：用强化学习协同进化智能体策略与可执行 harness",
+      "id": "http://arxiv.org/abs/2610.34679v1",
+      "arxiv_id": "2610.34679",
+      "title": "AT-AT: Automatic Tool Optimization from Agent Traces",
+      "title_zh": "AT-AT：从智能体轨迹中自动优化工具",
       "tags": {
-        "architecture": "LLM agent + executable harness",
-        "application": "软件工程与终端任务",
-        "innovation": "策略与一群可执行 harness 在 RL 中协同进化，proposer 依执行轨迹改写 harness 代码",
+        "architecture": "LLM coding agent + tool harness",
+        "application": "共享工具集离线优化",
+        "innovation": "用轻量编码智能体读轨迹与评测反馈，选择性改写工具描述并在允许时改实现",
         "training": [
-          "RL"
+          "免训练",
+          "其他"
         ]
       },
-      "problem": "固定 harness 训练策略，或为固定策略一次性搜索 harness，二者相互割裂，界面与策略不同步。",
-      "challenge": "harness 决定工具调用与反馈形式；固定它使生成训练经验的接口僵化，一次性搜索无法随策略演化调整。",
-      "solution": "基于种群的强化学习框架：共享策略在整个人群 harness 的 rollout 上学习，proposer 利用执行轨迹在训练中迭代修订 harness 代码。",
-      "results": "SWE-rebench 平均解决率 27.6%，比仅搜索 harness 高 6.4 个百分点；SWE-bench Verified 与 Terminal-Bench 2.0 上同预算下优于基线。",
+      "problem": "智能体成功依赖其所处工具环境，而共享工具（API、MCP 服务器）由提供方维护、无法改动使用它的智能体",
+      "challenge": "以往工作只改智能体本身，工具描述与实现的缺陷导致错误调用与报错，提供方又无法调整下游智能体",
+      "solution": "冻结智能体，离线读取历史执行轨迹及其评测结果，由编码智能体定位工具描述或实现问题并做针对性编辑，迭代提升共享工具集",
+      "results": "τ²-bench-verified 上 Airline 与 Telecom 域任务完成率最高且成本低于强基线，Telecom 提升在配对置换检验下显著；TerminalBench-2 与 TBLite 留出集亦提升；三个企业级 MCP 服务器成本或工具错误率均下降，一个留出任务…",
       "future": "",
       "groups": [
         "代码Agent"
       ],
-      "html_url": "https://arxiv.org/abs/2610.36469v1",
+      "html_url": "https://arxiv.org/abs/2610.34679v1",
       "code_urls": []
     },
     {
-      "id": "http://arxiv.org/abs/2610.36405v1",
-      "arxiv_id": "2610.36405",
-      "title": "kw-bench: Breaking Frontier Harnesses on Real-World Tasks",
-      "title_zh": "kw-bench：在真实世界任务上击破前沿 harness",
+      "id": "http://arxiv.org/abs/2610.34654v1",
+      "arxiv_id": "2610.34654",
+      "title": "Thinking-in-Bets at Test Time Reduces Sycophantic Revisions in LLM Agents",
+      "title_zh": "测试时 Thinking-in-Bets 减少 LLM 智能体的谄媚式修订",
       "tags": {
-        "architecture": "LLM + agent harness",
-        "application": "增值税重建与审计",
-        "innovation": "用真实委托构建确定性评分基准，同一模型横向对比不同 agent harness",
-        "training": [
-          "评测基准",
-          "免训练"
-        ]
-      },
-      "problem": "现有基准多为生成式知识工作，缺少对答案已存在、需从残缺证据中取证并逐分核对的调查型任务的评测",
-      "challenge": "证据散落在无文档的异构系统导出中，格式不统一、链接表残缺，需在长会话里同时维持大量弱信号",
-      "solution": "以专家描述的真实委托构建五年增值税重建任务族，输入为 SAP 三代系统原始导出（ECC、部分迁移 S/4HANA、顾问重构），评分完全确定性、不用 LLM 评委",
-      "results": "DeepSeek v4.1 Flash 两小时：OpenCode 0.542、micro-cc 0.528，Claude Code 与 Codex 均为 0.00；Opus 5.5 上分别 0.9986 与 1.000",
-      "future": "",
-      "groups": [
-        "代码Agent"
-      ],
-      "html_url": "https://arxiv.org/abs/2610.36405v1",
-      "code_urls": [
-        "https://github.com/GSequist/kw-bench"
-      ]
-    },
-    {
-      "id": "http://arxiv.org/abs/2610.36346v1",
-      "arxiv_id": "2610.36346",
-      "title": "Your Wish Is My Commit: Over-Compliant Refactoring in AI Coding Agents",
-      "title_zh": "如你所愿：AI 编码代理中的过度顺从式重构",
-      "tags": {
-        "architecture": "LLM coding agents",
-        "application": "AI 编码代理重构",
-        "innovation": "用无停止准则的迭代重构，定义六个过度顺从行为信号",
-        "training": [
-          "评测基准",
-          "免训练"
-        ]
-      },
-      "problem": "LLM 编码代理在代码已优化后仍持续修改，带来代码 churn、技术债与审查负担",
-      "challenge": "缺乏对编码代理过度顺从的多轮量化；代理无法识别代码已清洁并停止",
-      "solution": "在算法与面向对象套件上，让 Codex 和 Claude Code 跨五个模型反复重构超 3000 轮，统计停止、重启等六类信号",
-      "results": "所有模型均未在代码已优化时停止；首次停止前重写最多达原代码库 31 倍，并会在宣称完成后继续编辑",
-      "future": "",
-      "groups": [
-        "代码Agent"
-      ],
-      "html_url": "https://arxiv.org/abs/2610.36346v1",
-      "code_urls": []
-    },
-    {
-      "id": "http://arxiv.org/abs/2610.36254v1",
-      "arxiv_id": "2610.36254",
-      "title": "Instant Software Factories",
-      "title_zh": "即时软件工厂",
-      "tags": {
-        "architecture": "Multi-agent cron-job swarm",
-        "application": "仓库持续维护自动化",
-        "innovation": "仅用常设目标的 cron 代理群与共享看板两个协调输入，替代专用编排层",
+        "architecture": "LLM agent + claim checklist",
+        "application": "用户质疑下的智能体任务",
+        "innovation": "读取反馈前先写私有 Claim Checklist，受质疑时据此保留已验证工作并复查不确定部分",
         "training": [
           "免训练"
         ]
       },
-      "problem": "编码代理能快速搭出原型，但从原型到产品之间的大量修复、优化、测试与发布长尾工作是否需要专门编排，又该如何评判",
-      "challenge": "固定基准打分的代理无法刻画工厂会改变自身工作负载、评估者与进度测量的内生反馈",
-      "solution": "用 bootstrap prompt 由一轮人类输入搭起两套协调输入：带常设目标的 cron 代理群与 GitHub 共享看板，agent 通过留下的痕迹协作，治理作为可分离层",
-      "results": "日合并量升 15 倍（关联观察）；代理提交 95% 新 issue，58 个改 CI 的 PR 中 40 个由其撰写；至少 5.6% 标记已修的 issue 修复有误",
-      "future": "bootstrap prompt 尚未评估；计划五个月内演进两个工厂、在新仓库上测试并检验五个可证伪假设",
+      "problem": "智能体被用户质疑时倾向放弃正确工作，而简单要求坚持又会忽略真实错误",
+      "challenge": "读过投诉后智能体会低估自己先前的检查，为迎合用户而改错；事后补记录收益很小",
+      "solution": "读取用户反馈前私有记录主要主张、支持检查与置信度形成 Claim Checklist；受质疑时据此保留已验证工作，只复查不确定或被新质疑部分，并按不确定性门控记录以省 token",
+      "results": "五个 Gemini 模型八个基准上，patch review 近乎消除错误反转；多轮编码减少误质疑后的文件编辑，门控记录省 token 且修复更多真实 bug",
+      "future": "",
       "groups": [
         "代码Agent"
       ],
-      "html_url": "https://arxiv.org/abs/2610.36254v1",
+      "html_url": "https://arxiv.org/abs/2610.34654v1",
       "code_urls": []
     },
     {
-      "id": "http://arxiv.org/abs/2610.36229v1",
-      "arxiv_id": "2610.36229",
-      "title": "Agent or Human? Detecting Commits by AI Coding Agents in the Absence of Authorship Signatures",
-      "title_zh": "Agent 还是 Human？在缺少作者签名的情况下检测 AI 编码代理的提交",
+      "id": "http://arxiv.org/abs/2610.34613v1",
+      "arxiv_id": "2610.34613",
+      "title": "Do AI Coding Agents Write Infrastructure as Code Like Humans? An Empirical Study of GitHub Pull Requests",
+      "title_zh": "AI 编码智能体写基础设施即代码是否像人类？基于 GitHub Pull Request 的实证研究",
       "tags": {
-        "architecture": "XGBoost + TF-IDF commit classifiers",
-        "application": "AI 提交归属检测",
-        "innovation": "屏蔽作者签名后，用提交消息冗长度与改动规模等信号区分 Agent 与人类提交",
+        "architecture": "",
+        "application": "IaC PR 维护分析",
+        "innovation": "区分人类、自动化机器人、隐蔽智能体与披露智能体，并用同仓库、同变更类型的匹配对比审查结果",
         "training": [
           "评测基准"
         ]
       },
-      "problem": "当 bot 账号、Co-authored-by 等签名缺失或被删除时，能否仍从提交中识别出 AI 编码代理",
-      "challenge": "签名是可选、可移除的，且常挂在 pull request 而非单个 commit 上，导致基于签名的标签不完备",
-      "solution": "用 1226 个仓库、783 万条 commit（5 种 Agent 与人类）构建数据，遮蔽签名后训练 XGBoost、TF-IDF 与未微调 gpt-6-sol 检测器，并评估跨 Agent 迁移与时间漂移",
-      "results": "全量测试集最佳精度仅 0.332，ROC AUC 最高 0.859；跨 Agent 迁移差，TF-IDF 对 Claude Code AUC 仅 0.524",
-      "future": "无签名检测只可用于排序待审提交，不能替代记录式归属；签名标签应视为 Agent 活跃度下界",
+      "problem": "AI 编码智能体提交的 IaC PR 与人类、自动化机器人有何差异，维护者如何评审，是否带来不同的可持续性问题",
+      "challenge": "现有研究缺乏对智能体来源的细粒度区分，未控制仓库与变更类型差异，难以判断合并率与可持续性气味是否源自智能体",
+      "solution": "分析 49,241 个仓库的 349,156 个 IaC PR，按作者类型分层，比较规模、修改模块与合并率，并在同仓库内及 2,645 对匹配的 Terraform PR 上对比可持续性气味",
+      "results": "机器人占表面人类 PR 的 32.9%；隐蔽智能体 PR 合并率 87.4% 高于人类 78.9%，但同仓库内低 4.0 个百分点；披露智能体同仓库同变更类型合并率低 8.4 个百分点；可持续性气味比例 10.4% vs 10.3%",
+      "future": "",
       "groups": [
         "代码Agent"
       ],
-      "html_url": "https://arxiv.org/abs/2610.36229v1",
+      "html_url": "https://arxiv.org/abs/2610.34613v1",
       "code_urls": []
-    },
-    {
-      "id": "http://arxiv.org/abs/2610.37609v1",
-      "arxiv_id": "2610.37609",
-      "title": "EnvSched: Environment-Aware Scheduling for Rollout-Efficient Agent Reinforcement Learning",
-      "title_zh": "EnvSched：面向 rollout 高效 Agent 强化学习的环境感知调度",
-      "tags": {
-        "architecture": "Agent RL scheduler + graph",
-        "application": "Agent 强化学习训练调度",
-        "innovation": "双关系图传播历史 rollout 统计预测奖励方差，并按环境配额调度批次",
-        "training": [
-          "RL"
-        ]
-      },
-      "problem": "有限 rollout 预算下，能否通过环境级数据管理提升 Agent 强化学习效率",
-      "challenge": "rollout 生成与验证昂贵，随机选任务易集中在低信息或冗余样本，浪费预算",
-      "solution": "将环境-任务对建为双关系图，沿环境内/跨环境边传播 rollout 统计以预测任务奖励方差；结合利用与覆盖、环境配额和相似度惩罚组成信息丰富且多样的批次",
-      "results": "Qwen3-8B 上 40 步训练在 BFCL-v3、tau-Bench、ACEBench-Agent 平均 48.81，超过随机选择 120 步最高分；同预算下跨模型规模提升",
-      "future": "",
-      "groups": [
-        "Agentic RL"
-      ],
-      "html_url": "https://arxiv.org/abs/2610.37609v1",
-      "code_urls": []
-    },
-    {
-      "id": "http://arxiv.org/abs/2610.37441v1",
-      "arxiv_id": "2610.37441",
-      "title": "Multi-Agent Reinforcement Learning of Co-Adaptive Hip Exoskeleton Control (MARL-Exo) for Metabolic Energy Reduction",
-      "title_zh": "面向代谢能量降低的协同自适应髋外骨骼控制的多智能体强化学习（MARL-Exo）",
-      "tags": {
-        "architecture": "Multi-agent RL + musculoskeletal model",
-        "application": "髋外骨骼代谢优化",
-        "innovation": "将肌肉代谢功率作为奖励，人体模型与外骨骼策略多智能体同时协同适应训练",
-        "training": [
-          "RL"
-        ]
-      },
-      "problem": "能否用仿真中与肌肉骨骼人体模型协同训练的髋外骨骼策略，在免逐用户调参下降低新用户行走代谢成本",
-      "challenge": "逐用户人在回路优化依赖大量人体试验和单独调参，难以直接泛化到新用户",
-      "solution": "两阶段多智能体RL：304肌肉人体模型随机化解剖、步态与速度，与外骨骼策略同时训练；外骨骼仅用延迟髋运动学与历史指令，奖励含生理代谢功率",
-      "results": "仿真代谢功率降13.8%；8人硬件净代谢率较Passive降18.3±6.6%，较No-Exo降7.4±10.0%，最高低24.2%",
-      "future": "",
-      "groups": [
-        "Agentic RL"
-      ],
-      "html_url": "https://arxiv.org/abs/2610.37441v1",
-      "code_urls": []
-    },
-    {
-      "id": "http://arxiv.org/abs/2610.37195v1",
-      "arxiv_id": "2610.37195",
-      "title": "Action-Value Calibration via Continuation Sharing for Long-Horizon Agentic Reinforcement Learning",
-      "title_zh": "面向长时程智能体强化学习的续段共享动作价值校准（ConCal）",
-      "tags": {
-        "architecture": "LLM agent + RL",
-        "application": "长时程智能体决策",
-        "innovation": "递归续段价值估计器：匹配同一任务中状态转移相同的访问，共享续段证据并反向传播校准值",
-        "training": [
-          "RL"
-        ]
-      },
-      "problem": "长时程智能体强化学习信用分配困难，单个动作的价值只能由一条采样续段估计，局部信用易受后续决策影响而失真",
-      "challenge": "GiGPO 等方法虽在共享状态上比较动作，但每个动作价值仍来自单条采样续段，估计方差大且受轨迹后段决策干扰",
-      "solution": "按入向 state-action-state 转移匹配同一任务的多次访问，把共享续段证据与各访问自身转移估计结合，递归反向传播校准值以修正早期动作价值，且无需额外 rollout",
-      "results": "使用 Qwen2.5-1.5B-Instruct 时，ALFWorld 与 WebShop 成功率较 GiGPO 分别提升 3.39 和 5.86 个百分点；留出回报诊断显示组内价值差误差更低、动作序一致性更高",
-      "future": "",
-      "groups": [
-        "Agentic RL"
-      ],
-      "html_url": "https://arxiv.org/abs/2610.37195v1",
-      "code_urls": [
-        "https://github.com/Yingjian-Chen/ConCal"
-      ]
     }
   ]
 }

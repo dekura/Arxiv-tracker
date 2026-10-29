@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>arXiv 论文速递</title><style>
+:root {
+  --bg:#f6f7f9; --card:#ffffff; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --row:#f8fafc; --acc:#2563eb;
+}
+:root[data-theme="dark"] {
+  --bg:#0b0f17; --card:#111827; --text:#e5e7eb; --muted:#94a3b8; --border:#1f2937; --row:#0f1623; --acc:#2563eb;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:13.5px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+.container{width:96vw;max-width:1680px;margin:0 auto;padding:14px 0 24px}
+.header{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+h1{font-size:20px;margin:0}
+.btn{border:1px solid var(--border);background:var(--card);color:var(--text);padding:5px 10px;border-radius:8px;cursor:pointer;font:inherit}
+.btn:hover{border-color:var(--acc)}
+.stats{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.stat strong{font-size:15px;margin-right:3px}
+.stat-group{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.stat-label{color:var(--muted);font-size:12px}
+.chip{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:0 8px;font-size:12px;line-height:20px;white-space:nowrap;background:var(--card);color:var(--text)}
+button.chip{cursor:pointer;font-family:inherit} button.chip:hover,button.chip.on{border-color:var(--acc);color:var(--acc)}
+.chip b{margin-left:3px}
+.t-预训练{background:rgba(59,130,246,.12)} .t-继续预训练{background:rgba(14,165,233,.12)} .t-SFT{background:rgba(16,185,129,.14)}
+.t-RL{background:rgba(245,158,11,.16)} .t-RLVR{background:rgba(249,115,22,.16)} .t-偏好优化{background:rgba(236,72,153,.13)}
+.t-蒸馏{background:rgba(139,92,246,.14)} .t-免训练{background:rgba(100,116,139,.14)} .t-评测基准{background:rgba(234,179,8,.16)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.filters input[type=search]{flex:1;min-width:240px;border:1px solid var(--border);border-radius:8px;padding:7px 10px;background:var(--card);color:var(--text);font:inherit}
+.filters select{border:1px solid var(--border);border-radius:8px;padding:6px 8px;background:var(--card);color:var(--text);font:inherit}
+.filters label{display:flex;gap:5px;align-items:center;white-space:nowrap}
+.visible-count{color:var(--muted);margin-left:auto}
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:auto}
+table.papers{width:100%;border-collapse:collapse;table-layout:fixed}
+.papers th{position:sticky;top:0;z-index:1;background:var(--card);text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:8px;border-bottom:1px solid var(--border)}
+.papers td{padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere}
+.papers tr[hidden]{display:none!important}
+.paper-row{cursor:pointer} .paper-row:hover td{background:var(--row)}
+.paper-row.open td{background:var(--row);border-bottom-color:transparent}
+.pid a{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.pid .date{display:block;color:var(--muted);font-size:11px}
+.ptitle{font-weight:600} .ptitle a{color:var(--text)} .ptitle a:hover{color:var(--acc)}
+.caret{display:inline-block;width:12px;color:var(--muted);transition:transform .15s} .open .caret{transform:rotate(90deg)}
+.authors{color:var(--muted);font-size:12px;font-weight:400}
+.muted{color:var(--muted)}
+.code a{display:inline-block;background:var(--acc);color:#fff;border-radius:6px;padding:0 7px;font-size:12px;font-weight:600;margin:0 4px 3px 0}
+.detail-row td{background:var(--row);padding:4px 12px 14px 32px}
+.title-zh{font-size:14px;font-weight:600;margin:2px 0 8px}
+.facts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.fact{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 9px}
+.fact span{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:2px}
+.meta{color:var(--muted);font-size:12px;margin-top:8px}
+.meta a{margin-right:10px}
+details.abs{margin-top:6px} details.abs summary{cursor:pointer;color:var(--acc);font-size:12px}
+details.abs div{margin-top:4px;white-space:pre-wrap;font-size:12.5px}
+.empty td{text-align:center;color:var(--muted);padding:24px}
+.history{margin-top:14px} .history summary{cursor:pointer;color:var(--acc)}
+.history-list{columns:6 140px;margin-top:6px} .history-list a{display:block;font-size:12px}
+.footer{color:var(--muted);font-size:12px;margin-top:12px}
+@media (max-width:1100px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+  .container{width:auto;padding:10px}
+  table.papers,.papers tbody,.papers tr,.papers td{display:block;width:100%}
+  .papers thead,.papers colgroup{display:none}
+  .paper-row{border-bottom:1px solid var(--border);padding:8px 0}
+  .papers td{border:0;padding:2px 10px}
+  .papers td[data-label]::before{content:attr(data-label) "：";color:var(--muted);font-size:12px}
+  .detail-row td{padding:4px 10px 12px}
+  .facts{grid-template-columns:1fr}
+}
+</style>
+<script>
+(function() {
+  const root = document.documentElement;
+  function apply(t) {
+    const dark = t === 'dark' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
+  }
+  let theme = localStorage.getItem('theme') || 'light';
+  if (!['light', 'dark', 'auto'].includes(theme)) theme = 'light';
+  apply(theme);
+  window.__toggleTheme = function() {
+    theme = theme === 'light' ? 'dark' : theme === 'dark' ? 'auto' : 'light';
+    localStorage.setItem('theme', theme);
+    apply(theme);
+    const el = document.getElementById('theme-label');
+    if (el) el.textContent = theme.toUpperCase();
+  };
+  function setOpen(row, open) {
+    const detail = row.nextElementSibling;
+    row.classList.toggle('open', open);
+    if (detail && detail.classList.contains('detail-row')) detail.hidden = !open;
+  }
+  window.__toggleRow = function(event, row) {
+    if (event.target.closest('a')) return;
+    setOpen(row, !row.classList.contains('open'));
+  };
+  window.__expandAll = function(open) {
+    document.querySelectorAll('.paper-row').forEach(row => { if (!row.hidden) setOpen(row, open); });
+  };
+  window.__pick = function(kind, value) {
+    const select = document.getElementById(kind + '-filter');
+    select.value = select.value === value ? '' : value;
+    window.__filter();
+  };
+  window.__filter = function() {
+    const query = (document.getElementById('paper-search').value || '').trim().toLocaleLowerCase();
+    const group = document.getElementById('group-filter').value;
+    const training = document.getElementById('training-filter').value;
+    const onlyCode = document.getElementById('code-only').checked;
+    let visible = 0;
+    document.querySelectorAll('.paper-row').forEach(row => {
+      const match = (!query || row.dataset.search.includes(query)) &&
+        (!group || row.dataset.groups.split('|').includes(group)) &&
+        (!training || row.dataset.training.split('|').includes(training)) &&
+        (!onlyCode || row.dataset.hasCode === 'true');
+      row.hidden = !match;
+      const detail = row.nextElementSibling;
+      if (detail && detail.classList.contains('detail-row')) detail.hidden = !match || !row.classList.contains('open');
+      if (match) visible += 1;
+    });
+    document.getElementById('visible-count').textContent = visible;
+    document.querySelectorAll('button.chip[data-kind]').forEach(chip => {
+      const value = document.getElementById(chip.dataset.kind + '-filter').value;
+      chip.classList.toggle('on', chip.dataset.value === value);
+    });
+  };
+  document.addEventListener('DOMContentLoaded', () => {
+    const label = document.getElementById('theme-label');
+    if (label) label.textContent = theme.toUpperCase();
+    window.__filter();
+  });
+})();
+</script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>arXiv 论文速递</h1>
+      <div><button class="btn" onclick="__toggleTheme()">Theme: <span id="theme-label">AUTO</span></button>
+      <span class="muted" style="margin-left:8px">更新于 2026-10-30 07:04</span></div>
+    </div>
+    <div class="stats"><span class="stat"><strong>2026-10-30</strong></span><span class="stat"><strong>15</strong>篇</span><span class="stat"><strong>0</strong>篇有代码</span><span class="stat-group"><span class="stat-label">方向</span><button class="chip" data-kind="group" data-value="代码预训练" onclick="__pick('group', this.dataset.value)">代码预训练<b>0</b></button><button class="chip" data-kind="group" data-value="代码后训练" onclick="__pick('group', this.dataset.value)">代码后训练<b>0</b></button><button class="chip" data-kind="group" data-value="代码Agent" onclick="__pick('group', this.dataset.value)">代码Agent<b>15</b></button><button class="chip" data-kind="group" data-value="Agentic RL" onclick="__pick('group', this.dataset.value)">Agentic RL<b>0</b></button></span><span class="stat-group"><span class="stat-label">训练方法</span><button class="chip t-SFT" data-kind="training" data-value="SFT" onclick="__pick('training', this.dataset.value)">SFT<b>2</b></button><button class="chip t-免训练" data-kind="training" data-value="免训练" onclick="__pick('training', this.dataset.value)">免训练<b>8</b></button><button class="chip t-评测基准" data-kind="training" data-value="评测基准" onclick="__pick('training', this.dataset.value)">评测基准<b>7</b></button><button class="chip t-其他" data-kind="training" data-value="其他" onclick="__pick('training', this.dataset.value)">其他<b>2</b></button></span></div><div class="filters"><input id="paper-search" type="search" placeholder="搜索编号、标题、作者、架构、场景、摘要…" aria-label="搜索论文" oninput="__filter()"><select id="group-filter" aria-label="方向" onchange="__filter()"><option value="">全部方向</option><option value="代码预训练">代码预训练</option><option value="代码后训练">代码后训练</option><option value="代码Agent">代码Agent</option><option value="Agentic RL">Agentic RL</option></select><select id="training-filter" aria-label="训练方法" onchange="__filter()"><option value="">全部训练方法</option><option value="SFT">SFT</option><option value="免训练">免训练</option><option value="评测基准">评测基准</option><option value="其他">其他</option></select><label><input id="code-only" type="checkbox" onchange="__filter()"> 只看有代码</label><button class="btn" onclick="__expandAll(true)">全部展开</button><button class="btn" onclick="__expandAll(false)">全部收起</button><span class="visible-count">显示 <b id="visible-count">15</b> / 15</span></div><div class="table-wrap"><table class="papers"><colgroup><col style="width:92px"><col style="width:24%"><col style="width:108px"><col style="width:150px"><col style="width:118px"><col style="width:140px"><col><col style="width:76px"></colgroup><thead><tr><th>论文编号</th><th>Title</th><th>方向</th><th>模型架构</th><th>训练方法</th><th>应用场景</th><th>核心创新</th><th>Code</th></tr></thead><tbody><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.36188 skill dreaming: evolving repository skills through pull request streams skill dreaming：通过 pull request 流演化仓库技能 xinyuan song hasibul haque jay somasundaram ryan turner bowen zhu liang zhao large language model (llm) agents increasingly rely on reusable skills for complex software engineering tasks, making skill libraries essential for repository development and maintenance. however, repository-specific skills must evolve with changing code structures, implementation conventions, and maintenance requirements. pull requests (prs) provide a natural source of such knowledge by recording how repositories evolve through implementation and review. meanwhile, new prs must follow repository-specific implementation patterns, modify related components consistently, and ensure that existing tests continue to pass while adding coverage for new functionality. this creates a mutually reinforcing cycle: prs provide knowledge for updating skills, while these skills improve future prs, maintain repositories, and support further skill evolution. to enable this co-evolution of prs, repositories, and skills, we propose skill dreaming, a framework that learns from pr streams to guide continuous repository development and maintenance. given a repository and its pr history, skill dreaming builds a repository-specific skill library by extracting executable knowledge from validated prs and continuously refines the skills as new pr information becomes available. these skills guide coding agents not only in implementing requested features but also in maintaining associated tests, documentation, compatibility, and repository conventions. by integrating pr analysis, skill management, code execution, and continuous integration, skill dreaming provides an end-to-end workflow for applying learned skills to repository changes and incorporating subsequent pr outcomes into future skill updates. 代码agent 免训练 llm agent + skill library 仓库级 pr 开发维护 从已验证 pr 中抽取可执行技能，并随 pr 流持续精炼仓库技能库 仓库专用技能需随代码结构、实现约定与维护需求演化，pr 中积累的经验未被系统复用 新 pr 需遵循仓库实现模式、同步修改相关组件并保持既有测试通过，通用技能难以覆盖 从已验证 pr 提取可执行知识构建仓库技能库，随新 pr 持续更新；串联 pr 分析、技能管理、代码执行与 ci 形成闭环 构建端到端工作流，将学习到的技能用于仓库变更，并把后续 pr 结果回流更新技能；摘要未给出定量结果 " data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.36188v1" target="_blank" rel="noreferrer">2610.36188</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.36188v1" target="_blank" rel="noreferrer">Skill Dreaming: Evolving Repository Skills through Pull Request Streams</a><div class="authors">Xinyuan Song, Hasibul Haque, Jay Somasundaram et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + skill library</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">仓库级 PR 开发维护</td><td data-label="核心创新">从已验证 PR 中抽取可执行技能，并随 PR 流持续精炼仓库技能库</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">Skill Dreaming：通过 Pull Request 流演化仓库技能</div><div class="facts"><div class="fact"><span>核心问题</span>仓库专用技能需随代码结构、实现约定与维护需求演化，PR 中积累的经验未被系统复用</div><div class="fact"><span>关键困难</span>新 PR 需遵循仓库实现模式、同步修改相关组件并保持既有测试通过，通用技能难以覆盖</div><div class="fact"><span>解决方案</span>从已验证 PR 提取可执行知识构建仓库技能库，随新 PR 持续更新；串联 PR 分析、技能管理、代码执行与 CI 形成闭环</div><div class="fact"><span>主要结果</span>构建端到端工作流，将学习到的技能用于仓库变更，并把后续 PR 结果回流更新技能；摘要未给出定量结果</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.36188v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.36188v1" target="_blank" rel="noreferrer">PDF</a>Xinyuan Song, Hasibul Haque, Jay Somasundaram, Ryan Turner, Bowen Zhu, Liang Zhao · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Large language model (LLM) agents increasingly rely on reusable skills for complex software engineering tasks, making skill libraries essential for repository development and maintenance. However, repository-specific skills must evolve with changing code structures, implementation conventions, and maintenance requirements. Pull requests (PRs) provide a natural source of such knowledge by recording how repositories evolve through implementation and review. Meanwhile, new PRs must follow repository-specific implementation patterns, modify related components consistently, and ensure that existing tests continue to pass while adding coverage for new functionality. This creates a mutually reinforcing cycle: PRs provide knowledge for updating skills, while these skills improve future PRs, maintain repositories, and support further skill evolution. To enable this co-evolution of PRs, repositories, and skills, we propose Skill Dreaming, a framework that learns from PR streams to guide continuous repository development and maintenance. Given a repository and its PR history, Skill Dreaming builds a repository-specific skill library by extracting executable knowledge from validated PRs and continuously refines the skills as new PR information becomes available. These skills guide coding agents not only in implementing requested features but also in maintaining associated tests, documentation, compatibility, and repository conventions. By integrating PR analysis, skill management, code execution, and continuous integration, Skill Dreaming provides an end-to-end workflow for applying learned skills to repository changes and incorporating subsequent PR outcomes into future skill updates.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.36153 stratum: repository memory for coding agents beyond the context window stratum：超越上下文窗口的编码智能体仓库记忆 yuvraj sehgal mahsa panahandeh naser ezzati-jivan context windows have grown a thousand-fold, yet coding agents still start every session with no memory of their past work. they re-read files, retry failed approaches, and forget root causes they established hours earlier. this is not a context-length problem but a memory-architecture problem. our hypothesis: coding agents need persistent, experience-aware repository memory, so that knowledge survives from one session to the next. three measurements on real repositories motivate the design. first, mid-size projects already exceed the largest production context windows, and storing knowledge inside the model&#x27;s key-value (kv) cache costs $10^4$ to $10^5$ times more bytes than storing it as indexed text. second, across 752 real bug-fix commits, the median fix edits two files, and these files plus their direct imports amount to less than 10% of the repository; the bottleneck is selection, not capacity. third, even with transitive import reachability and test links, 47% of co-edited file pairs remain structurally disconnected; the knowledge needed for selection must be mined from history and experience. we sketch stratum, a tiered memory that lives with the repository and serves it through page-safe tools: every response states what was returned, what remains, and what it cost. retrieval over a store of one million nodes takes 1.7 ms at the median. in a multi-session experiment on eight real bugs, a fresh agent that inherited a prior session&#x27;s memory, written by a different model, identified the root-cause file in 21 of 24 trials versus 6 of 24 for a retrieval-only baseline (fisher $p&lt;10^{-4}$), at 4.5x lower median token cost. with the notes of all eight investigations pooled in one store, success remained 8/8. 代码agent 免训练 tiered repository memory + tools 仓库级缺陷修复 分层仓库记忆借助页安全工具返回内容、剩余与开销，检索百万节点中位 1.7ms 编码智能体每次会话都无历史记忆，重复读文件、重试失败方案、遗忘已定位的根因 瓶颈在知识选择而非容量：47% 共编辑文件对无结构连通，kv 缓存存储代价高 10^4–10^5 倍 把经验感知的持久记忆与仓库共存，按层存储索引文本，通过明确说明返回内容、剩余内容与代价的页安全工具服务检索 8 个真实缺陷多会话实验中，继承他模型会话记忆的新智能体 24 次中 21 次定位根因文件，检索基线仅 6/24（fisher p&lt;1e-4），中位 token 成本低 4.5 倍；八项调查笔记合并后仍 8/8 " data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.36153v1" target="_blank" rel="noreferrer">2610.36153</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.36153v1" target="_blank" rel="noreferrer">Stratum: Repository Memory for Coding Agents Beyond the Context Window</a><div class="authors">Yuvraj Sehgal, Mahsa Panahandeh, Naser Ezzati-Jivan</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Tiered repository memory + tools</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">仓库级缺陷修复</td><td data-label="核心创新">分层仓库记忆借助页安全工具返回内容、剩余与开销，检索百万节点中位 1.7ms</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">Stratum：超越上下文窗口的编码智能体仓库记忆</div><div class="facts"><div class="fact"><span>核心问题</span>编码智能体每次会话都无历史记忆，重复读文件、重试失败方案、遗忘已定位的根因</div><div class="fact"><span>关键困难</span>瓶颈在知识选择而非容量：47% 共编辑文件对无结构连通，KV 缓存存储代价高 10^4–10^5 倍</div><div class="fact"><span>解决方案</span>把经验感知的持久记忆与仓库共存，按层存储索引文本，通过明确说明返回内容、剩余内容与代价的页安全工具服务检索</div><div class="fact"><span>主要结果</span>8 个真实缺陷多会话实验中，继承他模型会话记忆的新智能体 24 次中 21 次定位根因文件，检索基线仅 6/24（Fisher p&lt;1e-4），中位 token 成本低 4.5 倍；八项调查笔记合并后仍 8/8</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.36153v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.36153v1" target="_blank" rel="noreferrer">PDF</a>Yuvraj Sehgal, Mahsa Panahandeh, Naser Ezzati-Jivan · 5 pages, 1 figure, 1 table. Replication package: https://doi.org/10.5281/zenodo.23615180 · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Context windows have grown a thousand-fold, yet coding agents still start every session with no memory of their past work. They re-read files, retry failed approaches, and forget root causes they established hours earlier. This is not a context-length problem but a memory-architecture problem. Our hypothesis: coding agents need persistent, experience-aware repository memory, so that knowledge survives from one session to the next. Three measurements on real repositories motivate the design. First, mid-size projects already exceed the largest production context windows, and storing knowledge inside the model&#x27;s key-value (KV) cache costs $10^4$ to $10^5$ times more bytes than storing it as indexed text. Second, across 752 real bug-fix commits, the median fix edits two files, and these files plus their direct imports amount to less than 10% of the repository; the bottleneck is selection, not capacity. Third, even with transitive import reachability and test links, 47% of co-edited file pairs remain structurally disconnected; the knowledge needed for selection must be mined from history and experience. We sketch Stratum, a tiered memory that lives with the repository and serves it through page-safe tools: every response states what was returned, what remains, and what it cost. Retrieval over a store of one million nodes takes 1.7 ms at the median. In a multi-session experiment on eight real bugs, a fresh agent that inherited a prior session&#x27;s memory, written by a different model, identified the root-cause file in 21 of 24 trials versus 6 of 24 for a retrieval-only baseline (Fisher $p&lt;10^{-4}$), at 4.5x lower median token cost. With the notes of all eight investigations pooled in one store, success remained 8/8.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.36015 do coding agents still need a debugger? frontier-model-based fault localization at the accuracy ceiling 编码智能体还需要调试器吗？准确率天花板下基于前沿模型的故障定位 christoph daxerer johann glock christian macho rudolf ramler martin pinzger josef pichler background: to localize a fault, a coding agent can reason from source code alone or use debugger assistance by running the program and stepping through it in an interactive debugger. while earlier agents struggled with static execution tracing and debugger operation, frontier llms have improved at both. objective: we evaluate how accurately coding agents localize faults without tools across original and transformed programs, how much debugger assistance improves accuracy and at what cost, and how agents use it when optional. methods: we seed 610 single-line faults into 144 leetcodedataset solutions and rewrite each faulty program with five recipes of behavior-preserving transformations. agents based on sol 6.1, luna 6, and qwen 3.8 localize each fault with no, optional, or encouraged debugger assistance. results: without tools, the agents localized 98.2 to 99.9% of faults in original and 96.7 to 99.9% in transformed programs, losing accuracy mainly where recipes restructured loops and conditions. encouraged assistance removed 63% and 61% of luna 6&#x27;s and qwen 3.8&#x27;s remaining transformed errors (+2.1 and +1.3 percentage points) at 14.7 to 27.0 times the token use, while sol 6.1 stayed at 99.9%. with optional assistance, luna 6 and qwen 3.8 still gained +1.5 and +1.3 points, though the agents used the interactive debugger in only 0.2 to 6.2% of runs. conclusions: on short, precisely specified programs, current coding agents localize nearly all faults from source code alone, and debugger assistance removes most errors that remain. given the choice, agents executed the program far more often than they stepped through it, yet kept most of the benefit. 代码agent 评测基准 llm coding agent with debugger 代码故障定位 在610个注入故障和5种语义保持变换上比较有无调试器辅助的故障定位 编码智能体仅凭源码能否准确进行故障定位，调试器辅助能带来多少提升、代价多大，以及可选时智能体是否使用调试器。 早期智能体不擅长静态执行追踪和调试器操作，且调试器交互成本高；变换后程序可能破坏定位，前沿模型下是否仍需调试器不明。 向144个leetcode解答注入610个单行故障，并用5种行为保持变换重写；让sol 6.1、luna 6、qwen 3.8智能体在无/可选/鼓励调试器下定位，记录准确率与token。 无工具原始/变换程序定位98.2–99.9%/96.7–99.9%；鼓励调试器消除luna 6和qwen 3.8剩余变换错误63%/61%，提升2.1/1.3点，token为14.7–27倍；可选时仅0.2–6.2%运行用调试器仍增益1.5/1.3点。 仅限短小且规格精确的程序；未涉及大型仓库、多行故障和真实开发流程。" data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.36015v1" target="_blank" rel="noreferrer">2610.36015</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.36015v1" target="_blank" rel="noreferrer">Do Coding Agents Still Need a Debugger? Frontier-Model-Based Fault Localization at the Accuracy Ceiling</a><div class="authors">Christoph Daxerer, Johann Glock, Christian Macho et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM coding agent with debugger</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">代码故障定位</td><td data-label="核心创新">在610个注入故障和5种语义保持变换上比较有无调试器辅助的故障定位</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">编码智能体还需要调试器吗？准确率天花板下基于前沿模型的故障定位</div><div class="facts"><div class="fact"><span>核心问题</span>编码智能体仅凭源码能否准确进行故障定位，调试器辅助能带来多少提升、代价多大，以及可选时智能体是否使用调试器。</div><div class="fact"><span>关键困难</span>早期智能体不擅长静态执行追踪和调试器操作，且调试器交互成本高；变换后程序可能破坏定位，前沿模型下是否仍需调试器不明。</div><div class="fact"><span>解决方案</span>向144个LeetCode解答注入610个单行故障，并用5种行为保持变换重写；让Sol 6.1、Luna 6、Qwen 3.8智能体在无/可选/鼓励调试器下定位，记录准确率与token。</div><div class="fact"><span>主要结果</span>无工具原始/变换程序定位98.2–99.9%/96.7–99.9%；鼓励调试器消除Luna 6和Qwen 3.8剩余变换错误63%/61%，提升2.1/1.3点，token为14.7–27倍；可选时仅0.2–6.2%运行用调试器仍增益1.5/1.3点。</div><div class="fact"><span>未来方向</span>仅限短小且规格精确的程序；未涉及大型仓库、多行故障和真实开发流程。</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.36015v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.36015v1" target="_blank" rel="noreferrer">PDF</a>Christoph Daxerer, Johann Glock, Christian Macho, Rudolf Ramler, Martin Pinzger, Josef Pichler · 12 pages, 3 figures, 5 tables · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Background: To localize a fault, a coding agent can reason from source code alone or use debugger assistance by running the program and stepping through it in an interactive debugger. While earlier agents struggled with static execution tracing and debugger operation, frontier LLMs have improved at both. Objective: We evaluate how accurately coding agents localize faults without tools across original and transformed programs, how much debugger assistance improves accuracy and at what cost, and how agents use it when optional. Methods: We seed 610 single-line faults into 144 LeetCodeDataset solutions and rewrite each faulty program with five recipes of behavior-preserving transformations. Agents based on Sol 6.1, Luna 6, and Qwen 3.8 localize each fault with no, optional, or encouraged debugger assistance. Results: Without tools, the agents localized 98.2 to 99.9% of faults in original and 96.7 to 99.9% in transformed programs, losing accuracy mainly where recipes restructured loops and conditions. Encouraged assistance removed 63% and 61% of Luna 6&#x27;s and Qwen 3.8&#x27;s remaining transformed errors (+2.1 and +1.3 percentage points) at 14.7 to 27.0 times the token use, while Sol 6.1 stayed at 99.9%. With optional assistance, Luna 6 and Qwen 3.8 still gained +1.5 and +1.3 points, though the agents used the interactive debugger in only 0.2 to 6.2% of runs. Conclusions: On short, precisely specified programs, current coding agents localize nearly all faults from source code alone, and debugger assistance removes most errors that remain. Given the choice, agents executed the program far more often than they stepped through it, yet kept most of the benefit.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.36010 civer: causal intervention verification for reliable code review civer：面向可靠代码评审的因果干预验证 xinyuan song hasibul haque jay somasundaram ryan turner bowen zhu liang zhao code review is essential for maintaining software repositories by identifying defects, improving code quality, and supporting reliable software evolution. with the growing adoption of llm-based coding agents, an increasing number of code contributions and repository changes are generated by these agents. consequently, llm-based code review agents are becoming increasingly prevalent to evaluate these contributions and maintain software quality. however, llm reviewers often generate lengthy reviews containing numerous potential issues, many of which are false positives or lack sufficient evidence. these unreliable reviews can mislead developers and downstream coding agents, motivating the need to distinguish actionable findings from unsupported claims. we propose civer, a causal intervention-based framework that identifies the core issues underlying code-review findings and distinguishes genuine defects from false positives. civer integrates three modules: a review module assesses findings, an intervention module generates repair-oriented perturbations, and a verifier module scores review reliability. through joint optimization via expert iteration, the three modules identify genuine defects by responding to targeted repairs while remaining stable under unrelated changes. extensive experiments on swe-review-bench demonstrate that civer correctly identifies 77% of genuine defects through targeted repairs. cross-project and downstream repair evaluations further demonstrate that civer generalizes across repositories and improves coding agents&#x27; task success rates, highlighting its effectiveness for reliable automated code review. 代码agent 其他 llm reviewer + verifier 代码评审缺陷验证 用修复导向扰动干预评审，验证缺陷真伪并抑制误报 llm 代码评审常产生冗长、含大量误报且缺乏证据的不可靠审查意见 现有评审无法区分可行动缺陷与无证据声明，误报会误导开发者与下游编码代理 评审模块评估发现，干预模块生成修复导向扰动，验证模块打分；专家迭代联合优化，使真缺陷在针对性修复下响应，无关改动下稳定 swe-review-bench 正确识别 77% 真缺陷；跨项目与下游修复评测显示可泛化并提升编码代理成功率 " data-groups="代码Agent" data-training="其他" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.36010v1" target="_blank" rel="noreferrer">2610.36010</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.36010v1" target="_blank" rel="noreferrer">CIVER: Causal Intervention Verification for Reliable Code Review</a><div class="authors">Xinyuan Song, Hasibul Haque, Jay Somasundaram et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM reviewer + verifier</td><td data-label="训练方法"><span class="chip t-其他">其他</span></td><td data-label="应用场景">代码评审缺陷验证</td><td data-label="核心创新">用修复导向扰动干预评审，验证缺陷真伪并抑制误报</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">CIVER：面向可靠代码评审的因果干预验证</div><div class="facts"><div class="fact"><span>核心问题</span>LLM 代码评审常产生冗长、含大量误报且缺乏证据的不可靠审查意见</div><div class="fact"><span>关键困难</span>现有评审无法区分可行动缺陷与无证据声明，误报会误导开发者与下游编码代理</div><div class="fact"><span>解决方案</span>评审模块评估发现，干预模块生成修复导向扰动，验证模块打分；专家迭代联合优化，使真缺陷在针对性修复下响应，无关改动下稳定</div><div class="fact"><span>主要结果</span>SWE-Review-Bench 正确识别 77% 真缺陷；跨项目与下游修复评测显示可泛化并提升编码代理成功率</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.36010v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.36010v1" target="_blank" rel="noreferrer">PDF</a>Xinyuan Song, Hasibul Haque, Jay Somasundaram, Ryan Turner, Bowen Zhu, Liang Zhao · WWW 2026 · WWW 2026 · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Code review is essential for maintaining software repositories by identifying defects, improving code quality, and supporting reliable software evolution. With the growing adoption of LLM-based coding agents, an increasing number of code contributions and repository changes are generated by these agents. Consequently, LLM-based code review agents are becoming increasingly prevalent to evaluate these contributions and maintain software quality. However, LLM reviewers often generate lengthy reviews containing numerous potential issues, many of which are false positives or lack sufficient evidence. These unreliable reviews can mislead developers and downstream coding agents, motivating the need to distinguish actionable findings from unsupported claims. We propose CIVER, a causal intervention-based framework that identifies the core issues underlying code-review findings and distinguishes genuine defects from false positives. CIVER integrates three modules: a review module assesses findings, an intervention module generates repair-oriented perturbations, and a verifier module scores review reliability. Through joint optimization via expert iteration, the three modules identify genuine defects by responding to targeted repairs while remaining stable under unrelated changes. Extensive experiments on SWE-Review-Bench demonstrate that CIVER correctly identifies 77% of genuine defects through targeted repairs. Cross-project and downstream repair evaluations further demonstrate that CIVER generalizes across repositories and improves coding agents&#x27; task success rates, highlighting its effectiveness for reliable automated code review.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.35992 before the first edit? measuring when coding-agent guidance actually arrives 在首次编辑之前？测量编码智能体指导实际何时到达 thupakula sai varun when a coding-agent harness promises guidance before the first source edit, what event does it actually intercept? we audit five separate events: policy assignment, request eligibility, trigger, plan delivery, and observed source-content change. a prescribed-action comparison exposes the coverage of three gate rules but cannot tell us how an agent would continue after receiving a plan. we therefore run local agents on public software issues and hash python files before and after each executed action. in a pilot-guided, 76-arm study using qwen2.5-coder 14b, 15 arms change python source across seven tasks and three repositories. guidance precedes every observed first change, but every change uses a structured editor and the study misses its prespecified 20-arm coverage target. post hoc local tests find seven changed arms that pass the tested target and regression selectors; four of those seven use incomplete regression lists. public pause and si2ca trajectories add source-text changes bracketed by adjacent reads, but lack synchronized filesystem states and cannot identify exact first mutations. the audit makes the timing claim testable within a stated source scope. these data do not show that planning improves repair correctness or covers shell-first writes in live agent runs. 代码agent 评测基准 llm coding-agent harness 编码智能体时序审计 审计策略分配、请求资格、触发、计划交付、源码变更五个事件，并逐动作前后哈希 python 文件，使“首编辑前指导”可测试 编码智能体框架声称在首次源码编辑前提供指导，但实际拦截的是哪个事件、指导是否真先于首次修改缺乏可验证证据 公开轨迹缺同步文件系统状态，无法定位首次突变；规定动作比较也无法反映智能体收到计划后如何继续执行 在公开软件 issue 上运行本地 qwen2.5-coder 14b 智能体，对每个已执行动作前后哈希 python 文件，做 76 臂 pilot 研究并辅以后验局部目标与回归选择器测试 15 臂跨 7 任务 3 仓库修改 python 源码；指导均先于首次变更，但未达预注册 20 臂覆盖目标；7 个变更臂通过选择器，其中 4 个回归列表不完整 数据未证明规划提升修复正确性，也未覆盖 shell 首写；需同步文件系统状态并扩大覆盖" data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.35992v1" target="_blank" rel="noreferrer">2610.35992</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.35992v1" target="_blank" rel="noreferrer">Before the First Edit? Measuring When Coding-Agent Guidance Actually Arrives</a><div class="authors">Thupakula Sai Varun</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM coding-agent harness</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">编码智能体时序审计</td><td data-label="核心创新">审计策略分配、请求资格、触发、计划交付、源码变更五个事件，并逐动作前后哈希 Python 文件，使“首编辑前指导”可测试</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">在首次编辑之前？测量编码智能体指导实际何时到达</div><div class="facts"><div class="fact"><span>核心问题</span>编码智能体框架声称在首次源码编辑前提供指导，但实际拦截的是哪个事件、指导是否真先于首次修改缺乏可验证证据</div><div class="fact"><span>关键困难</span>公开轨迹缺同步文件系统状态，无法定位首次突变；规定动作比较也无法反映智能体收到计划后如何继续执行</div><div class="fact"><span>解决方案</span>在公开软件 issue 上运行本地 Qwen2.5-Coder 14B 智能体，对每个已执行动作前后哈希 Python 文件，做 76 臂 pilot 研究并辅以后验局部目标与回归选择器测试</div><div class="fact"><span>主要结果</span>15 臂跨 7 任务 3 仓库修改 Python 源码；指导均先于首次变更，但未达预注册 20 臂覆盖目标；7 个变更臂通过选择器，其中 4 个回归列表不完整</div><div class="fact"><span>未来方向</span>数据未证明规划提升修复正确性，也未覆盖 shell 首写；需同步文件系统状态并扩大覆盖</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.35992v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.35992v1" target="_blank" rel="noreferrer">PDF</a>Thupakula Sai Varun · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>When a coding-agent harness promises guidance before the first source edit, what event does it actually intercept? We audit five separate events: policy assignment, request eligibility, trigger, plan delivery, and observed source-content change. A prescribed-action comparison exposes the coverage of three gate rules but cannot tell us how an agent would continue after receiving a plan. We therefore run local agents on public software issues and hash Python files before and after each executed action. In a pilot-guided, 76-arm study using Qwen2.5-Coder 14B, 15 arms change Python source across seven tasks and three repositories. Guidance precedes every observed first change, but every change uses a structured editor and the study misses its prespecified 20-arm coverage target. Post hoc local tests find seven changed arms that pass the tested target and regression selectors; four of those seven use incomplete regression lists. Public PAUSE and SI2CA trajectories add source-text changes bracketed by adjacent reads, but lack synchronized filesystem states and cannot identify exact first mutations. The audit makes the timing claim testable within a stated source scope. These data do not show that planning improves repair correctness or covers shell-first writes in live agent runs.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.35987 probe: frontier coding agents find different bugs than maintainers fix probe：前沿编程智能体发现的 bug 与维护者修复的不同 marco paina mark niklas müller niels mündler-sasahara martin vechev proactive bug discovery is an important software-engineering problem. even though coding agents are already widely deployed in this domain, their capabilities remain understudied. in particular, the challenging task of finding all bugs that human maintainers would repair across an entire repository has not been studied yet. to close this gap, we introduce probe, a benchmark consisting of all 2,457 bugs fixed over the course of 18 months across 20 diverse github repositories, together with a method for matching candidate findings to this partial reference set. we evaluate coding agents across frontier models and find they all achieve a recall of below $21\%$ and a precision of less than $9\%$ with respect to the reference set. while stronger models increase recall substantially from $8\%$ to $17\%$, they do not improve precision. surprisingly, despite the low precision, llm and human evaluators still judge $85\%$ of findings valid. crucially, we find that found bug distributions are similar across agents but differ substantially from those of bugs fixed by maintainers. the practical relevance of bug discovery and the low recall of frontier models make this benchmark a valuable resource for both model users and developers. 代码agent 评测基准 code llm agent 仓库级 bug 发现 汇总 20 个仓库 18 个月内 2457 个已修复 bug，并提供候选发现与部分参考集的匹配方法 编码智能体已广泛用于软件工程，但其在整个仓库范围内找出人类维护者会修复的全部 bug 的能力尚未被研究 缺少以维护者实际修复为参考、覆盖整仓库的 bug 发现基准，无法同时衡量召回与精度 将 20 个 github 仓库 18 个月内修复的全部 2457 个 bug 作为部分参考集，设计候选发现与参考集的匹配方法，评测前沿模型智能体的召回、精度及发现分布 召回低于 21%、精度低于 9%；更强模型召回由 8% 升至 17%，精度未提升；85% 候选发现被 llm 与人工评为有效；各智能体发现分布相近，但显著不同于维护者修复的 bug 分布 参考集仅为部分 bug 集合，评测止于召回与精度，未给出提升 bug 发现能力的训练方法" data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.35987v1" target="_blank" rel="noreferrer">2610.35987</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.35987v1" target="_blank" rel="noreferrer">PROBE: Frontier Coding Agents Find Different Bugs Than Maintainers Fix</a><div class="authors">Marco Paina, Mark Niklas Müller, Niels Mündler-Sasahara et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Code LLM agent</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">仓库级 bug 发现</td><td data-label="核心创新">汇总 20 个仓库 18 个月内 2457 个已修复 bug，并提供候选发现与部分参考集的匹配方法</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">PROBE：前沿编程智能体发现的 bug 与维护者修复的不同</div><div class="facts"><div class="fact"><span>核心问题</span>编码智能体已广泛用于软件工程，但其在整个仓库范围内找出人类维护者会修复的全部 bug 的能力尚未被研究</div><div class="fact"><span>关键困难</span>缺少以维护者实际修复为参考、覆盖整仓库的 bug 发现基准，无法同时衡量召回与精度</div><div class="fact"><span>解决方案</span>将 20 个 GitHub 仓库 18 个月内修复的全部 2457 个 bug 作为部分参考集，设计候选发现与参考集的匹配方法，评测前沿模型智能体的召回、精度及发现分布</div><div class="fact"><span>主要结果</span>召回低于 21%、精度低于 9%；更强模型召回由 8% 升至 17%，精度未提升；85% 候选发现被 LLM 与人工评为有效；各智能体发现分布相近，但显著不同于维护者修复的 bug 分布</div><div class="fact"><span>未来方向</span>参考集仅为部分 bug 集合，评测止于召回与精度，未给出提升 bug 发现能力的训练方法</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.35987v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.35987v1" target="_blank" rel="noreferrer">PDF</a>Marco Paina, Mark Niklas Müller, Niels Mündler-Sasahara, Martin Vechev · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Proactive bug discovery is an important software-engineering problem. Even though coding agents are already widely deployed in this domain, their capabilities remain understudied. In particular, the challenging task of finding all bugs that human maintainers would repair across an entire repository has not been studied yet. To close this gap, we introduce PROBE, a benchmark consisting of all 2,457 bugs fixed over the course of 18 months across 20 diverse GitHub repositories, together with a method for matching candidate findings to this partial reference set. We evaluate coding agents across frontier models and find they all achieve a recall of below $21\%$ and a precision of less than $9\%$ with respect to the reference set. While stronger models increase recall substantially from $8\%$ to $17\%$, they do not improve precision. Surprisingly, despite the low precision, LLM and human evaluators still judge $85\%$ of findings valid. Crucially, we find that found bug distributions are similar across agents but differ substantially from those of bugs fixed by maintainers. The practical relevance of bug discovery and the low recall of frontier models make this benchmark a valuable resource for both model users and developers.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.35982 generation and verification: human-agent collaboration for safety-critical automotive software engineering 生成与验证：面向安全关键汽车软件工程的人机协作 elizaveta zinovyeva aiham taleb nikita kozodoi daniel schleicher amir mahdi namazi martin kraus levent kent brian jensen research on coding agents mainly focuses on generation quality. yet, safety-critical automotive software makes two additional demands. it prioritizes verification, since every change is reviewed, traced to a requirement, and checked against industry standards such as misra and autosar before it can be committed. it is also a narrow domain, written against layered architectures, embedded resource constraints, and organization-specific interface conventions that are scarce in the data general-purpose llms are trained on. we present a coding assistant for automotive c/c++ that addresses both demands. first, it exposes three tools to the user over the model context protocol (generate, edit, and verify), allowing developers to run verify on any code on demand rather than relying on the agent to check its own output. second, rather than using a general-purpose model, we customize the underlying llm for the automotive domain through prompt engineering and fine-tuning. we construct a dataset from automotive production code of aumovio, where each function is paired with the requirement texts and unified modeling language (uml) behavior it must satisfy. in a two-week pilot on active production projects, developers report verify as the most-used tool and confirm using it on their own code and not only on generated output. comparing model customization strategies, 75% prefer the faster prompt-engineered configuration. misra- and autosar-inspired pattern checkers indicate that prompt engineering achieves a lower number of violations on c, while fine-tuning shows better conformance with architecture patterns for c++. 代码agent sft 免训练 llm + mcp tool harness 汽车安全关键软件开发 通过mcp暴露生成、编辑、验证工具，并基于生产代码、需求与uml微调llm 通用编码代理侧重生成质量，难以满足汽车安全关键软件对验证、追溯和领域规范的要求 安全关键汽车软件需逐变更审查、需求追溯并符合misra/autosar，且领域数据稀缺，通用llm不熟悉分层架构与接口约定 构建汽车c/c++编码助手：用mcp向开发者提供生成、编辑、验证三工具，可按需验证任意代码；并用提示工程与基于生产代码-需求-uml数据集的微调定制llm 两周试点verify最常用；75%偏好提示工程；c上提示工程违规更少，c++上微调架构一致性更好 " data-groups="代码Agent" data-training="SFT|免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.35982v1" target="_blank" rel="noreferrer">2610.35982</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.35982v1" target="_blank" rel="noreferrer">Generation and Verification: Human-Agent Collaboration for Safety-Critical Automotive Software Engineering</a><div class="authors">Elizaveta Zinovyeva, Aiham Taleb, Nikita Kozodoi et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM + MCP tool harness</td><td data-label="训练方法"><span class="chip t-SFT">SFT</span> <span class="chip t-免训练">免训练</span></td><td data-label="应用场景">汽车安全关键软件开发</td><td data-label="核心创新">通过MCP暴露生成、编辑、验证工具，并基于生产代码、需求与UML微调LLM</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">生成与验证：面向安全关键汽车软件工程的人机协作</div><div class="facts"><div class="fact"><span>核心问题</span>通用编码代理侧重生成质量，难以满足汽车安全关键软件对验证、追溯和领域规范的要求</div><div class="fact"><span>关键困难</span>安全关键汽车软件需逐变更审查、需求追溯并符合MISRA/AUTOSAR，且领域数据稀缺，通用LLM不熟悉分层架构与接口约定</div><div class="fact"><span>解决方案</span>构建汽车C/C++编码助手：用MCP向开发者提供生成、编辑、验证三工具，可按需验证任意代码；并用提示工程与基于生产代码-需求-UML数据集的微调定制LLM</div><div class="fact"><span>主要结果</span>两周试点verify最常用；75%偏好提示工程；C上提示工程违规更少，C++上微调架构一致性更好</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.35982v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.35982v1" target="_blank" rel="noreferrer">PDF</a>Elizaveta Zinovyeva, Aiham Taleb, Nikita Kozodoi, Daniel Schleicher, Amir Mahdi Namazi, Martin Kraus, Levent Kent, Brian Jensen · EMNLP 2026 · Accepted to EMNLP 2026 REALM Workshop · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Research on coding agents mainly focuses on generation quality. Yet, safety-critical automotive software makes two additional demands. It prioritizes verification, since every change is reviewed, traced to a requirement, and checked against industry standards such as MISRA and AUTOSAR before it can be committed. It is also a narrow domain, written against layered architectures, embedded resource constraints, and organization-specific interface conventions that are scarce in the data general-purpose LLMs are trained on. We present a coding assistant for automotive C/C++ that addresses both demands. First, it exposes three tools to the user over the Model Context Protocol (generate, edit, and verify), allowing developers to run verify on any code on demand rather than relying on the agent to check its own output. Second, rather than using a general-purpose model, we customize the underlying LLM for the automotive domain through prompt engineering and fine-tuning. We construct a dataset from automotive production code of AUMOVIO, where each function is paired with the requirement texts and Unified Modeling Language (UML) behavior it must satisfy. In a two-week pilot on active production projects, developers report verify as the most-used tool and confirm using it on their own code and not only on generated output. Comparing model customization strategies, 75% prefer the faster prompt-engineered configuration. MISRA- and AUTOSAR-inspired pattern checkers indicate that prompt engineering achieves a lower number of violations on C, while fine-tuning shows better conformance with architecture patterns for C++.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.35980 unitybench-mini3d: evaluating llm agents for 3d game development in unity unitybench-mini3d：评估 llm agent 在 unity 中进行 3d 游戏开发的能力 yijun zhou minghao shao ke zhang renkai yuan hongbo yuan bin hu bozhao qian hongxia shen yanhong liu yuting chen yuntao shi zhongxuan xu shuo mao haijia zhou zhendong li tao zhang chenggang li yuxuan wang zinan zheng calvin zhang jia li heng chang jie feng game development stresses coding agents in ways general software engineering does not: correctness depends on how engine apis, serialized scene state, and runtime behavior interact, not on source code alone. existing benchmarks mainly target platforms such as godot and heavily rely on llm judges or coarse task-level outcomes. we present unitybench-mini3d, a benchmark of 77 project-level unity tasks organized around seven expert-defined skill categories rather than tutorials or genres, with three difficulty tiers. each task pairs a complete unity project with natural-language requirements and is evaluated using 1,178 held-out, human-authored milestone tests covering scene structure, component configuration, and runtime behavior. this in-engine evaluation provides deterministic partial credit, localizes failures, and distinguishes partial implementations from complete solutions without relying on subjective judges. across 21 models and 9 coding harnesses, the average pass rate reaches 80.9% on easy tasks but falls to 35.2% on hard tasks, with just 57.7% overall. unitybench-mini3d provides a reproducible, diagnostic testbed distinguishing systems across difficulty levels. 代码agent 评测基准 llm agent + unity test harness unity 3d 游戏开发 用 1,178 个引擎内里程碑测试做确定性评分，按场景结构、组件配置与运行时行为定位失败 现有游戏开发 agent 基准多集中于 godot，且依赖 llm 裁判或粗粒度任务级结果，缺少对引擎状态与运行时行为的细粒度诊断 游戏正确性取决于引擎 api、序列化场景状态与运行时行为的交互，仅看源码或任务级通过率无法区分部分实现与完整解 构建 77 个 unity 项目级任务，覆盖 7 类专家技能与 3 个难度档；每题配完整工程与自然语言需求，用 1,178 个留出里程碑测试在引擎内执行，给出确定性部分分并定位失败 21 个模型×9 个编码框架：整体通过率 57.7%，简单任务 80.9%，困难任务降至 35.2% " data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.35980v1" target="_blank" rel="noreferrer">2610.35980</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.35980v1" target="_blank" rel="noreferrer">UnityBench-Mini3D: Evaluating LLM Agents for 3D Game Development in Unity</a><div class="authors">Yijun Zhou, Minghao Shao, Ke Zhang et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + Unity test harness</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">Unity 3D 游戏开发</td><td data-label="核心创新">用 1,178 个引擎内里程碑测试做确定性评分，按场景结构、组件配置与运行时行为定位失败</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">UnityBench-Mini3D：评估 LLM Agent 在 Unity 中进行 3D 游戏开发的能力</div><div class="facts"><div class="fact"><span>核心问题</span>现有游戏开发 Agent 基准多集中于 Godot，且依赖 LLM 裁判或粗粒度任务级结果，缺少对引擎状态与运行时行为的细粒度诊断</div><div class="fact"><span>关键困难</span>游戏正确性取决于引擎 API、序列化场景状态与运行时行为的交互，仅看源码或任务级通过率无法区分部分实现与完整解</div><div class="fact"><span>解决方案</span>构建 77 个 Unity 项目级任务，覆盖 7 类专家技能与 3 个难度档；每题配完整工程与自然语言需求，用 1,178 个留出里程碑测试在引擎内执行，给出确定性部分分并定位失败</div><div class="fact"><span>主要结果</span>21 个模型×9 个编码框架：整体通过率 57.7%，简单任务 80.9%，困难任务降至 35.2%</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.35980v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.35980v1" target="_blank" rel="noreferrer">PDF</a>Yijun Zhou, Minghao Shao, Ke Zhang, Renkai Yuan, Hongbo Yuan, Bin Hu, Bozhao Qian, Hongxia Shen, Yanhong Liu, Yuting Chen, Yuntao Shi, Zhongxuan Xu, Shuo Mao, Haijia Zhou, Zhendong Li, Tao Zhang, Chenggang Li, Yuxuan Wang, Zinan Zheng, Calvin Zhang, Jia Li, Heng Chang, Jie Feng · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Game development stresses coding agents in ways general software engineering does not: correctness depends on how engine APIs, serialized scene state, and runtime behavior interact, not on source code alone. Existing benchmarks mainly target platforms such as Godot and heavily rely on LLM judges or coarse task-level outcomes. We present UnityBench-Mini3D, a benchmark of 77 project-level Unity tasks organized around seven expert-defined skill categories rather than tutorials or genres, with three difficulty tiers. Each task pairs a complete Unity project with natural-language requirements and is evaluated using 1,178 held-out, human-authored milestone tests covering scene structure, component configuration, and runtime behavior. This in-engine evaluation provides deterministic partial credit, localizes failures, and distinguishes partial implementations from complete solutions without relying on subjective judges. Across 21 models and 9 coding harnesses, the average pass rate reaches 80.9% on easy tasks but falls to 35.2% on hard tasks, with just 57.7% overall. UnityBench-Mini3D provides a reproducible, diagnostic testbed distinguishing systems across difficulty levels.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.34847 ethics by configuration: ai ethics principles in coding agent instructions 配置即伦理：编码智能体指令中的 ai 伦理原则 haoyu gao peerachai banyongrakkul marc cheong christoph treude sebastian baltes mansooreh zahedi as ai coding agents become integral to software development, projects increasingly utilise configuration files, such as context files and skills, to govern agent behaviour. while ai ethics principles are widely used in research and policy, little is known about whether and how they are reflected when developers configure coding agents. we studied ethics principles in 40,079 configuration files across 8,893 github repositories. using a validated large language model (llm) classification, we measured the prevalence of ethics-related statements, and qualitatively analysed 702 stratified samples across 679 files to uncover the ethical considerations reflected in these files and the parties they concern. ethics-related statements appeared in 39.4% of files and 61.5% of repositories; concentrated on accountability, transparency, privacy protection, and reliability; and occurred more often in task-specific files such as skills than in project-wide context files. our qualitative analysis identified 30 categories of ethical considerations, which take the form of concrete rules for the agent. accountability appeared mainly as requirements for human approval, transparency as explain and honestly report the agent&#x27;s work, and fairness as accessibility and localisation. these considerations reveal a difference in focus. whereas public ethics frameworks aim to protect society and end users, configuration files mainly concern developers, maintainers, and community members in the development workflow. ethics-related content appeared mainly in prose-based files, and whether agents follow these instructions remains untested. we discuss the implications for practitioners, researchers, and policymakers. 代码agent 免训练 llm classifier + repository mining 编码智能体配置审计 用经验证 llm 分类量化 4 万份配置文件的伦理表述，并分层抽样定性归纳 30 类考量 开发者配置编码智能体时是否、如何体现 ai 伦理原则，此前缺乏大规模实证证据 伦理原则多停留在政策框架层面，配置文件非结构化且分散，缺少可扩展的测量手段 用经验证的 llm 分类器统计 8,893 个仓库 40,079 份配置文件中伦理表述的流行度，再对 679 份文件的 702 个分层样本定性编码，归纳考量类别与涉及对象 39.4% 文件、61.5% 仓库含伦理表述，集中于问责、透明、隐私、可靠性；识别 30 类考量，多见于 skills 等任务特定文件 伦理内容多为散文式表述，智能体是否实际遵循这些指令尚未测试" data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.34847v1" target="_blank" rel="noreferrer">2610.34847</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.34847v1" target="_blank" rel="noreferrer">Ethics by Configuration: AI Ethics Principles in Coding Agent Instructions</a><div class="authors">Haoyu Gao, Peerachai Banyongrakkul, Marc Cheong et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM classifier + repository mining</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">编码智能体配置审计</td><td data-label="核心创新">用经验证 LLM 分类量化 4 万份配置文件的伦理表述，并分层抽样定性归纳 30 类考量</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">配置即伦理：编码智能体指令中的 AI 伦理原则</div><div class="facts"><div class="fact"><span>核心问题</span>开发者配置编码智能体时是否、如何体现 AI 伦理原则，此前缺乏大规模实证证据</div><div class="fact"><span>关键困难</span>伦理原则多停留在政策框架层面，配置文件非结构化且分散，缺少可扩展的测量手段</div><div class="fact"><span>解决方案</span>用经验证的 LLM 分类器统计 8,893 个仓库 40,079 份配置文件中伦理表述的流行度，再对 679 份文件的 702 个分层样本定性编码，归纳考量类别与涉及对象</div><div class="fact"><span>主要结果</span>39.4% 文件、61.5% 仓库含伦理表述，集中于问责、透明、隐私、可靠性；识别 30 类考量，多见于 skills 等任务特定文件</div><div class="fact"><span>未来方向</span>伦理内容多为散文式表述，智能体是否实际遵循这些指令尚未测试</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.34847v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.34847v1" target="_blank" rel="noreferrer">PDF</a>Haoyu Gao, Peerachai Banyongrakkul, Marc Cheong, Christoph Treude, Sebastian Baltes, Mansooreh Zahedi · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>As AI coding agents become integral to software development, projects increasingly utilise configuration files, such as context files and skills, to govern agent behaviour. While AI ethics principles are widely used in research and policy, little is known about whether and how they are reflected when developers configure coding agents. We studied ethics principles in 40,079 configuration files across 8,893 GitHub repositories. Using a validated large language model (LLM) classification, we measured the prevalence of ethics-related statements, and qualitatively analysed 702 stratified samples across 679 files to uncover the ethical considerations reflected in these files and the parties they concern. Ethics-related statements appeared in 39.4% of files and 61.5% of repositories; concentrated on accountability, transparency, privacy protection, and reliability; and occurred more often in task-specific files such as skills than in project-wide context files. Our qualitative analysis identified 30 categories of ethical considerations, which take the form of concrete rules for the agent. Accountability appeared mainly as requirements for human approval, transparency as explain and honestly report the agent&#x27;s work, and fairness as accessibility and localisation. These considerations reveal a difference in focus. Whereas public ethics frameworks aim to protect society and end users, configuration files mainly concern developers, maintainers, and community members in the development workflow. Ethics-related content appeared mainly in prose-based files, and whether agents follow these instructions remains untested. We discuss the implications for practitioners, researchers, and policymakers.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.35971 continue or restart? the limits of early failure prediction in coding agents 继续还是重启？编码智能体早期失败预测的局限 srinath srinivasan lunxiao li tim menzies wesley assunção early stopping promises to reduce compute costs for autonomous coding agents by terminating unpromising runs early. deciding when to abandon a run requires separating baseline issue difficulty from the trajectory of an individual attempt. we study the distinction in 147,002 execution traces from two public corpora spanning four model-framework settings. comparing pre-execution issue context against early execution prefixes, we evaluate linear count models, initial-turn text embeddings, task-conditional rankers, and a fine-tuned qwen3-0.6b monitor. although early prefixes modestly improve cross-task outcome ranking, within-task discrimination remains near chance across early landmarks (5k-20k tokens): initial-turn embeddings and 20k-token task-conditional models yield aucs around 0.50, and three-seed neural evaluations across 32,406 attempts at 20k tokens achieve a mean within-task auc of 0.50 [0.48, 0.51] across tasks of varying solve rates. to evaluate how these predictions translate into stopping decisions, we replay score-guided and matched random restarts under shared token budgets alongside uninterrupted continuation. under a 75k-token cap, learned restarting improves resolution over matched random restarting by up to 1.98 percentage points. an exact algebraic decomposition resolves this paradox: the gain over random restarting stems almost entirely from between-task stopping allocation (avoiding stops on easy issues), whereas attempt-level selection within a task contributes near zero (-0.11 to +0.24 percentage points). across all four settings at the 75k cap (and 216 of 224 tested budget-threshold configurations overall), uninterrupted continuation achieves higher solve rates at lower mean token cost than both restart policies. practical evaluations of early stopping must therefore establish attempt-level discrimination and demonstrate net compute savings relative to continuation. 代码agent sft 评测基准 coding agent + failure monitor 编码智能体提前停止 用147k执行轨迹区分任务难度与尝试轨迹，并代数分解重启收益来源 编码智能体能否在早期可靠预测失败并提前停止，从而节省算力 早期前缀对同任务内失败判别接近随机，跨任务排序提升不等于可停止决策 对比预执行上下文与5k–20k早期前缀，测试线性计数、初始轮嵌入、任务条件排序器和微调qwen3-0.6b监控器；在共享token预算下回放重启与继续并做代数分解 20k token同任务auc约0.50；75k上限下学习重启仅比随机重启高≤1.98pp，继续在四设置中解率更高且token更省 需建立尝试级判别并证明相对持续运行的净算力节省" data-groups="代码Agent" data-training="SFT|评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.35971v1" target="_blank" rel="noreferrer">2610.35971</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.35971v1" target="_blank" rel="noreferrer">Continue or Restart? The Limits of Early Failure Prediction in Coding Agents</a><div class="authors">Srinath Srinivasan, Lunxiao Li, Tim Menzies et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Coding agent + failure monitor</td><td data-label="训练方法"><span class="chip t-SFT">SFT</span> <span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">编码智能体提前停止</td><td data-label="核心创新">用147k执行轨迹区分任务难度与尝试轨迹，并代数分解重启收益来源</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">继续还是重启？编码智能体早期失败预测的局限</div><div class="facts"><div class="fact"><span>核心问题</span>编码智能体能否在早期可靠预测失败并提前停止，从而节省算力</div><div class="fact"><span>关键困难</span>早期前缀对同任务内失败判别接近随机，跨任务排序提升不等于可停止决策</div><div class="fact"><span>解决方案</span>对比预执行上下文与5k–20k早期前缀，测试线性计数、初始轮嵌入、任务条件排序器和微调Qwen3-0.6B监控器；在共享token预算下回放重启与继续并做代数分解</div><div class="fact"><span>主要结果</span>20k token同任务AUC约0.50；75k上限下学习重启仅比随机重启高≤1.98pp，继续在四设置中解率更高且token更省</div><div class="fact"><span>未来方向</span>需建立尝试级判别并证明相对持续运行的净算力节省</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.35971v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.35971v1" target="_blank" rel="noreferrer">PDF</a>Srinath Srinivasan, Lunxiao Li, Tim Menzies, Wesley Assunção · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Early stopping promises to reduce compute costs for autonomous coding agents by terminating unpromising runs early. Deciding when to abandon a run requires separating baseline issue difficulty from the trajectory of an individual attempt. We study the distinction in 147,002 execution traces from two public corpora spanning four model-framework settings. Comparing pre-execution issue context against early execution prefixes, we evaluate linear count models, initial-turn text embeddings, task-conditional rankers, and a fine-tuned Qwen3-0.6B monitor. Although early prefixes modestly improve cross-task outcome ranking, within-task discrimination remains near chance across early landmarks (5k-20k tokens): initial-turn embeddings and 20k-token task-conditional models yield AUCs around 0.50, and three-seed neural evaluations across 32,406 attempts at 20k tokens achieve a mean within-task AUC of 0.50 [0.48, 0.51] across tasks of varying solve rates. To evaluate how these predictions translate into stopping decisions, we replay score-guided and matched random restarts under shared token budgets alongside uninterrupted continuation. Under a 75k-token cap, learned restarting improves resolution over matched random restarting by up to 1.98 percentage points. An exact algebraic decomposition resolves this paradox: the gain over random restarting stems almost entirely from between-task stopping allocation (avoiding stops on easy issues), whereas attempt-level selection within a task contributes near zero (-0.11 to +0.24 percentage points). Across all four settings at the 75k cap (and 216 of 224 tested budget-threshold configurations overall), uninterrupted continuation achieves higher solve rates at lower mean token cost than both restart policies. Practical evaluations of early stopping must therefore establish attempt-level discrimination and demonstrate net compute savings relative to continuation.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.34763 the physical cost of context: quality-constrained resource accounting for coding agents 上下文的物理成本：面向编码智能体的质量约束资源核算 zhongming yu yitong ma hengjia yu boqin yuan xiangye lin hejia zhang jishen zhao coding agents resend a growing context on every model call, and context policies are usually judged by the prompt tokens they save. executed work also depends on call count and prefix reuse: a caching runtime prefills only the tokens after the longest cached prefix. a shorter prompt can therefore cost more if it rewrites cached history. our quality-gated protocol splits executed prefill into logical prompt minus reused prefix and measures kv residency, time, and energy. on 450 localization cases derived from swe-rebench v2, preloading ten retrieved blocks (eager) and adding anchored history compaction (compact) both pass a five-point non-inferiority gate. in a separate 900-cell study, eager cuts model calls by 35.7% and the gpu-energy proxy by 33.2% against on-demand search (grep); compact saves nothing further. enabling prefix caching leaves eager&#x27;s prompt volume similar (+8.3%; its 95% ci spans zero) but cuts its uncached prefill by 67.7%. deleting history can turn a token saving into extra work. with mini-swe-agent on 100 swe-bench verified instances, keeping only the last five observations (mask-5) cuts eager&#x27;s prompt volume by 33.3% but loses 135.9k reusable tokens per task. uncached prefill rises by 608.5%, the energy proxy by 125.6%, and the policy misses the quality gate. policies thus save physical work by shortening the trajectory and can multiply it by editing reusable history. 代码agent 免训练 llm agent + prefix cache 编码智能体资源核算 把执行期 prefill 拆为逻辑提示词减去复用前缀，并按质量门槛核算 kv 驻留、时间与能耗 现有上下文策略只看省下的提示词 token，忽视调用次数与前缀复用对实际执行成本的影响 更短提示词若重写缓存历史反而更贵，单看 token 无法反映预填充、能耗等真实开销 质量门控协议：执行预填充=逻辑提示词−复用前缀，测量 kv 驻留、时间、能耗，并对比预加载检索块、锚定历史压缩、按需检索与历史裁剪策略 eager 比 grep 少 35.7% 调用、33.2% 能耗代理；开启前缀缓存后未缓存预填充降 67.7%；mask-5 省 33.3% token 却使未缓存预填充增 608.5% " data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.34763v1" target="_blank" rel="noreferrer">2610.34763</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.34763v1" target="_blank" rel="noreferrer">The Physical Cost of Context: Quality-Constrained Resource Accounting for Coding Agents</a><div class="authors">Zhongming Yu, Yitong Ma, Hengjia Yu et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + prefix cache</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">编码智能体资源核算</td><td data-label="核心创新">把执行期 prefill 拆为逻辑提示词减去复用前缀，并按质量门槛核算 KV 驻留、时间与能耗</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">上下文的物理成本：面向编码智能体的质量约束资源核算</div><div class="facts"><div class="fact"><span>核心问题</span>现有上下文策略只看省下的提示词 token，忽视调用次数与前缀复用对实际执行成本的影响</div><div class="fact"><span>关键困难</span>更短提示词若重写缓存历史反而更贵，单看 token 无法反映预填充、能耗等真实开销</div><div class="fact"><span>解决方案</span>质量门控协议：执行预填充=逻辑提示词−复用前缀，测量 KV 驻留、时间、能耗，并对比预加载检索块、锚定历史压缩、按需检索与历史裁剪策略</div><div class="fact"><span>主要结果</span>Eager 比 Grep 少 35.7% 调用、33.2% 能耗代理；开启前缀缓存后未缓存预填充降 67.7%；Mask-5 省 33.3% token 却使未缓存预填充增 608.5%</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.34763v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.34763v1" target="_blank" rel="noreferrer">PDF</a>Zhongming Yu, Yitong Ma, Hengjia Yu, Boqin Yuan, Xiangye Lin, Hejia Zhang, Jishen Zhao · NeurIPS 2026 · Accepted at the NeurIPS 2026 Workshop on Resource-Aware Agentic AI (RAAAI). 15 pages, 2 figures, 6 tables · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Coding agents resend a growing context on every model call, and context policies are usually judged by the prompt tokens they save. Executed work also depends on call count and prefix reuse: a caching runtime prefills only the tokens after the longest cached prefix. A shorter prompt can therefore cost more if it rewrites cached history. Our quality-gated protocol splits executed prefill into logical prompt minus reused prefix and measures KV residency, time, and energy. On 450 localization cases derived from SWE-rebench V2, preloading ten retrieved blocks (Eager) and adding anchored history compaction (Compact) both pass a five-point non-inferiority gate. In a separate 900-cell study, Eager cuts model calls by 35.7% and the GPU-energy proxy by 33.2% against on-demand search (Grep); Compact saves nothing further. Enabling prefix caching leaves Eager&#x27;s prompt volume similar (+8.3%; its 95% CI spans zero) but cuts its uncached prefill by 67.7%. Deleting history can turn a token saving into extra work. With mini-SWE-agent on 100 SWE-bench Verified instances, keeping only the last five observations (Mask-5) cuts Eager&#x27;s prompt volume by 33.3% but loses 135.9k reusable tokens per task. Uncached prefill rises by 608.5%, the energy proxy by 125.6%, and the policy misses the quality gate. Policies thus save physical work by shortening the trajectory and can multiply it by editing reusable history.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.34745 sceneagent: an agentic pipeline from 3d and 4d captures to simulation environments sceneagent：从3d与4d捕获到仿真环境的智能体流水线 luke hollis tianxing fan heng yang visual captures provide detailed scene appearance, but converting them into interactive simulation environments requires object reconstruction, physical modeling, and correction of intermediate errors. we present sceneagent, an agentic pipeline that coordinates these steps through simulator-based visual inspection and repair. the pipeline processes 3d gaussian splatting (3dgs), photogrammetry, lidar captures, ai-generated 3dgs scenes, and 4d videos of dynamic scenes, and combines object segmentation, physical parameter estimation, part decomposition, articulation, and deformable simulation. to support policy learning, sceneagent generates diverse object variants (&quot;digital sisters&quot;) and scripted demonstrations. on a cluttered bin scene from graspclutter6d, sceneagent raises f1 at 1 cm for every coding agent with scorable outputs both with and without its skills, and its reconstructions are better than simfoundry: all agent configurations exceed simfoundry&#x27;s f1 score, with a best of 60.75% versus 6.9%. on three dynamic scenes from 4dcodebench, sceneagent raises the mean dynamic iou of gemini 4 argon from 0.86% to 99.09%. we further demonstrate diverse simulated interactions and preliminary policy transfer to a real robot. 代码agent 免训练 评测基准 llm agent + simulator tool harness 场景重建与机器人仿真 用仿真器视觉检查闭环驱动分割、物理参数与铰接修复的智能体流水线 如何把3d/4d视觉捕获自动转换为可交互、物理正确的仿真环境 中间步骤的重建与物理建模错误难以自动发现和纠正，人工修错成本高 协调物体分割、物理参数估计、部件分解、铰接与可变形仿真，并通过仿真渲染的视觉检查迭代修复中间错误，同时生成数字孪生变体与脚本演示 graspclutter6d杂乱箱场景1cm f1最高60.75%，远超simfoundry的6.9%；4dcodebench三动态场景平均动态iou由0.86%升至99.09% 仅初步验证真机策略迁移" data-groups="代码Agent" data-training="免训练|评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.34745v1" target="_blank" rel="noreferrer">2610.34745</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.34745v1" target="_blank" rel="noreferrer">SceneAgent: An Agentic Pipeline from 3D and 4D Captures to Simulation Environments</a><div class="authors">Luke Hollis, Tianxing Fan, Heng Yang</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + simulator tool harness</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span> <span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">场景重建与机器人仿真</td><td data-label="核心创新">用仿真器视觉检查闭环驱动分割、物理参数与铰接修复的智能体流水线</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">SceneAgent：从3D与4D捕获到仿真环境的智能体流水线</div><div class="facts"><div class="fact"><span>核心问题</span>如何把3D/4D视觉捕获自动转换为可交互、物理正确的仿真环境</div><div class="fact"><span>关键困难</span>中间步骤的重建与物理建模错误难以自动发现和纠正，人工修错成本高</div><div class="fact"><span>解决方案</span>协调物体分割、物理参数估计、部件分解、铰接与可变形仿真，并通过仿真渲染的视觉检查迭代修复中间错误，同时生成数字孪生变体与脚本演示</div><div class="fact"><span>主要结果</span>GraspClutter6D杂乱箱场景1cm F1最高60.75%，远超SimFoundry的6.9%；4DCodeBench三动态场景平均动态IoU由0.86%升至99.09%</div><div class="fact"><span>未来方向</span>仅初步验证真机策略迁移</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.34745v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.34745v1" target="_blank" rel="noreferrer">PDF</a>Luke Hollis, Tianxing Fan, Heng Yang · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Visual captures provide detailed scene appearance, but converting them into interactive simulation environments requires object reconstruction, physical modeling, and correction of intermediate errors. We present SceneAgent, an agentic pipeline that coordinates these steps through simulator-based visual inspection and repair. The pipeline processes 3D Gaussian Splatting (3DGS), photogrammetry, LiDAR captures, AI-generated 3DGS scenes, and 4D videos of dynamic scenes, and combines object segmentation, physical parameter estimation, part decomposition, articulation, and deformable simulation. To support policy learning, SceneAgent generates diverse object variants (&quot;digital sisters&quot;) and scripted demonstrations. On a cluttered bin scene from GraspClutter6D, SceneAgent raises F1 at 1 cm for every coding agent with scorable outputs both with and without its skills, and its reconstructions are better than SimFoundry: all agent configurations exceed SimFoundry&#x27;s F1 score, with a best of 60.75% versus 6.9%. On three dynamic scenes from 4DCodeBench, SceneAgent raises the mean dynamic IoU of Gemini 4 Argon from 0.86% to 99.09%. We further demonstrate diverse simulated interactions and preliminary policy transfer to a real robot.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.34679 at-at: automatic tool optimization from agent traces at-at：从智能体轨迹中自动优化工具 maya ravichandran pragya tripathi dharamendra kumar adith swaminathan nathan kallus efforts to improve llm-based agents typically focus on modifying the agent itself, yet success also depends on the environment in which an agent acts. tools mediate this interaction: a tool&#x27;s description shapes how an agent calls it, and its implementation determines the results and errors the agent receives afterwards. many tools, such as apis and mcp servers, are shared by many agents and maintained by providers who cannot change those agents. we introduce at-at (automatic tool optimization from agent traces), an agentic tool optimizer that improves a shared toolset offline from historical agent executions while holding the agents fixed. a lightweight coding agent reads agent trajectories and their evaluation results, and selectively edits tool descriptions and, when permitted, implementations. on $τ^2$-bench-verified, at-at achieves the highest task completion rates in the airline and telecom domains at lower cost than strong prompt- and tool-optimizer baselines, and its telecom gain is statistically significant under paired permutation tests. optimizing the tools within a coding agent harness also improves held-out performance on terminalbench-2 and tblite. when applied to three production mcp servers at a large enterprise, at-at lowered cost or tool error rates on every server and increased held-out task passes on one. by turning accumulated execution traces into updates to shared tool environments, at-at provides a path toward continual improvement of agent systems through environment-side learning. 代码agent 免训练 其他 llm coding agent + tool harness 共享工具集离线优化 用轻量编码智能体读轨迹与评测反馈，选择性改写工具描述并在允许时改实现 智能体成功依赖其所处工具环境，而共享工具（api、mcp 服务器）由提供方维护、无法改动使用它的智能体 以往工作只改智能体本身，工具描述与实现的缺陷导致错误调用与报错，提供方又无法调整下游智能体 冻结智能体，离线读取历史执行轨迹及其评测结果，由编码智能体定位工具描述或实现问题并做针对性编辑，迭代提升共享工具集 τ²-bench-verified 上 airline 与 telecom 域任务完成率最高且成本低于强基线，telecom 提升在配对置换检验下显著；terminalbench-2 与 tblite 留出集亦提升；三个企业级 mcp 服务器成本或工具错误率均下降，一个留出任务… " data-groups="代码Agent" data-training="免训练|其他" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.34679v1" target="_blank" rel="noreferrer">2610.34679</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.34679v1" target="_blank" rel="noreferrer">AT-AT: Automatic Tool Optimization from Agent Traces</a><div class="authors">Maya Ravichandran, Pragya Tripathi, Dharamendra Kumar et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM coding agent + tool harness</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span> <span class="chip t-其他">其他</span></td><td data-label="应用场景">共享工具集离线优化</td><td data-label="核心创新">用轻量编码智能体读轨迹与评测反馈，选择性改写工具描述并在允许时改实现</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">AT-AT：从智能体轨迹中自动优化工具</div><div class="facts"><div class="fact"><span>核心问题</span>智能体成功依赖其所处工具环境，而共享工具（API、MCP 服务器）由提供方维护、无法改动使用它的智能体</div><div class="fact"><span>关键困难</span>以往工作只改智能体本身，工具描述与实现的缺陷导致错误调用与报错，提供方又无法调整下游智能体</div><div class="fact"><span>解决方案</span>冻结智能体，离线读取历史执行轨迹及其评测结果，由编码智能体定位工具描述或实现问题并做针对性编辑，迭代提升共享工具集</div><div class="fact"><span>主要结果</span>τ²-bench-verified 上 Airline 与 Telecom 域任务完成率最高且成本低于强基线，Telecom 提升在配对置换检验下显著；TerminalBench-2 与 TBLite 留出集亦提升；三个企业级 MCP 服务器成本或工具错误率均下降，一个留出任务…</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.34679v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.34679v1" target="_blank" rel="noreferrer">PDF</a>Maya Ravichandran, Pragya Tripathi, Dharamendra Kumar, Adith Swaminathan, Nathan Kallus · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Efforts to improve LLM-based agents typically focus on modifying the agent itself, yet success also depends on the environment in which an agent acts. Tools mediate this interaction: a tool&#x27;s description shapes how an agent calls it, and its implementation determines the results and errors the agent receives afterwards. Many tools, such as APIs and MCP servers, are shared by many agents and maintained by providers who cannot change those agents. We introduce AT-AT (Automatic Tool Optimization from Agent Traces), an agentic tool optimizer that improves a shared toolset offline from historical agent executions while holding the agents fixed. A lightweight coding agent reads agent trajectories and their evaluation results, and selectively edits tool descriptions and, when permitted, implementations. On $τ^2$-bench-verified, AT-AT achieves the highest task completion rates in the Airline and Telecom domains at lower cost than strong prompt- and tool-optimizer baselines, and its Telecom gain is statistically significant under paired permutation tests. Optimizing the tools within a coding agent harness also improves held-out performance on TerminalBench-2 and TBLite. When applied to three production MCP servers at a large enterprise, AT-AT lowered cost or tool error rates on every server and increased held-out task passes on one. By turning accumulated execution traces into updates to shared tool environments, AT-AT provides a path toward continual improvement of agent systems through environment-side learning.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.34654 thinking-in-bets at test time reduces sycophantic revisions in llm agents 测试时 thinking-in-bets 减少 llm 智能体的谄媚式修订 nghi d. q. bui language model agents often abandon correct work when a user challenges it, yet simply telling them to stand firm makes them ignore real mistakes. once an agent reads a complaint, it tends to discount its own earlier checks in order to agree with the user. we introduce thinking-in-bets, a training-free method in which an agent writes a short private record of its main claims, the checks supporting them, and its confidence before reading user feedback. when challenged, the agent consults this claim checklist to keep verified work intact while investigating uncertain or newly challenged parts. we evaluate five gemini models (3.5 flash-lite, 3.5 flash, 3.6 flash, 3.8 flash, and 4.0 argon) across eight benchmarks: swe-together, swe-interact, and deepswe for software engineering, agents&#x27; last exam for professional reports, humanity&#x27;s last exam and syceval for academic reasoning, vals finance for financial analysis, and terminal-bench for command-line tasks. recording claims before criticism nearly eliminates false reversals in patch review and protects passing report drafts under mistaken pushback, whereas writing the same record after reading the complaint recovers very little of the gain. in multi-turn coding, pre-reply claim records substantially reduce unnecessary file edits after mistaken complaints, and gating the record so it is written only when the agent is uncertain lowers token overhead while fixing more real bugs than the baseline. even in non-interactive tasks without user feedback, listing the key claims in a draft and re-checking the weakest one before submission improves both answer accuracy and confidence estimates across all tested models. 代码agent 免训练 llm agent + claim checklist 用户质疑下的智能体任务 读取反馈前先写私有 claim checklist，受质疑时据此保留已验证工作并复查不确定部分 智能体被用户质疑时倾向放弃正确工作，而简单要求坚持又会忽略真实错误 读过投诉后智能体会低估自己先前的检查，为迎合用户而改错；事后补记录收益很小 读取用户反馈前私有记录主要主张、支持检查与置信度形成 claim checklist；受质疑时据此保留已验证工作，只复查不确定或被新质疑部分，并按不确定性门控记录以省 token 五个 gemini 模型八个基准上，patch review 近乎消除错误反转；多轮编码减少误质疑后的文件编辑，门控记录省 token 且修复更多真实 bug " data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.34654v1" target="_blank" rel="noreferrer">2610.34654</a><span class="date">2026-10-26</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.34654v1" target="_blank" rel="noreferrer">Thinking-in-Bets at Test Time Reduces Sycophantic Revisions in LLM Agents</a><div class="authors">Nghi D. Q. Bui</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + claim checklist</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">用户质疑下的智能体任务</td><td data-label="核心创新">读取反馈前先写私有 Claim Checklist，受质疑时据此保留已验证工作并复查不确定部分</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">测试时 Thinking-in-Bets 减少 LLM 智能体的谄媚式修订</div><div class="facts"><div class="fact"><span>核心问题</span>智能体被用户质疑时倾向放弃正确工作，而简单要求坚持又会忽略真实错误</div><div class="fact"><span>关键困难</span>读过投诉后智能体会低估自己先前的检查，为迎合用户而改错；事后补记录收益很小</div><div class="fact"><span>解决方案</span>读取用户反馈前私有记录主要主张、支持检查与置信度形成 Claim Checklist；受质疑时据此保留已验证工作，只复查不确定或被新质疑部分，并按不确定性门控记录以省 token</div><div class="fact"><span>主要结果</span>五个 Gemini 模型八个基准上，patch review 近乎消除错误反转；多轮编码减少误质疑后的文件编辑，门控记录省 token 且修复更多真实 bug</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.34654v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.34654v1" target="_blank" rel="noreferrer">PDF</a><a href="https://thinking-in-bets.github.io/" target="_blank" rel="noreferrer">Project1</a>Nghi D. Q. Bui · Project page: https://thinking-in-bets.github.io/ · First 2026-10-26 · Latest 2026-10-26</div><details class="abs"><summary>Abstract</summary><div>Language model agents often abandon correct work when a user challenges it, yet simply telling them to stand firm makes them ignore real mistakes. Once an agent reads a complaint, it tends to discount its own earlier checks in order to agree with the user. We introduce Thinking-in-Bets, a training-free method in which an agent writes a short private record of its main claims, the checks supporting them, and its confidence before reading user feedback. When challenged, the agent consults this Claim Checklist to keep verified work intact while investigating uncertain or newly challenged parts. We evaluate five Gemini models (3.5 Flash-Lite, 3.5 Flash, 3.6 Flash, 3.8 Flash, and 4.0 Argon) across eight benchmarks: SWE-Together, SWE-Interact, and DeepSWE for software engineering, Agents&#x27; Last Exam for professional reports, Humanity&#x27;s Last Exam and SycEval for academic reasoning, Vals Finance for financial analysis, and Terminal-Bench for command-line tasks. Recording claims before criticism nearly eliminates false reversals in patch review and protects passing report drafts under mistaken pushback, whereas writing the same record after reading the complaint recovers very little of the gain. In multi-turn coding, pre-reply claim records substantially reduce unnecessary file edits after mistaken complaints, and gating the record so it is written only when the agent is uncertain lowers token overhead while fixing more real bugs than the baseline. Even in non-interactive tasks without user feedback, listing the key claims in a draft and re-checking the weakest one before submission improves both answer accuracy and confidence estimates across all tested models.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.34613 do ai coding agents write infrastructure as code like humans? an empirical study of github pull requests ai 编码智能体写基础设施即代码是否像人类？基于 github pull request 的实证研究 amine barrak emna ksontini charles wehbe infrastructure-as-code (iac) configurations define cloud resources, networking, and access control, and ai coding agents increasingly write them. little is known about how agent contributions differ from those of humans and automation bots, how maintainers evaluate them, and whether they introduce different sustainability concerns.
+  we study 349,156 iac pull requests (prs) from 49,241 github repositories, distinguishing humans, automation bots, silent agents, and disclosed agents. bots account for 32.9% of ostensibly human prs, and 12.3% of the remaining prs contain agent traces, a share that grows over the study period. agent prs are about four times larger than human prs and more often modify core infrastructure modules, whereas bots mainly maintain dependencies. silent-agent prs have higher overall merge rates than human prs (87.4% vs. 78.9%) but are merged 4.0 percentage points less often within the same repositories. disclosed agents create new infrastructure more often than humans (34.0% vs. 21.4%), and even for the same change type within the same repository, their prs are 8.4 points less likely to be merged; silent-agent prs show comparable acceptance for most change types. finally, in 2,645 matched agent-human terraform pr pairs, agent and human prs introduce sustainability smells at similar rates (10.4% vs. 10.3%; paired odds ratio 1.02, 95% ci 0.83-1.25), most commonly missing remote state and monolithic configurations. 代码agent 评测基准  iac pr 维护分析 区分人类、自动化机器人、隐蔽智能体与披露智能体，并用同仓库、同变更类型的匹配对比审查结果 ai 编码智能体提交的 iac pr 与人类、自动化机器人有何差异，维护者如何评审，是否带来不同的可持续性问题 现有研究缺乏对智能体来源的细粒度区分，未控制仓库与变更类型差异，难以判断合并率与可持续性气味是否源自智能体 分析 49,241 个仓库的 349,156 个 iac pr，按作者类型分层，比较规模、修改模块与合并率，并在同仓库内及 2,645 对匹配的 terraform pr 上对比可持续性气味 机器人占表面人类 pr 的 32.9%；隐蔽智能体 pr 合并率 87.4% 高于人类 78.9%，但同仓库内低 4.0 个百分点；披露智能体同仓库同变更类型合并率低 8.4 个百分点；可持续性气味比例 10.4% vs 10.3% " data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.34613v1" target="_blank" rel="noreferrer">2610.34613</a><span class="date">2026-10-25</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.34613v1" target="_blank" rel="noreferrer">Do AI Coding Agents Write Infrastructure as Code Like Humans? An Empirical Study of GitHub Pull Requests</a><div class="authors">Amine Barrak, Emna Ksontini, Charles Wehbe</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构"><span class="muted">—</span></td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">IaC PR 维护分析</td><td data-label="核心创新">区分人类、自动化机器人、隐蔽智能体与披露智能体，并用同仓库、同变更类型的匹配对比审查结果</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">AI 编码智能体写基础设施即代码是否像人类？基于 GitHub Pull Request 的实证研究</div><div class="facts"><div class="fact"><span>核心问题</span>AI 编码智能体提交的 IaC PR 与人类、自动化机器人有何差异，维护者如何评审，是否带来不同的可持续性问题</div><div class="fact"><span>关键困难</span>现有研究缺乏对智能体来源的细粒度区分，未控制仓库与变更类型差异，难以判断合并率与可持续性气味是否源自智能体</div><div class="fact"><span>解决方案</span>分析 49,241 个仓库的 349,156 个 IaC PR，按作者类型分层，比较规模、修改模块与合并率，并在同仓库内及 2,645 对匹配的 Terraform PR 上对比可持续性气味</div><div class="fact"><span>主要结果</span>机器人占表面人类 PR 的 32.9%；隐蔽智能体 PR 合并率 87.4% 高于人类 78.9%，但同仓库内低 4.0 个百分点；披露智能体同仓库同变更类型合并率低 8.4 个百分点；可持续性气味比例 10.4% vs 10.3%</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.34613v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.34613v1" target="_blank" rel="noreferrer">PDF</a>Amine Barrak, Emna Ksontini, Charles Wehbe · First 2026-10-25 · Latest 2026-10-25</div><details class="abs"><summary>Abstract</summary><div>Infrastructure-as-Code (IaC) configurations define cloud resources, networking, and access control, and AI coding agents increasingly write them. Little is known about how agent contributions differ from those of humans and automation bots, how maintainers evaluate them, and whether they introduce different sustainability concerns.
+  We study 349,156 IaC pull requests (PRs) from 49,241 GitHub repositories, distinguishing humans, automation bots, silent agents, and disclosed agents. Bots account for 32.9% of ostensibly human PRs, and 12.3% of the remaining PRs contain agent traces, a share that grows over the study period. Agent PRs are about four times larger than human PRs and more often modify core infrastructure modules, whereas bots mainly maintain dependencies. Silent-agent PRs have higher overall merge rates than human PRs (87.4% vs. 78.9%) but are merged 4.0 percentage points less often within the same repositories. Disclosed agents create new infrastructure more often than humans (34.0% vs. 21.4%), and even for the same change type within the same repository, their PRs are 8.4 points less likely to be merged; silent-agent PRs show comparable acceptance for most change types. Finally, in 2,645 matched agent-human Terraform PR pairs, agent and human PRs introduce sustainability smells at similar rates (10.4% vs. 10.3%; paired odds ratio 1.02, 95% CI 0.83-1.25), most commonly missing remote state and monolithic configurations.</div></details></td></tr></tbody></table></div>
+    <details class="history"><summary>History</summary><div class="history-list"><a href="20261029_0656.html">20261029_0656</a>
+<a href="20261028_0648.html">20261028_0648</a>
+<a href="20261027_0659.html">20261027_0659</a>
+<a href="20261026_0525.html">20261026_0525</a>
+<a href="20261025_0522.html">20261025_0522</a>
+<a href="20261024_0547.html">20261024_0547</a>
+<a href="20261023_0606.html">20261023_0606</a>
+<a href="20261022_0603.html">20261022_0603</a>
+<a href="20261021_0601.html">20261021_0601</a>
+<a href="20261020_0643.html">20261020_0643</a>
+<a href="20261019_0512.html">20261019_0512</a>
+<a href="20261018_0511.html">20261018_0511</a>
+<a href="20261017_0552.html">20261017_0552</a>
+<a href="20261016_0554.html">20261016_0554</a>
+<a href="20261015_0600.html">20261015_0600</a>
+<a href="20261014_0711.html">20261014_0711</a>
+<a href="20261013_0912.html">20261013_0912</a>
+<a href="20261012_0637.html">20261012_0637</a>
+<a href="20261011_0608.html">20261011_0608</a>
+<a href="20261010_0700.html">20261010_0700</a>
+<a href="20261009_0737.html">20261009_0737</a>
+<a href="20261008_0725.html">20261008_0725</a>
+<a href="20261007_0651.html">20261007_0651</a>
+<a href="20261006_0832.html">20261006_0832</a>
+<a href="20261005_0608.html">20261005_0608</a>
+<a href="20261004_0557.html">20261004_0557</a>
+<a href="20261003_0656.html">20261003_0656</a>
+<a href="20261002_0658.html">20261002_0658</a>
+<a href="20261001_0646.html">20261001_0646</a>
+<a href="20260930_1209.html">20260930_1209</a>
+<a href="20260930_1005.html">20260930_1005</a>
+<a href="20260930_0656.html">20260930_0656</a>
+<a href="20260929_0737.html">20260929_0737</a>
+<a href="20260928_0546.html">20260928_0546</a>
+<a href="20260927_0552.html">20260927_0552</a>
+<a href="20260926_0604.html">20260926_0604</a>
+<a href="20260925_0600.html">20260925_0600</a>
+<a href="20260924_1505.html">20260924_1505</a>
+<a href="20260924_1308.html">20260924_1308</a>
+<a href="20260924_1112.html">20260924_1112</a>
+<a href="20260924_0601.html">20260924_0601</a>
+<a href="20260923_1530.html">20260923_1530</a>
+<a href="20260923_1508.html">20260923_1508</a>
+<a href="20260923_0559.html">20260923_0559</a>
+<a href="20260923_0546.html">20260923_0546</a>
+<a href="20260922_0634.html">20260922_0634</a>
+<a href="20260922_0624.html">20260922_0624</a>
+<a href="20260921_0526.html">20260921_0526</a>
+<a href="20260921_0509.html">20260921_0509</a>
+<a href="20260920_0525.html">20260920_0525</a>
+<a href="20260920_0514.html">20260920_0514</a>
+<a href="20260919_0536.html">20260919_0536</a>
+<a href="20260919_0523.html">20260919_0523</a>
+<a href="20260918_0605.html">20260918_0605</a>
+<a href="20260918_0553.html">20260918_0553</a>
+<a href="20260917_0604.html">20260917_0604</a>
+<a href="20260916_0606.html">20260916_0606</a>
+<a href="20260916_0554.html">20260916_0554</a>
+<a href="20260915_0627.html">20260915_0627</a>
+<a href="20260915_0618.html">20260915_0618</a>
+<a href="20260913_0522.html">20260913_0522</a>
+<a href="20260913_0510.html">20260913_0510</a>
+<a href="20260912_0541.html">20260912_0541</a>
+<a href="20260912_0530.html">20260912_0530</a>
+<a href="20260911_0534.html">20260911_0534</a>
+<a href="20260911_0521.html">20260911_0521</a>
+<a href="20260910_0539.html">20260910_0539</a>
+<a href="20260910_0528.html">20260910_0528</a>
+<a href="20260909_0547.html">20260909_0547</a>
+<a href="20260909_0533.html">20260909_0533</a>
+<a href="20260908_0559.html">20260908_0559</a>
+<a href="20260908_0553.html">20260908_0553</a>
+<a href="20260907_0513.html">20260907_0513</a>
+<a href="20260907_0500.html">20260907_0500</a>
+<a href="20260906_0507.html">20260906_0507</a>
+<a href="20260906_0453.html">20260906_0453</a>
+<a href="20260905_0523.html">20260905_0523</a>
+<a href="20260905_0512.html">20260905_0512</a>
+<a href="20260904_0540.html">20260904_0540</a>
+<a href="20260904_0533.html">20260904_0533</a>
+<a href="20260903_0545.html">20260903_0545</a>
+<a href="20260903_0530.html">20260903_0530</a>
+<a href="20260902_0544.html">20260902_0544</a>
+<a href="20260902_0533.html">20260902_0533</a>
+<a href="20260901_0712.html">20260901_0712</a>
+<a href="20260901_0706.html">20260901_0706</a>
+<a href="20260831_0555.html">20260831_0555</a>
+<a href="20260831_0548.html">20260831_0548</a>
+<a href="20260830_0540.html">20260830_0540</a>
+<a href="20260830_0528.html">20260830_0528</a>
+<a href="20260829_1004.html">20260829_1004</a>
+<a href="20260829_0959.html">20260829_0959</a>
+<a href="20260828_1134.html">20260828_1134</a>
+<a href="20260828_1025.html">20260828_1025</a>
+<a href="20260827_0547.html">20260827_0547</a>
+<a href="20260827_0533.html">20260827_0533</a>
+<a href="20260826_0339.html">20260826_0339</a>
+<a href="20260826_0326.html">20260826_0326</a>
+<a href="20260825_0337.html">20260825_0337</a>
+<a href="20260825_0324.html">20260825_0324</a>
+<a href="20260824_0329.html">20260824_0329</a>
+<a href="20260824_0318.html">20260824_0318</a>
+<a href="20260823_0330.html">20260823_0330</a>
+<a href="20260823_0319.html">20260823_0319</a>
+<a href="20260822_0332.html">20260822_0332</a>
+<a href="20260822_0322.html">20260822_0322</a>
+<a href="20260821_0338.html">20260821_0338</a>
+<a href="20260821_0326.html">20260821_0326</a>
+<a href="20260820_0343.html">20260820_0343</a>
+<a href="20260820_0335.html">20260820_0335</a>
+<a href="20260819_0338.html">20260819_0338</a>
+<a href="20260819_0324.html">20260819_0324</a>
+<a href="20260818_0335.html">20260818_0335</a>
+<a href="20260818_0323.html">20260818_0323</a>
+<a href="20260817_0328.html">20260817_0328</a>
+<a href="20260816_0328.html">20260816_0328</a>
+<a href="20260816_0318.html">20260816_0318</a>
+<a href="20260815_0352.html">20260815_0352</a>
+<a href="20260815_0344.html">20260815_0344</a>
+<a href="20260814_0359.html">20260814_0359</a>
+<a href="20260814_0354.html">20260814_0354</a>
+<a href="20260813_0403.html">20260813_0403</a>
+<a href="20260813_0359.html">20260813_0359</a>
+<a href="20260812_0404.html">20260812_0404</a>
+<a href="20260812_0358.html">20260812_0358</a>
+<a href="20260811_0357.html">20260811_0357</a>
+<a href="20260811_0352.html">20260811_0352</a>
+<a href="20260810_0341.html">20260810_0341</a>
+<a href="20260810_0329.html">20260810_0329</a>
+<a href="20260809_0338.html">20260809_0338</a>
+<a href="20260809_0325.html">20260809_0325</a>
+<a href="20260808_0356.html">20260808_0356</a>
+<a href="20260808_0348.html">20260808_0348</a>
+<a href="20260807_0844.html">20260807_0844</a>
+<a href="20260807_0838.html">20260807_0838</a>
+<a href="20260806_0437.html">20260806_0437</a>
+<a href="20260806_0422.html">20260806_0422</a>
+<a href="20260805_0439.html">20260805_0439</a>
+<a href="20260805_0422.html">20260805_0422</a>
+<a href="20260804_0437.html">20260804_0437</a>
+<a href="20260804_0423.html">20260804_0423</a>
+<a href="20260803_0416.html">20260803_0416</a>
+<a href="20260802_0414.html">20260802_0414</a>
+<a href="20260802_0408.html">20260802_0408</a>
+<a href="20260801_0426.html">20260801_0426</a>
+<a href="20260801_0416.html">20260801_0416</a>
+<a href="20260731_0421.html">20260731_0421</a>
+<a href="20260731_0413.html">20260731_0413</a>
+<a href="20260730_0416.html">20260730_0416</a>
+<a href="20260730_0410.html">20260730_0410</a>
+<a href="20260729_0413.html">20260729_0413</a>
+<a href="20260728_0417.html">20260728_0417</a>
+<a href="20260727_0416.html">20260727_0416</a>
+<a href="20260727_0411.html">20260727_0411</a>
+<a href="20260726_0414.html">20260726_0414</a>
+<a href="20260726_0409.html">20260726_0409</a>
+<a href="20260725_0432.html">20260725_0432</a>
+<a href="20260725_0415.html">20260725_0415</a>
+<a href="20260724_0419.html">20260724_0419</a>
+<a href="20260724_0410.html">20260724_0410</a>
+<a href="20260723_0418.html">20260723_0418</a>
+<a href="20260723_0415.html">20260723_0415</a>
+<a href="20260722_0423.html">20260722_0423</a>
+<a href="20260722_0418.html">20260722_0418</a>
+<a href="20260721_0427.html">20260721_0427</a>
+<a href="20260721_0418.html">20260721_0418</a>
+<a href="20260720_0411.html">20260720_0411</a>
+<a href="20260720_0406.html">20260720_0406</a>
+<a href="20260719_0407.html">20260719_0407</a>
+<a href="20260719_0403.html">20260719_0403</a>
+<a href="20260718_0413.html">20260718_0413</a>
+<a href="20260718_0403.html">20260718_0403</a>
+<a href="20260717_0408.html">20260717_0408</a>
+<a href="20260717_0359.html">20260717_0359</a>
+<a href="20260716_0417.html">20260716_0417</a>
+<a href="20260716_0405.html">20260716_0405</a>
+<a href="20260715_0420.html">20260715_0420</a>
+<a href="20260715_0407.html">20260715_0407</a>
+<a href="20260714_0421.html">20260714_0421</a>
+<a href="20260714_0409.html">20260714_0409</a>
+<a href="20260713_0409.html">20260713_0409</a>
+<a href="20260713_0405.html">20260713_0405</a>
+<a href="20260712_0409.html">20260712_0409</a>
+<a href="20260712_0402.html">20260712_0402</a>
+<a href="20260711_0439.html">20260711_0439</a>
+<a href="20260711_0418.html">20260711_0418</a>
+<a href="20260710_0454.html">20260710_0454</a>
+<a href="20260710_0444.html">20260710_0444</a>
+<a href="20260709_0426.html">20260709_0426</a>
+<a href="20260709_0419.html">20260709_0419</a>
+<a href="20260708_0455.html">20260708_0455</a>
+<a href="20260708_0448.html">20260708_0448</a>
+<a href="20260707_0456.html">20260707_0456</a>
+<a href="20260707_0451.html">20260707_0451</a>
+<a href="20260706_0421.html">20260706_0421</a>
+<a href="20260706_0410.html">20260706_0410</a>
+<a href="20260705_0415.html">20260705_0415</a>
+<a href="20260705_0407.html">20260705_0407</a>
+<a href="20260704_0421.html">20260704_0421</a>
+<a href="20260704_0413.html">20260704_0413</a>
+<a href="20260703_0425.html">20260703_0425</a>
+<a href="20260703_0417.html">20260703_0417</a>
+<a href="20260702_0452.html">20260702_0452</a>
+<a href="20260702_0447.html">20260702_0447</a>
+<a href="20260701_0502.html">20260701_0502</a>
+<a href="20260701_0455.html">20260701_0455</a>
+<a href="20260630_0454.html">20260630_0454</a>
+<a href="20260630_0452.html">20260630_0452</a>
+<a href="20260629_0420.html">20260629_0420</a>
+<a href="20260629_0410.html">20260629_0410</a>
+<a href="20260628_0423.html">20260628_0423</a>
+<a href="20260627_0450.html">20260627_0450</a>
+<a href="20260627_0430.html">20260627_0430</a>
+<a href="20260626_1438.html">20260626_1438</a>
+<a href="20260626_0502.html">20260626_0502</a>
+<a href="20260625_0455.html">20260625_0455</a>
+<a href="20260624_0505.html">20260624_0505</a>
+<a href="20260623_0535.html">20260623_0535</a>
+<a href="20260622_0445.html">20260622_0445</a>
+<a href="20260621_0422.html">20260621_0422</a>
+<a href="20260620_0442.html">20260620_0442</a>
+<a href="20260619_0531.html">20260619_0531</a>
+<a href="20260618_0519.html">20260618_0519</a>
+<a href="20260617_0545.html">20260617_0545</a>
+<a href="20260616_0549.html">20260616_0549</a>
+<a href="20260615_0423.html">20260615_0423</a>
+<a href="20260614_0423.html">20260614_0423</a>
+<a href="20260613_0505.html">20260613_0505</a>
+<a href="20260612_0528.html">20260612_0528</a>
+<a href="20260611_0528.html">20260611_0528</a>
+<a href="20260610_0504.html">20260610_0504</a>
+<a href="20260609_0514.html">20260609_0514</a>
+<a href="20260608_0421.html">20260608_0421</a>
+<a href="20260607_0418.html">20260607_0418</a>
+<a href="20260606_0451.html">20260606_0451</a>
+<a href="20260604_0557.html">20260604_0557</a>
+<a href="20260603_0556.html">20260603_0556</a>
+<a href="20260602_0615.html">20260602_0615</a>
+<a href="20260601_0419.html">20260601_0419</a>
+<a href="20260531_0414.html">20260531_0414</a>
+<a href="20260530_0512.html">20260530_0512</a>
+<a href="20260529_0515.html">20260529_0515</a>
+<a href="20260527_0459.html">20260527_0459</a>
+<a href="20260526_0426.html">20260526_0426</a>
+<a href="20260525_0417.html">20260525_0417</a>
+<a href="20260524_0411.html">20260524_0411</a>
+<a href="20260523_0445.html">20260523_0445</a>
+<a href="20260522_0454.html">20260522_0454</a>
+<a href="20260521_0508.html">20260521_0508</a>
+<a href="20260520_0449.html">20260520_0449</a>
+<a href="20260519_0442.html">20260519_0442</a>
+<a href="20260518_0409.html">20260518_0409</a>
+<a href="20260517_0425.html">20260517_0425</a>
+<a href="20260516_0436.html">20260516_0436</a>
+<a href="20260515_0457.html">20260515_0457</a>
+<a href="20260514_0507.html">20260514_0507</a>
+<a href="20260513_0503.html">20260513_0503</a>
+<a href="20260512_0505.html">20260512_0505</a>
+<a href="20260511_0418.html">20260511_0418</a>
+<a href="20260510_0414.html">20260510_0414</a>
+<a href="20260509_0426.html">20260509_0426</a>
+<a href="20260508_0435.html">20260508_0435</a>
+<a href="20260507_0454.html">20260507_0454</a>
+<a href="20260506_0427.html">20260506_0427</a>
+<a href="20260505_0436.html">20260505_0436</a>
+<a href="20260504_0410.html">20260504_0410</a>
+<a href="20260503_0414.html">20260503_0414</a>
+<a href="20260502_0426.html">20260502_0426</a>
+<a href="20260501_0429.html">20260501_0429</a>
+<a href="20260430_0430.html">20260430_0430</a>
+<a href="20260429_0437.html">20260429_0437</a>
+<a href="20260428_0429.html">20260428_0429</a>
+<a href="20260427_0405.html">20260427_0405</a>
+<a href="20260426_0404.html">20260426_0404</a>
+<a href="20260425_0410.html">20260425_0410</a>
+<a href="20260424_0430.html">20260424_0430</a>
+<a href="20260423_0426.html">20260423_0426</a>
+<a href="20260422_0424.html">20260422_0424</a>
+<a href="20260421_0418.html">20260421_0418</a>
+<a href="20260420_0359.html">20260420_0359</a>
+<a href="20260419_0358.html">20260419_0358</a>
+<a href="20260418_0415.html">20260418_0415</a>
+<a href="20260417_0421.html">20260417_0421</a>
+<a href="20260416_0425.html">20260416_0425</a>
+<a href="20260415_0426.html">20260415_0426</a>
+<a href="20260414_0423.html">20260414_0423</a>
+<a href="20260413_0352.html">20260413_0352</a>
+<a href="20260412_0347.html">20260412_0347</a>
+<a href="20260411_0356.html">20260411_0356</a>
+<a href="20260410_0412.html">20260410_0412</a>
+<a href="20260409_0411.html">20260409_0411</a>
+<a href="20260407_0404.html">20260407_0404</a>
+<a href="20260406_0347.html">20260406_0347</a>
+<a href="20260405_0344.html">20260405_0344</a>
+<a href="20260404_0350.html">20260404_0350</a>
+<a href="20260403_0400.html">20260403_0400</a>
+<a href="20260401_0408.html">20260401_0408</a>
+<a href="20260331_0407.html">20260331_0407</a>
+<a href="20260329_0347.html">20260329_0347</a>
+<a href="20260328_0350.html">20260328_0350</a>
+<a href="20260326_0357.html">20260326_0357</a>
+<a href="20260325_0405.html">20260325_0405</a>
+<a href="20260324_0400.html">20260324_0400</a>
+<a href="20260323_0342.html">20260323_0342</a>
+<a href="20260322_0340.html">20260322_0340</a>
+<a href="20260321_0347.html">20260321_0347</a>
+<a href="20260320_0356.html">20260320_0356</a>
+<a href="20260319_0358.html">20260319_0358</a>
+<a href="20260318_0405.html">20260318_0405</a>
+<a href="20260317_0401.html">20260317_0401</a>
+<a href="20260316_0343.html">20260316_0343</a>
+<a href="20260315_0341.html">20260315_0341</a>
+<a href="20260314_0344.html">20260314_0344</a>
+<a href="20260313_0352.html">20260313_0352</a>
+<a href="20260312_0352.html">20260312_0352</a>
+<a href="20260311_0347.html">20260311_0347</a>
+<a href="20260310_0350.html">20260310_0350</a>
+<a href="20260309_0338.html">20260309_0338</a>
+<a href="20260308_0337.html">20260308_0337</a>
+<a href="20260307_0347.html">20260307_0347</a>
+<a href="20260306_0402.html">20260306_0402</a>
+<a href="20260305_0348.html">20260305_0348</a>
+<a href="20260304_0348.html">20260304_0348</a>
+<a href="20260303_0348.html">20260303_0348</a>
+<a href="20260302_0336.html">20260302_0336</a>
+<a href="20260301_0339.html">20260301_0339</a>
+<a href="20260228_0348.html">20260228_0348</a>
+<a href="20260227_0354.html">20260227_0354</a>
+<a href="20260226_0402.html">20260226_0402</a>
+<a href="20260225_0404.html">20260225_0404</a>
+<a href="20260224_0406.html">20260224_0406</a>
+<a href="20260223_0338.html">20260223_0338</a>
+<a href="20260222_0339.html">20260222_0339</a>
+<a href="20260221_0345.html">20260221_0345</a>
+<a href="20260220_0348.html">20260220_0348</a>
+<a href="20260219_0358.html">20260219_0358</a>
+<a href="20260218_0358.html">20260218_0358</a>
+<a href="20260217_0343.html">20260217_0343</a>
+<a href="20260216_0339.html">20260216_0339</a>
+<a href="20260215_0338.html">20260215_0338</a>
+<a href="20260213_0401.html">20260213_0401</a>
+<a href="20260212_0404.html">20260212_0404</a>
+<a href="20260210_0409.html">20260210_0409</a>
+<a href="20260208_0339.html">20260208_0339</a>
+<a href="20260207_0349.html">20260207_0349</a>
+<a href="20260206_0347.html">20260206_0347</a>
+<a href="20260205_0346.html">20260205_0346</a>
+<a href="20260204_0354.html">20260204_0354</a>
+<a href="20260202_0337.html">20260202_0337</a>
+<a href="20260201_0333.html">20260201_0333</a>
+<a href="20260131_0345.html">20260131_0345</a>
+<a href="20260130_0341.html">20260130_0341</a>
+<a href="20260129_0344.html">20260129_0344</a>
+<a href="20260128_0341.html">20260128_0341</a>
+<a href="20260127_0338.html">20260127_0338</a>
+<a href="20260126_0330.html">20260126_0330</a>
+<a href="20260125_0329.html">20260125_0329</a>
+<a href="20260124_0337.html">20260124_0337</a>
+<a href="20260123_0337.html">20260123_0337</a>
+<a href="20260122_0343.html">20260122_0343</a>
+<a href="20260121_0424.html">20260121_0424</a>
+<a href="20260119_0329.html">20260119_0329</a>
+<a href="20260118_0327.html">20260118_0327</a>
+<a href="20260117_0332.html">20260117_0332</a>
+<a href="20260116_0339.html">20260116_0339</a>
+<a href="20260115_0334.html">20260115_0334</a>
+<a href="20260114_0333.html">20260114_0333</a>
+<a href="20260113_0334.html">20260113_0334</a>
+<a href="20260112_0331.html">20260112_0331</a>
+<a href="20260111_0329.html">20260111_0329</a>
+<a href="20260110_0333.html">20260110_0333</a>
+<a href="20260109_0334.html">20260109_0334</a>
+<a href="20260108_0335.html">20260108_0335</a>
+<a href="20260107_0330.html">20260107_0330</a>
+<a href="20260106_0336.html">20260106_0336</a>
+<a href="20260105_0328.html">20260105_0328</a>
+<a href="20260104_0328.html">20260104_0328</a>
+<a href="20260103_0325.html">20260103_0325</a>
+<a href="20260102_0339.html">20260102_0339</a>
+<a href="20260101_0329.html">20260101_0329</a>
+<a href="20251231_0333.html">20251231_0333</a>
+<a href="20251230_0332.html">20251230_0332</a>
+<a href="20251229_0329.html">20251229_0329</a>
+<a href="20251228_0332.html">20251228_0332</a>
+<a href="20251227_0329.html">20251227_0329</a>
+<a href="20251226_0330.html">20251226_0330</a>
+<a href="20251225_0329.html">20251225_0329</a>
+<a href="20251224_0331.html">20251224_0331</a>
+<a href="20251223_0332.html">20251223_0332</a>
+<a href="20251222_0328.html">20251222_0328</a>
+<a href="20251221_0329.html">20251221_0329</a>
+<a href="20251220_0330.html">20251220_0330</a>
+<a href="20251219_0330.html">20251219_0330</a>
+<a href="20251218_0345.html">20251218_0345</a>
+<a href="20251217_0332.html">20251217_0332</a>
+<a href="20251216_0333.html">20251216_0333</a>
+<a href="20251215_0333.html">20251215_0333</a>
+<a href="20251214_0327.html">20251214_0327</a>
+<a href="20251212_0333.html">20251212_0333</a>
+<a href="20251211_0331.html">20251211_0331</a>
+<a href="20251210_0332.html">20251210_0332</a>
+<a href="20251209_0331.html">20251209_0331</a>
+<a href="20251208_0328.html">20251208_0328</a>
+<a href="20251207_0327.html">20251207_0327</a>
+<a href="20251206_0330.html">20251206_0330</a>
+<a href="20251205_0331.html">20251205_0331</a>
+<a href="20251204_0331.html">20251204_0331</a>
+<a href="20251203_0333.html">20251203_0333</a>
+<a href="20251202_0335.html">20251202_0335</a>
+<a href="20251201_0328.html">20251201_0328</a>
+<a href="20251130_0327.html">20251130_0327</a>
+<a href="20251129_0328.html">20251129_0328</a>
+<a href="20251128_0327.html">20251128_0327</a>
+<a href="20251127_0327.html">20251127_0327</a>
+<a href="20251126_0329.html">20251126_0329</a>
+<a href="20251125_0327.html">20251125_0327</a>
+<a href="20251124_0327.html">20251124_0327</a>
+<a href="20251123_0326.html">20251123_0326</a>
+<a href="20251122_0328.html">20251122_0328</a>
+<a href="20251121_0328.html">20251121_0328</a>
+<a href="20251120_0329.html">20251120_0329</a>
+<a href="20251119_0328.html">20251119_0328</a>
+<a href="20251118_0328.html">20251118_0328</a>
+<a href="20251117_0326.html">20251117_0326</a>
+<a href="20251116_0325.html">20251116_0325</a>
+<a href="20251115_0327.html">20251115_0327</a>
+<a href="20251114_0328.html">20251114_0328</a>
+<a href="20251113_0330.html">20251113_0330</a>
+<a href="20251112_0329.html">20251112_0329</a>
+<a href="20251111_0328.html">20251111_0328</a>
+<a href="20251110_0325.html">20251110_0325</a>
+<a href="20251109_0326.html">20251109_0326</a>
+<a href="20251108_0328.html">20251108_0328</a>
+<a href="20251107_0328.html">20251107_0328</a>
+<a href="20251106_0329.html">20251106_0329</a>
+<a href="20251105_0326.html">20251105_0326</a>
+<a href="20251104_0327.html">20251104_0327</a>
+<a href="20251103_0324.html">20251103_0324</a>
+<a href="20251102_0326.html">20251102_0326</a>
+<a href="20251101_0324.html">20251101_0324</a>
+<a href="20251031_0328.html">20251031_0328</a>
+<a href="20251030_0330.html">20251030_0330</a>
+<a href="20251029_0329.html">20251029_0329</a>
+<a href="20251028_0329.html">20251028_0329</a>
+<a href="20251027_0322.html">20251027_0322</a>
+<a href="20251026_0327.html">20251026_0327</a>
+<a href="20251025_0331.html">20251025_0331</a>
+<a href="20251024_0329.html">20251024_0329</a>
+<a href="20251023_0329.html">20251023_0329</a>
+<a href="20251022_0330.html">20251022_0330</a>
+<a href="20251021_0331.html">20251021_0331</a>
+<a href="20251020_0328.html">20251020_0328</a>
+<a href="20251019_0321.html">20251019_0321</a>
+<a href="20251018_0327.html">20251018_0327</a>
+<a href="20251017_0320.html">20251017_0320</a>
+<a href="20251016_0328.html">20251016_0328</a>
+<a href="20251015_0328.html">20251015_0328</a>
+<a href="20251014_0323.html">20251014_0323</a>
+<a href="20251011_0328.html">20251011_0328</a>
+<a href="20251010_0330.html">20251010_0330</a>
+<a href="20251009_0321.html">20251009_0321</a>
+<a href="20251008_0343.html">20251008_0343</a>
+<a href="20251007_0353.html">20251007_0353</a>
+<a href="20251006_0325.html">20251006_0325</a>
+<a href="20251005_0350.html">20251005_0350</a>
+<a href="20251004_0352.html">20251004_0352</a>
+<a href="20251003_0352.html">20251003_0352</a>
+<a href="20251002_0356.html">20251002_0356</a>
+<a href="20251001_0321.html">20251001_0321</a>
+<a href="20250925_0335.html">20250925_0335</a>
+<a href="20250924_0350.html">20250924_0350</a>
+<a href="20250923_0348.html">20250923_0348</a>
+<a href="20250922_0346.html">20250922_0346</a>
+<a href="20250921_0345.html">20250921_0345</a>
+<a href="20250920_0342.html">20250920_0342</a>
+<a href="20250919_0346.html">20250919_0346</a>
+<a href="20250918_0342.html">20250918_0342</a>
+<a href="20250917_0336.html">20250917_0336</a>
+<a href="20250916_0333.html">20250916_0333</a>
+<a href="20250915_0333.html">20250915_0333</a>
+<a href="20250914_0328.html">20250914_0328</a>
+<a href="20250913_0322.html">20250913_0322</a>
+<a href="20250912_0335.html">20250912_0335</a>
+<a href="20250911_0337.html">20250911_0337</a>
+<a href="20250910_0338.html">20250910_0338</a>
+<a href="20250909_0341.html">20250909_0341</a>
+<a href="20250908_0342.html">20250908_0342</a>
+<a href="20250907_0333.html">20250907_0333</a>
+<a href="20250906_0350.html">20250906_0350</a>
+<a href="20250905_0319.html">20250905_0319</a>
+<a href="20250904_0323.html">20250904_0323</a>
+<a href="20250903_0355.html">20250903_0355</a>
+<a href="20250902_0325.html">20250902_0325</a>
+<a href="20250901_0355.html">20250901_0355</a>
+<a href="20250831_0355.html">20250831_0355</a>
+<a href="20250830_0356.html">20250830_0356</a>
+<a href="20250829_0355.html">20250829_0355</a>
+<a href="20250828_0333.html">20250828_0333</a>
+<a href="20250827_1654.html">20250827_1654</a>
+<a href="20250827_1602.html">20250827_1602</a>
+<a href="20250827_1557.html">20250827_1557</a>
+<a href="20250827_0320.html">20250827_0320</a>
+<a href="20250826_0320.html">20250826_0320</a>
+<a href="20250825_1752.html">20250825_1752</a>
+<a href="20250825_1709.html">20250825_1709</a>
+<a href="20250825_1652.html">20250825_1652</a>
+<a href="20250825_1647.html">20250825_1647</a>
+<a href="20250825_1645.html">20250825_1645</a>
+<a href="20250825_1631.html">20250825_1631</a>
+<a href="20250825_1606.html">20250825_1606</a>
+<a href="20250825_1559.html">20250825_1559</a>
+<a href="20250825_1558.html">20250825_1558</a>
+<a href="20250825_1556.html">20250825_1556</a>
+<a href="20250825_1531.html">20250825_1531</a>
+<a href="20250825_1525.html">20250825_1525</a>
+<a href="20250825_1516.html">20250825_1516</a>
+<a href="20250825_1450.html">20250825_1450</a>
+<a href="20250825_1444.html">20250825_1444</a>
+<a href="20250825_1438.html">20250825_1438</a>
+<a href="20250825_1414.html">20250825_1414</a>
+<a href="20250825_1413.html">20250825_1413</a>
+<a href="20250825_1410.html">20250825_1410</a>
+<a href="20250825_1408.html">20250825_1408</a>
+<a href="20250825_1405.html">20250825_1405</a>
+<a href="20250825_1401.html">20250825_1401</a>
+<a href="20250825_1355.html">20250825_1355</a>
+<a href="20250825_1347.html">20250825_1347</a>
+<a href="20250825_1345.html">20250825_1345</a>
+<a href="20250825_1344.html">20250825_1344</a>
+<a href="20250825_1343.html">20250825_1343</a>
+<a href="20250825_1340.html">20250825_1340</a>
+<a href="20250825_1339.html">20250825_1339</a>
+<a href="20250825_1333.html">20250825_1333</a>
+<a href="20250825_1323.html">20250825_1323</a>
+<a href="20250825_1317.html">20250825_1317</a>
+<a href="20250825_1243.html">20250825_1243</a>
+<a href="20250824_0342.html">20250824_0342</a>
+<a href="20250823_0343.html">20250823_0343</a>
+<a href="20250823_0142.html">20250823_0142</a>
+<a href="20250822_2331.html">20250822_2331</a>
+<a href="20250822_2308.html">20250822_2308</a>
+<a href="20250822_2258.html">20250822_2258</a>
+<a href="20250822_2241.html">20250822_2241</a>
+<a href="20250822_2228.html">20250822_2228</a>
+<a href="20250822_2206.html">20250822_2206</a>
+<a href="20250822_2147.html">20250822_2147</a>
+<a href="20250822_2111.html">20250822_2111</a>
+<a href="20250822_1259.html">20250822_1259</a>
+<a href="20250822_1233.html">20250822_1233</a>
+<a href="20250822_1229.html">20250822_1229</a>
+<a href="20250822_1223.html">20250822_1223</a>
+<a href="20250822_1210.html">20250822_1210</a>
+<a href="20250822_1201.html">20250822_1201</a>
+<a href="20250822_1111.html">20250822_1111</a>
+<a href="20250822_1058.html">20250822_1058</a>
+<a href="20250822_1052.html">20250822_1052</a>
+<a href="20250822_1045.html">20250822_1045</a>
+<a href="20250822_0657.html">20250822_0657</a>
+<a href="20250822_0553.html">20250822_0553</a></div></details>
+    <div class="footer">Generated by arxiv-tracker</div>
+  </div>
+</body></html>
