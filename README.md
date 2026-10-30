@@ -74,6 +74,8 @@ requirements.txt      # 运行依赖
 - `OPENAI_COMPAT_API_KEY`：任意 OpenAI 兼容平台的 API Key（如 **DeepSeek**、**SiliconFlow**）  
 - `SMTP_PASS`：QQ 邮箱 **SMTP 授权码**（非登录密码）
 - `FEISHU_WEBHOOK_URL`：飞书群自定义机器人的 Webhook 地址
+- `GROK_WEBHOOK_URL`：Grok Bot 的 Webhook 地址
+- `GROK_WEBHOOK_KEY`：Grok Bot Webhook 的 Bearer Token
 
 **Variables（非机密，可用 Secrets 替代）**
 
@@ -81,7 +83,7 @@ requirements.txt      # 运行依赖
 - `EMAIL_SENDER`：发件人邮箱（通常与 SMTP 用户一致，比如 `xxx@qq.com`）
 - `SMTP_USER`：SMTP 用户名（通常 = 发件人邮箱，比如 `xxx@qq.com`）
 
-每日 `digest.yml` 工作流会用同一轮检索结果更新网站、发送邮件，并将精简摘要以 Markdown 卡片发送到 Lark/飞书：消息包含去重命中数、分方向趋势、支持论文链接和代码链接；网站还提供摘要搜索与“只看有代码”筛选。方向分析由本轮生成并在站点与 Lark 间复用。检索方向包含代码预训练、代码后训练、代码 Agent 和 Agentic RL。定时运行会自动推送；手动运行时可在 `send_feishu` 输入中单独选择是否发送。请在仓库 **Settings → Secrets and variables → Actions** 添加 `FEISHU_WEBHOOK_URL`。OpenClaw 中原先抓取旧站点的 `arxiv-daily` 任务应停用，避免重复推送。
+每日 `digest.yml` 工作流会用同一轮检索结果更新网站、发送邮件，并将精简摘要以 Markdown 卡片发送到 Lark/飞书：消息包含去重命中数、分方向趋势、支持论文链接和代码链接；网站还提供摘要搜索与“只看有代码”筛选。方向分析由本轮生成并在站点与 Lark 间复用。检索方向包含代码预训练、代码后训练、代码 Agent 和 Agentic RL。定时运行会自动推送；手动运行时可在 `send_feishu` 输入中单独选择是否发送。请在仓库 **Settings → Secrets and variables → Actions** 添加 `FEISHU_WEBHOOK_URL`。同一次构建结束后，无论成功、失败还是取消，都会再向 Grok Bot 发一条状态通知（`repo`、`workflow`、`conclusion`、`ref`、`run_url`），请同时添加 `GROK_WEBHOOK_URL` 和 `GROK_WEBHOOK_KEY`。手动运行时把 `only_notify_grok` 设为 true，可以只发这条状态、不跑摘要、不发邮件和飞书。OpenClaw 中原先抓取旧站点的 `arxiv-daily` 任务应停用，避免重复推送。
 
 ### 3) 启用 GitHub Pages
 

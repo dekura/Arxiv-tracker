@@ -16,6 +16,12 @@ on:
         default: "true"
         type: choice
         options: ["false", "true"]
+      only_notify_grok:
+        description: "Only ping Grok Bot (skip digest, email, and Feishu)?"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
 
   # 定时触发：每天 19:00 UTC = 北京时间次日 03:00。
   # 这个钟点在 DeepSeek 谷时（工作日 9:00–12:00、14:00–18:00 以外；周末全天都是谷时）。
@@ -28,6 +34,7 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.only_notify_grok != 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write           # 允许提交 docs
@@ -172,6 +179,62 @@ jobs:
           commit_message: "chore: update digest, site & state"
           # 这个 action 用 read 只解析第一行。写成多行时 .state/seen.json 不会被提交，跨天去重等于没开。
           file_pattern: "docs/** outputs/** .state/**"
+
+  # 单独成 job，手动 only_notify_grok 时可以跳过检索。
+  # conclusion 用 build 的结果；只 ping 时记为 success。
+  notify-grok:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Grok Bot
+        env:
+          GROK_WEBHOOK_URL: ${{ secrets.GROK_WEBHOOK_URL }}
+          GROK_WEBHOOK_KEY: ${{ secrets.GROK_WEBHOOK_KEY }}
+          NOTIFY_REPO: ${{ github.repository }}
+          NOTIFY_WORKFLOW: ${{ github.workflow }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          ONLY_NOTIFY_GROK: ${{ inputs.only_notify_grok }}
+          NOTIFY_REF: ${{ github.ref }}
+          NOTIFY_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          if [ "${ONLY_NOTIFY_GROK:-}" = "true" ]; then
+            CONCLUSION=success
+          else
+            CONCLUSION="${BUILD_RESULT}"
+          fi
+          case "$CONCLUSION" in
+            success|failure|cancelled) ;;
+            *)
+              echo "Skip Grok notify for build result: $CONCLUSION"
+              exit 0
+              ;;
+          esac
+          if [ -z "${GROK_WEBHOOK_URL:-}" ] || [ -z "${GROK_WEBHOOK_KEY:-}" ]; then
+            echo "GROK_WEBHOOK_URL or GROK_WEBHOOK_KEY is not set. Add both under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          export NOTIFY_CONCLUSION="$CONCLUSION"
+          python3 - <<'PY'
+          import json, os
+          payload = {
+              "repo": os.environ["NOTIFY_REPO"],
+              "workflow": os.environ["NOTIFY_WORKFLOW"],
+              "conclusion": os.environ["NOTIFY_CONCLUSION"],
+              "ref": os.environ["NOTIFY_REF"],
+              "run_url": os.environ["NOTIFY_RUN_URL"],
+          }
+          path = os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "grok_notify.json")
+          with open(path, "w", encoding="utf-8") as fh:
+              json.dump(payload, fh, ensure_ascii=False)
+              fh.write("\n")
+          print("conclusion=" + payload["conclusion"])
+          PY
+          curl -sS -f -X POST "$GROK_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $GROK_WEBHOOK_KEY" \
+            --data-binary @"${RUNNER_TEMP:-/tmp}/grok_notify.json"
 
 
 
