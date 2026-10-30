@@ -78,6 +78,8 @@ Click **Fork** on the top-right.
 - `GROK_WEBHOOK_URL`: Grok Bot webhook URL
 - `GROK_WEBHOOK_KEY`: Bearer token for the Grok Bot webhook
 
+Scheduled runs also POST the same digest Markdown as the Feishu card to the Grok Bot. A manual run sends it when `send_grok` is true.
+
 **Variables**
 
 - `EMAIL_TO`: Recipients (comma/semicolon separated)
