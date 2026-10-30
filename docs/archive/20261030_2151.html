@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>arXiv 论文速递</title><style>
+:root {
+  --bg:#f6f7f9; --card:#ffffff; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --row:#f8fafc; --acc:#2563eb;
+}
+:root[data-theme="dark"] {
+  --bg:#0b0f17; --card:#111827; --text:#e5e7eb; --muted:#94a3b8; --border:#1f2937; --row:#0f1623; --acc:#2563eb;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:13.5px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+.container{width:96vw;max-width:1680px;margin:0 auto;padding:14px 0 24px}
+.header{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+h1{font-size:20px;margin:0}
+.btn{border:1px solid var(--border);background:var(--card);color:var(--text);padding:5px 10px;border-radius:8px;cursor:pointer;font:inherit}
+.btn:hover{border-color:var(--acc)}
+.stats{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.stat strong{font-size:15px;margin-right:3px}
+.stat-group{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.stat-label{color:var(--muted);font-size:12px}
+.chip{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:0 8px;font-size:12px;line-height:20px;white-space:nowrap;background:var(--card);color:var(--text)}
+button.chip{cursor:pointer;font-family:inherit} button.chip:hover,button.chip.on{border-color:var(--acc);color:var(--acc)}
+.chip b{margin-left:3px}
+.t-预训练{background:rgba(59,130,246,.12)} .t-继续预训练{background:rgba(14,165,233,.12)} .t-SFT{background:rgba(16,185,129,.14)}
+.t-RL{background:rgba(245,158,11,.16)} .t-RLVR{background:rgba(249,115,22,.16)} .t-偏好优化{background:rgba(236,72,153,.13)}
+.t-蒸馏{background:rgba(139,92,246,.14)} .t-免训练{background:rgba(100,116,139,.14)} .t-评测基准{background:rgba(234,179,8,.16)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.filters input[type=search]{flex:1;min-width:240px;border:1px solid var(--border);border-radius:8px;padding:7px 10px;background:var(--card);color:var(--text);font:inherit}
+.filters select{border:1px solid var(--border);border-radius:8px;padding:6px 8px;background:var(--card);color:var(--text);font:inherit}
+.filters label{display:flex;gap:5px;align-items:center;white-space:nowrap}
+.visible-count{color:var(--muted);margin-left:auto}
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:auto}
+table.papers{width:100%;border-collapse:collapse;table-layout:fixed}
+.papers th{position:sticky;top:0;z-index:1;background:var(--card);text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:8px;border-bottom:1px solid var(--border)}
+.papers td{padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere}
+.papers tr[hidden]{display:none!important}
+.paper-row{cursor:pointer} .paper-row:hover td{background:var(--row)}
+.paper-row.open td{background:var(--row);border-bottom-color:transparent}
+.pid a{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.pid .date{display:block;color:var(--muted);font-size:11px}
+.ptitle{font-weight:600} .ptitle a{color:var(--text)} .ptitle a:hover{color:var(--acc)}
+.caret{display:inline-block;width:12px;color:var(--muted);transition:transform .15s} .open .caret{transform:rotate(90deg)}
+.authors{color:var(--muted);font-size:12px;font-weight:400}
+.muted{color:var(--muted)}
+.code a{display:inline-block;background:var(--acc);color:#fff;border-radius:6px;padding:0 7px;font-size:12px;font-weight:600;margin:0 4px 3px 0}
+.detail-row td{background:var(--row);padding:4px 12px 14px 32px}
+.title-zh{font-size:14px;font-weight:600;margin:2px 0 8px}
+.facts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.fact{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 9px}
+.fact span{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:2px}
+.meta{color:var(--muted);font-size:12px;margin-top:8px}
+.meta a{margin-right:10px}
+details.abs{margin-top:6px} details.abs summary{cursor:pointer;color:var(--acc);font-size:12px}
+details.abs div{margin-top:4px;white-space:pre-wrap;font-size:12.5px}
+.empty td{text-align:center;color:var(--muted);padding:24px}
+.history{margin-top:14px} .history summary{cursor:pointer;color:var(--acc)}
+.history-list{columns:6 140px;margin-top:6px} .history-list a{display:block;font-size:12px}
+.footer{color:var(--muted);font-size:12px;margin-top:12px}
+@media (max-width:1100px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+  .container{width:auto;padding:10px}
+  table.papers,.papers tbody,.papers tr,.papers td{display:block;width:100%}
+  .papers thead,.papers colgroup{display:none}
+  .paper-row{border-bottom:1px solid var(--border);padding:8px 0}
+  .papers td{border:0;padding:2px 10px}
+  .papers td[data-label]::before{content:attr(data-label) "：";color:var(--muted);font-size:12px}
+  .detail-row td{padding:4px 10px 12px}
+  .facts{grid-template-columns:1fr}
+}
+</style>
+<script>
+(function() {
+  const root = document.documentElement;
+  function apply(t) {
+    const dark = t === 'dark' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
+  }
+  let theme = localStorage.getItem('theme') || 'light';
+  if (!['light', 'dark', 'auto'].includes(theme)) theme = 'light';
+  apply(theme);
+  window.__toggleTheme = function() {
+    theme = theme === 'light' ? 'dark' : theme === 'dark' ? 'auto' : 'light';
+    localStorage.setItem('theme', theme);
+    apply(theme);
+    const el = document.getElementById('theme-label');
+    if (el) el.textContent = theme.toUpperCase();
+  };
+  function setOpen(row, open) {
+    const detail = row.nextElementSibling;
+    row.classList.toggle('open', open);
+    if (detail && detail.classList.contains('detail-row')) detail.hidden = !open;
+  }
+  window.__toggleRow = function(event, row) {
+    if (event.target.closest('a')) return;
+    setOpen(row, !row.classList.contains('open'));
+  };
+  window.__expandAll = function(open) {
+    document.querySelectorAll('.paper-row').forEach(row => { if (!row.hidden) setOpen(row, open); });
+  };
+  window.__pick = function(kind, value) {
+    const select = document.getElementById(kind + '-filter');
+    select.value = select.value === value ? '' : value;
+    window.__filter();
+  };
+  window.__filter = function() {
+    const query = (document.getElementById('paper-search').value || '').trim().toLocaleLowerCase();
+    const group = document.getElementById('group-filter').value;
+    const training = document.getElementById('training-filter').value;
+    const onlyCode = document.getElementById('code-only').checked;
+    let visible = 0;
+    document.querySelectorAll('.paper-row').forEach(row => {
+      const match = (!query || row.dataset.search.includes(query)) &&
+        (!group || row.dataset.groups.split('|').includes(group)) &&
+        (!training || row.dataset.training.split('|').includes(training)) &&
+        (!onlyCode || row.dataset.hasCode === 'true');
+      row.hidden = !match;
+      const detail = row.nextElementSibling;
+      if (detail && detail.classList.contains('detail-row')) detail.hidden = !match || !row.classList.contains('open');
+      if (match) visible += 1;
+    });
+    document.getElementById('visible-count').textContent = visible;
+    document.querySelectorAll('button.chip[data-kind]').forEach(chip => {
+      const value = document.getElementById(chip.dataset.kind + '-filter').value;
+      chip.classList.toggle('on', chip.dataset.value === value);
+    });
+  };
+  document.addEventListener('DOMContentLoaded', () => {
+    const label = document.getElementById('theme-label');
+    if (label) label.textContent = theme.toUpperCase();
+    window.__filter();
+  });
+})();
+</script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>arXiv 论文速递</h1>
+      <div><button class="btn" onclick="__toggleTheme()">Theme: <span id="theme-label">AUTO</span></button>
+      <span class="muted" style="margin-left:8px">更新于 2026-10-30 21:51</span></div>
+    </div>
+    <div class="stats"><span class="stat"><strong>2026-10-30</strong></span><span class="stat"><strong>8</strong>篇</span><span class="stat"><strong>1</strong>篇有代码</span><span class="stat-group"><span class="stat-label">方向</span><button class="chip" data-kind="group" data-value="代码预训练" onclick="__pick('group', this.dataset.value)">代码预训练<b>0</b></button><button class="chip" data-kind="group" data-value="代码后训练" onclick="__pick('group', this.dataset.value)">代码后训练<b>0</b></button><button class="chip" data-kind="group" data-value="代码Agent" onclick="__pick('group', this.dataset.value)">代码Agent<b>8</b></button><button class="chip" data-kind="group" data-value="Agentic RL" onclick="__pick('group', this.dataset.value)">Agentic RL<b>0</b></button></span><span class="stat-group"><span class="stat-label">训练方法</span><button class="chip t-预训练" data-kind="training" data-value="预训练" onclick="__pick('training', this.dataset.value)">预训练<b>1</b></button><button class="chip t-RL" data-kind="training" data-value="RL" onclick="__pick('training', this.dataset.value)">RL<b>1</b></button><button class="chip t-蒸馏" data-kind="training" data-value="蒸馏" onclick="__pick('training', this.dataset.value)">蒸馏<b>1</b></button><button class="chip t-免训练" data-kind="training" data-value="免训练" onclick="__pick('training', this.dataset.value)">免训练<b>4</b></button><button class="chip t-评测基准" data-kind="training" data-value="评测基准" onclick="__pick('training', this.dataset.value)">评测基准<b>5</b></button></span></div><div class="filters"><input id="paper-search" type="search" placeholder="搜索编号、标题、作者、架构、场景、摘要…" aria-label="搜索论文" oninput="__filter()"><select id="group-filter" aria-label="方向" onchange="__filter()"><option value="">全部方向</option><option value="代码预训练">代码预训练</option><option value="代码后训练">代码后训练</option><option value="代码Agent">代码Agent</option><option value="Agentic RL">Agentic RL</option></select><select id="training-filter" aria-label="训练方法" onchange="__filter()"><option value="">全部训练方法</option><option value="预训练">预训练</option><option value="RL">RL</option><option value="蒸馏">蒸馏</option><option value="免训练">免训练</option><option value="评测基准">评测基准</option></select><label><input id="code-only" type="checkbox" onchange="__filter()"> 只看有代码</label><button class="btn" onclick="__expandAll(true)">全部展开</button><button class="btn" onclick="__expandAll(false)">全部收起</button><span class="visible-count">显示 <b id="visible-count">8</b> / 8</span></div><div class="table-wrap"><table class="papers"><colgroup><col style="width:92px"><col style="width:24%"><col style="width:108px"><col style="width:150px"><col style="width:118px"><col style="width:140px"><col><col style="width:76px"></colgroup><thead><tr><th>论文编号</th><th>Title</th><th>方向</th><th>模型架构</th><th>训练方法</th><th>应用场景</th><th>核心创新</th><th>Code</th></tr></thead><tbody><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.38244 precedent or intent? what coding agents follow when evolving existing code 先例还是意图？编码智能体在演进既有代码时遵循什么 haichao zhu geyang xu zhaorui yang jiyuan wang qian zhang existing code reveals past implementation decisions but rarely explains the reasoning behind them. when coding agents implement new features or modify existing functionality, past decisions may conflict with new task instructions. this raises a fundamental question for agentic software evolution: when multiple implementations satisfy the same functional requirements, how do coding agents decide whether to follow existing code or new task instructions? we investigate this question through bidirectional, controlled experiments in purpose-built repositories, followed by validation in real-world open-source repositories. our approach isolates three competing sources of guidance: (1) agents&#x27; default preferences, (2) repository precedents, and (3) explicit task instructions. we conduct 5,625 trials across four coding agents and six implementation pairs, with validation in four open-source repositories spanning three programming languages. we find that agents share the same default implementation choices, yet overwhelmingly follow repository precedent when it conflicts with those defaults (359/360 trials). crucially, not all precedents carry equal influence: three supporting local files yield 96% adoption, compared with only 4% for sibling-resource files, and changing file placement alone can shift adoption from 0% to 100% at a fixed example count. when new task intent conflicts with existing code, written priority rules achieve substantially higher success than code examples alone (59/60 versus 38/60 joint successes for two agents on two implementation pairs). the effectiveness of explicit rules also extends to open-source repositories, where a harness-loaded rule raises joint success from 0/120 to 117/120. these findings motivate design-decision traceability that preserves not only implementation choices but also the rationale and priorities that should guide future changes. 代码agent 评测基准 llm coding agent 代码演进与修改 用双向对照实验分离默认偏好、仓库先例与显式指令三种引导来源 多个实现都满足功能需求时，编码智能体是跟随既有代码先例还是新任务指令 既有代码只留实现决策不解释理由，与新指令冲突时缺乏可依据的优先级信息 在定制仓库做双向对照实验并在开源仓库验证，比较默认偏好、先例来源与明文优先级规则的影响 先例冲突时 359/360 跟先例；3 个支持性本地文件采纳率 96%，同级资源文件仅 4%；明文规则联合成功率 59/60 vs 38/60，开源仓库 0/120 升至 117/120 推动设计决策可追溯，保留实现选择及理由与未来修改的优先级" data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.38244v1" target="_blank" rel="noreferrer">2610.38244</a><span class="date">2026-10-28</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.38244v1" target="_blank" rel="noreferrer">Precedent or Intent? What Coding Agents Follow When Evolving Existing Code</a><div class="authors">Haichao Zhu, Geyang Xu, Zhaorui Yang et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM coding agent</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">代码演进与修改</td><td data-label="核心创新">用双向对照实验分离默认偏好、仓库先例与显式指令三种引导来源</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">先例还是意图？编码智能体在演进既有代码时遵循什么</div><div class="facts"><div class="fact"><span>核心问题</span>多个实现都满足功能需求时，编码智能体是跟随既有代码先例还是新任务指令</div><div class="fact"><span>关键困难</span>既有代码只留实现决策不解释理由，与新指令冲突时缺乏可依据的优先级信息</div><div class="fact"><span>解决方案</span>在定制仓库做双向对照实验并在开源仓库验证，比较默认偏好、先例来源与明文优先级规则的影响</div><div class="fact"><span>主要结果</span>先例冲突时 359/360 跟先例；3 个支持性本地文件采纳率 96%，同级资源文件仅 4%；明文规则联合成功率 59/60 vs 38/60，开源仓库 0/120 升至 117/120</div><div class="fact"><span>未来方向</span>推动设计决策可追溯，保留实现选择及理由与未来修改的优先级</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.38244v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.38244v1" target="_blank" rel="noreferrer">PDF</a>Haichao Zhu, Geyang Xu, Zhaorui Yang, Jiyuan Wang, Qian Zhang · 16 pages, 7 figures, 6 tables · First 2026-10-28 · Latest 2026-10-28</div><details class="abs"><summary>Abstract</summary><div>Existing code reveals past implementation decisions but rarely explains the reasoning behind them. When coding agents implement new features or modify existing functionality, past decisions may conflict with new task instructions. This raises a fundamental question for agentic software evolution: when multiple implementations satisfy the same functional requirements, how do coding agents decide whether to follow existing code or new task instructions? We investigate this question through bidirectional, controlled experiments in purpose-built repositories, followed by validation in real-world open-source repositories. Our approach isolates three competing sources of guidance: (1) agents&#x27; default preferences, (2) repository precedents, and (3) explicit task instructions. We conduct 5,625 trials across four coding agents and six implementation pairs, with validation in four open-source repositories spanning three programming languages. We find that agents share the same default implementation choices, yet overwhelmingly follow repository precedent when it conflicts with those defaults (359/360 trials). Crucially, not all precedents carry equal influence: three supporting local files yield 96% adoption, compared with only 4% for sibling-resource files, and changing file placement alone can shift adoption from 0% to 100% at a fixed example count. When new task intent conflicts with existing code, written priority rules achieve substantially higher success than code examples alone (59/60 versus 38/60 joint successes for two agents on two implementation pairs). The effectiveness of explicit rules also extends to open-source repositories, where a harness-loaded rule raises joint success from 0/120 to 117/120. These findings motivate design-decision traceability that preserves not only implementation choices but also the rationale and priorities that should guide future changes.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.38214 skeleton coding: program structure as a specification for agents skeleton coding：以程序结构作为智能体的规范 aditya golatkar alessandro achille renos zabounidis vlad sobal yangruibo ding baishakhi ray jonathan buck guy van den broeck maryam fazel pietro perona wei xia stefano soatto coding agents are typically provided end-to-end behavioral specifications that the code they produce should satisfy, such as tests and input--output examples. how many such specifications must a developer provide, and which ones, for the agent to produce the developer&#x27;s intended program? we argue that this cannot be determined a priori, for it depends on the structure of the implementation, which is left to the agent to decide. an agent first commits to a structure---a decomposition into data types, modules, and functions---which fixes a class of candidate programs; behavioral specifications then select a program within that class. a set of tests that suffices for one structure may leave another badly underdetermined, requiring different edge cases or exponentially more examples. since the structure is chosen by the agent, developers cannot ensure their specification is complete without reverse-engineering it from thousands of lines of generated code. to resolve this, we introduce skeleton coding, in which developers jointly specify the structure---in high-level, code-like format---alongside behavioral specifications. theoretically, we model ai-assisted coding as a control problem, and show that skeletons can reduce exponentially the number of tests developers must supply to steer an agent toward an acceptable program. empirically, across four models and three benchmarks, the best-performing skeleton specifications reduce mean test error by 48.4% relative to the best end-to-end behavioral specifications. even when the agent can query a complete reference implementation, adding a skeleton reduces mean test error relatively by up to 27.0%. skeletons also narrow the average gap between small and large models by about 52.4% while lowering implementation cost by 15--26x, and reduce code erosion by 24.7% on average. 代码agent 免训练 code llm + skeleton specification ai 辅助代码生成 开发者用类代码骨架显式指定程序结构，与行为测试共同约束生成，减少所需测试数量 开发者需提供多少条、哪些行为规范（测试、输入输出样例），才能让编码智能体产出预期程序，无法先验确定 所需测试取决于智能体自选的结构，一种结构下充分的测试在另一种结构下严重欠定，需指数级样例 将 ai 辅助编码建模为控制问题，证明骨架可使所需测试数指数级下降；开发者在高层类代码格式中同时给出结构与行为规范，联合约束候选程序类 四模型三基准：测试误差降 48.4%（有参考实现时仍降 27.0%），代码侵蚀降 24.7% " data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.38214v1" target="_blank" rel="noreferrer">2610.38214</a><span class="date">2026-10-28</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.38214v1" target="_blank" rel="noreferrer">Skeleton Coding: Program Structure as a Specification for Agents</a><div class="authors">Aditya Golatkar, Alessandro Achille, Renos Zabounidis et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Code LLM + skeleton specification</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">AI 辅助代码生成</td><td data-label="核心创新">开发者用类代码骨架显式指定程序结构，与行为测试共同约束生成，减少所需测试数量</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">Skeleton Coding：以程序结构作为智能体的规范</div><div class="facts"><div class="fact"><span>核心问题</span>开发者需提供多少条、哪些行为规范（测试、输入输出样例），才能让编码智能体产出预期程序，无法先验确定</div><div class="fact"><span>关键困难</span>所需测试取决于智能体自选的结构，一种结构下充分的测试在另一种结构下严重欠定，需指数级样例</div><div class="fact"><span>解决方案</span>将 AI 辅助编码建模为控制问题，证明骨架可使所需测试数指数级下降；开发者在高层类代码格式中同时给出结构与行为规范，联合约束候选程序类</div><div class="fact"><span>主要结果</span>四模型三基准：测试误差降 48.4%（有参考实现时仍降 27.0%），代码侵蚀降 24.7%</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.38214v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.38214v1" target="_blank" rel="noreferrer">PDF</a>Aditya Golatkar, Alessandro Achille, Renos Zabounidis, Vlad Sobal, Yangruibo Ding, Baishakhi Ray, Jonathan Buck, Guy Van den Broeck, Maryam Fazel, Pietro Perona, Wei Xia, Stefano Soatto · First 2026-10-28 · Latest 2026-10-28</div><details class="abs"><summary>Abstract</summary><div>Coding agents are typically provided end-to-end behavioral specifications that the code they produce should satisfy, such as tests and input--output examples. How many such specifications must a developer provide, and which ones, for the agent to produce the developer&#x27;s intended program? We argue that this cannot be determined a priori, for it depends on the structure of the implementation, which is left to the agent to decide. An agent first commits to a structure---a decomposition into data types, modules, and functions---which fixes a class of candidate programs; behavioral specifications then select a program within that class. A set of tests that suffices for one structure may leave another badly underdetermined, requiring different edge cases or exponentially more examples. Since the structure is chosen by the agent, developers cannot ensure their specification is complete without reverse-engineering it from thousands of lines of generated code. To resolve this, we introduce Skeleton Coding, in which developers jointly specify the structure---in high-level, code-like format---alongside behavioral specifications. Theoretically, we model AI-assisted coding as a control problem, and show that skeletons can reduce exponentially the number of tests developers must supply to steer an agent toward an acceptable program. Empirically, across four models and three benchmarks, the best-performing skeleton specifications reduce mean test error by 48.4% relative to the best end-to-end behavioral specifications. Even when the agent can query a complete reference implementation, adding a skeleton reduces mean test error relatively by up to 27.0%. Skeletons also narrow the average gap between small and large models by about 52.4% while lowering implementation cost by 15--26x, and reduce code erosion by 24.7% on average.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.38175 decompgym: benchmarking llm agents on designing decomposition algorithms decompgym：评估 llm 智能体设计分解算法的基准 sikai cheng tinghan ye arnaud deza xiaonan qi miao li litong liu changkun guan benders decomposition and column generation solve large optimization problems by passing cuts, columns, and dual values between a master problem and subproblems, and are hard to implement correctly. large language models now automate parts of algorithm design, which points toward agents that build decomposition solvers for new problems. as a first step toward such agents, we study how well current coding agents design and implement these two algorithms, and how they fail. we introduce decompgym, 81 instances from nine problem families (five benders, four column generation), in which an agent writes a solver for a prescribed method. each solver must meet three criteria: execution within a 60-second time limit; numerical feasibility together with a method audit, in which an llm judge reads the solver&#x27;s code; and an objective within 1% of the stored optimal objective. we evaluate 12 gpt, claude, and gemini models running in coding-agent tools. over up to ten attempts, we compare independent regeneration with reflection, which first diagnoses the failure. on the first attempt, two models solve every instance and seven solve more than 90%. most benders failures (48 of 62) are missing or suboptimal solutions. the most common column-generation failure is a method-audit rejection. output checks alone would accept 93 of the 108 attempts that fail the method audit. the most common rejection, an optimalif, occurs 96 times, 92 of them in one model.reflection turns 66% of retries into successes, compared with 39% for regeneration, and it repairs method-audit failures, for which the judge names the defecective gaps. agents for decomposition therefore need checks on how a solver reaches its answer and feedback that locates the error. the benchmark is available at https://github.com/sikai-c/decompgym. 代码agent 评测基准 llm coding agent 分解算法求解器设计 81 个实例的分解算法基准，结合方法审计与 llm 评审检测求解过程缺陷 现有编码智能体能否正确设计并实现 benders 分解与列生成求解器，以及失败模式为何 分解算法需主问题与子问题交换割、列和对偶值，正确实现困难，仅检查输出会放过方法错误 构建 81 个实例、九类问题族的 decompgym；要求 60 秒执行、数值可行性与 llm 代码审计、目标值 1% 内；比较重生成与反思重试 首轮两模型全解，七个&gt;90%；反思重试成功率66% vs 重生成39%；仅输出检查会接受93/108方法审计失败尝试 仅作为第一步，需扩展到更多分解算法与实际建模场景" data-groups="代码Agent" data-training="评测基准" data-has-code="true"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.38175v1" target="_blank" rel="noreferrer">2610.38175</a><span class="date">2026-10-28</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.38175v1" target="_blank" rel="noreferrer">DecompGym: Benchmarking LLM Agents on Designing Decomposition Algorithms</a><div class="authors">Sikai Cheng, Tinghan Ye, Arnaud Deza et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM coding agent</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">分解算法求解器设计</td><td data-label="核心创新">81 个实例的分解算法基准，结合方法审计与 LLM 评审检测求解过程缺陷</td><td class="code" data-label="Code"><a href="https://github.com/SIKAI-C/DecompGym" target="_blank" rel="noreferrer">Code</a></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">DecompGym：评估 LLM 智能体设计分解算法的基准</div><div class="facts"><div class="fact"><span>核心问题</span>现有编码智能体能否正确设计并实现 Benders 分解与列生成求解器，以及失败模式为何</div><div class="fact"><span>关键困难</span>分解算法需主问题与子问题交换割、列和对偶值，正确实现困难，仅检查输出会放过方法错误</div><div class="fact"><span>解决方案</span>构建 81 个实例、九类问题族的 DecompGym；要求 60 秒执行、数值可行性与 LLM 代码审计、目标值 1% 内；比较重生成与反思重试</div><div class="fact"><span>主要结果</span>首轮两模型全解，七个&gt;90%；反思重试成功率66% vs 重生成39%；仅输出检查会接受93/108方法审计失败尝试</div><div class="fact"><span>未来方向</span>仅作为第一步，需扩展到更多分解算法与实际建模场景</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.38175v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.38175v1" target="_blank" rel="noreferrer">PDF</a>Sikai Cheng, Tinghan Ye, Arnaud Deza, Xiaonan Qi, Miao Li, Litong Liu, Changkun Guan · First 2026-10-28 · Latest 2026-10-28</div><details class="abs"><summary>Abstract</summary><div>Benders decomposition and column generation solve large optimization problems by passing cuts, columns, and dual values between a master problem and subproblems, and are hard to implement correctly. Large language models now automate parts of algorithm design, which points toward agents that build decomposition solvers for new problems. As a first step toward such agents, we study how well current coding agents design and implement these two algorithms, and how they fail. We introduce DecompGym, 81 instances from nine problem families (five Benders, four column generation), in which an agent writes a solver for a prescribed method. Each solver must meet three criteria: execution within a 60-second time limit; numerical feasibility together with a method audit, in which an LLM judge reads the solver&#x27;s code; and an objective within 1% of the stored optimal objective. We evaluate 12 GPT, Claude, and Gemini models running in coding-agent tools. Over up to ten attempts, we compare independent regeneration with reflection, which first diagnoses the failure. On the first attempt, two models solve every instance and seven solve more than 90%. Most Benders failures (48 of 62) are missing or suboptimal solutions. The most common column-generation failure is a method-audit rejection. Output checks alone would accept 93 of the 108 attempts that fail the method audit. The most common rejection, an optimalif, occurs 96 times, 92 of them in one model.Reflection turns 66% of retries into successes, compared with 39% for regeneration, and it repairs method-audit failures, for which the judge names the defecective gaps. Agents for decomposition therefore need checks on how a solver reaches its answer and feedback that locates the error. The benchmark is available at https://github.com/SIKAI-C/DecompGym.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.38095 nemotron 3.5 super and lightning: open, efficient mixture-of-experts hybrid mamba-transformer models for agentic ai nemotron 3.5 super 与 lightning：面向 agentic ai 的开放高效 moe 混合 mamba-transformer 模型 nvidia : aastha jhunjhunwala aayushi ashokkumar srivastava abhibha gupta abhinav garg abhinav khattar achsah wildish adam rajfer adi renduchintala adil asif adriana flores miranda aileen zaman aishwarya chhabra akanksha shukla akhiad bercovich alejandra rico aleksa gordic aleksander ficek alex gronskiy alex steiner alexander bukharin alexandre milesi ali roshan ghias ali shehper ali taghibakhshi alice gatti alisa liu alok kumar alok tripathy amala sanjay deshmukh aman miryala aman shanbhag ameya sunil mahabaleshwarkar ameya velingker amir klein amir samani amit zuker amnon geifman anahita bhiwandiwalla ananth subramaniam andre manoel andrea santilli andrew tao andrii skliar anil thomas anish mahishi anna shors anna warno anuj doshi anusha kamath anwith kiran ao tang arham mehta arnab dhara arnav komaragiri arnav kundu arti jain arun rao arun venkatesan arushi goel asha anoosheh ashish vaswani ashwath aithal asif ahamed asma kuriparambil thekkumpate aswin visva atefeh sohrabizadeh avinash vem ayush dattagupta benedikt schifferer benjamin chislett bernard nguyen besmira nushi bilal kartal bita darvish rouhani bobby chen boris ginsburg boxin wang brandon norick branislav kisacanin brendan johnson brian dang brian yu bryan catanzaro byung-kwan lee carlo del mundo chankyu lee chantal hwang charles wang charlie truong chen cui cheng wang cheng-ping hsieh chenhan yu chenjie luo chintan patel chris alexiuk chris johnson chris wing christian munley coco li collin mccarthy cynthia gao dan su dan zhao dane corneil danial mohseni taheri daniel afrimi daniel fatade daniel lo daniel machlab daniel serebrenik daniele molinari daniil sorokin daria gitman daria levy david mosallanezhad david yu deepak narayanan dev churiwala devin o&#x27;kelly dhruv nathawani di allan wu dima rekesh dina yared dipendra misra divyanshu kakwani dmitry belenko dominic manno dongyang fan dor tsur duncan riach dustin vanstee dylan lu edgar minasyan ehsan hosseini-asl eileen long elena lantz ellie evans elliott ning elvis chen emanuel scoullos eric chung eric harper eric pham-hung eric tramel eric yang erik arakelyan evelina bakhturina ewa dobrowolska fadi saady farzan memarian fay wang fei jia felipe soares felipe vieira frujeri feng chen fengguang lin ferenc galko frankie siino frederic lafrance fuxiao liu gantavya bhatt garvit kulshreshtha george armstrong giulio lovisotto gomathy venkata krishnan gosia lazuka grace lam greg heinrich greg pauloski grzegorz chlebus guilin liu guo chen guoming zhang guyue huang haifeng qian hanrong ye hao gao hao zhang haoqin tu haran kumar shiv kumar haribhau hud harris nover harrison saturley-hall harshil kotamreddy hemil desai henry estela hexin wang himanshu singh hui wang hung-yueh chiang igor gitman ilia karmanov ilya loshchilov ingo guehring itay neeman ivan moshkov jacky kwok jakub slowikowski james shen jane polak scowcroft jared casper jatin mitra jeff willette jenna diamond jenny chen jesse oliver jessica medina jiacheng xu jialin song jian hu jian tu jian zhang jiantao jiao jiaqi zeng jie-fang zhang jimmy zhang jin xu jingyu xin jinhang choi joey conway joey guman john kamalu john liu john roberts johnny greco jonah alben jonas yang jonathan cohen jonathan li jonathan raiman joseph jennings juhi mittal julia gusak julien veron vialard june yang junkeun yi jupinder parmar ka shun shum kaiwen shi kajal jain kanishk singla karan sapra kari briski kateryna chumachenko katherine huang katie lyons keith wyss keshav santhanam keval morabia kevin shih kezhi kong khanh nguyen khushi bhardwaj kiran praveen konstantinos krommydas krishna puvvada krzysztof pawelec kushal shah li ding lily lee linda liu linglin jing luis vega maarten van segbroeck mahan fathi mahdi nazemi maka dong makesh narsimhan sreedhar maor ashkenazi marc cuevas marcin chochowski marco pavone markus kliegl marta stepniewska-dziubinska martina gonzalez vilas martyna patelka matan rusanovsky matthieu le matty machczynski matvei novikov mauricio ferrato meenakshi sharma mehrzad samadi melissa corpuz melissa saelzer meng xin mengru wang mengxi wu meriem boubdir michael boone michael callahan michael elad michael lightstone michal bien michal zawalski miguel martinez mikail khona mike chrzanowski mike ranzinger mike wojcikiewicz min-hung chen ming kang mingjie liu mingyuan ma misha nekorystnov mj mikulski mohammad qazim bhat mohammad shoeybi morgan purcell mostofa patwary nabin mulepati nancy agarwal narimane hennouni nathan sala nave assaf nayeon lee neal vaidya negar habibi netanel haber nick gupta nick reamaroon nickson quak nidhi bhatia nik spirin niket agarwal nikolai ludwig nima tajbakhsh nithin sunny oleksii hrinchuk oleksii kuchaiev olivier delalleau omer ullman argov pablo ribalta padmavathy subramanian parth mannan pavlo molchanov pawel morkisz peter jin petr lapukhov petro junior milan philip monk pinky xu piotr januszewski piotr laszkiewicz po-han huang praateek mahajan pradeep thalasta prakash gurumurthy pranav prashant thombre prasoon varshney pratyusha maiti preeti chadha pritam biswas pritam gundecha przemek strzelczyk puhui meng pulkit kumar rabeeh karimi mahabadi rachel oberman rajpreet thethy ramani akkati rameshwar shivbhakta ran zilberstein randy gelhausen rasoul shafipour raviraj joshi ray macalisang rayen tian reka kovacs renjie pi resha shetty ria c rima shahbazyan rishabh garg rita fernandes neves ritika borkar ritu gala riya talwar riyad islam robert clark robert kirby roger waleffe rohan joshi rohan pillai rohit jena rohit watve roi garnett roi koren rongguang ye russell j. hewett ryan prenger ryan stewart ryota egashira sadegh mahdavi sai nishanth padala salika dave sandhya rani narravula sandip bhaskar sangkug lym sanjeev satheesh sarah amirslani saran vikas murari saurabh mishra saurabh srivastava saurav muralidharan sean narenthiran sean wang seokju cho seong hee lee seonjin na seonmyeong bak seph mard serge panev sergei kolchenko sergio perez seth henneman seth poulos shahar mor shantanu acharya shaokun zhang shaona ghosh sharath turuvekere sreenivas shaun kotek shaya gharghabi sheng-chieh lin shengliang xu shi chen shihao wang shilpa amireddy shiqing fan shiyang chen shrimai prabhumoye shriram venugopal shuang yu shubham gandhi shubham pachori shubham toshniwal shuoyang ding shwetha krishnamurthy simeng sun sivakumar arayandi thottakara somshubra majumdar soumye singhal sridurga krithivasan sriharsha niverty stephen ge sugam dipak devare sukrit rao sumeet kumar barua sungsoo ha surya nistala suseella panguluri sweta priyadarshi syeda nahida akter talor abramovich tanay varshney tandeep singh chandehoke teo ene terry kong thanh do thinh le tian zhang tijmen blankevoort tim romanski tiyasa mitra tom balough tom huang tomasz grzegorzek tomer asida tomer bar natan traian rebedea trenton starkey tugrul konuk tuomas rintamaki twinkle vashishth tyler kniess tyler poon udi karpas ushnish de utkarsh vaidya vahid noroozi vanshil atul shah venkat srinivasan venkata karri venmugil elango vibhor agrawal vibhu jawa victor cui victoria edmonds vijay korthikanti vikas mehta vikranth jeyakumar vinay rao vineeth kalluru srinivas vitaly kurin vitaly lavrukhin wahidur rahman wanli jiang wasi uddin ahmad wataru ishihara wei du wei ping wei-ming chen weiheng chai weijia chen wendy quan wenliang dai wenyan cong william zhang wojciech prazuch xiaowei ren xin yu xiwen yu yan wang yang chen yang yu yangyi chen yaniv galron yash jain yashaswi karnati ye yu yejin choi yemi ibrahim yev meyer yi dong yi-fu wu yian zhang yifan zhang ying lin yiyang zhou yoav miron yogendra pandey yonatan geifman yonggan fu yoshi suhara youngeun kwon yu-cheng chou yu-chiang frank wang yuanguo kuang yuekai zhang yugi guvvala yuki huang yunheng zou yunsheng liu zhenming wang zhiding yu zhiqi li zhiyu cheng zhongbo zhu zhuolin yang zichao yue zihan liu zijie yan zirui liu zoe faul zuhair ahmed we introduce nemotron 3.5 super and nemotron 3.5 lightning, open and efficient mixture-of-experts hybrid mamba-transformer models designed for reasoning, long-context understanding, and agentic workloads. super is a 120b-parameter, 12b-active multimodal model, while lightning is a smaller 30b-parameter, 3b-active text model; both designed for efficient deployment. both models combine large-scale distillation, long-context training, and native speculative decoding, while super further incorporates indic continued pretraining and agentic software-engineering mid-training. we develop a comprehensive post-training pipeline spanning supervised fine-tuning and reinforcement learning (rlvr and rlhf), complemented in super by specialized teacher training and multi- teacher on-policy distillation (mopd). this transforms super from a text-only base model into a multimodal agent capable of reasoning over text, images, video, and interactive tool environments. we further explore test-time scaling through parallel agent execution and self-verification. across training and deployment, we jointly optimize capability and efficiency. indic continued pretraining improves indian-language benchmarks by up to 9.82 percentage points, while agentic mid-training strengthens software-engineering capabilities and robustness across agent harnesses. the post-trained super model achieves 51.78% on swe-bench pro, surpassing nemotron 3 ultra despite using approximately 4.6x fewer active parameters. post-training mtp boosting improves speculative- decoding acceptance length by up to 21.8% under probabilistic draft sampling, while nvfp4 quantization achieves 99.62% median accuracy recovery relative to bf16. inference optimizations enable up to 4,856 output tokens/s/gpu on gb200 while sustaining at least 50 tokens/s/user. 代码agent rl 蒸馏 moe hybrid mamba-transformer 智能体与软件工程 多教师 on-policy 蒸馏把纯文本基座转为多模态智能体，并原生集成投机解码 推理、长上下文与智能体负载需要开放、参数高效且可低成本部署的 moe 模型 大模型在智能体任务上算力开销高，多模态与长上下文能力难以与部署效率兼顾 moe 混合 mamba-transformer 骨干，结合大规模蒸馏、长上下文训练与原生投机解码；super 追加 indic 继续预训练和软件工程中期训练，后训练含 sft、rlvr/rlhf 与 mopd 多教师蒸馏，测试时并行智能体执行与自验证 swe-bench pro 51.78%，活跃参数少约 4.6 倍仍超 nemotron 3 ultra；indic 基准最高 +9.82pp；投机解码接受长度 +21.8%；nvfp4 量化恢复 99.62% 精度 " data-groups="代码Agent" data-training="RL|蒸馏" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.38095v1" target="_blank" rel="noreferrer">2610.38095</a><span class="date">2026-10-28</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.38095v1" target="_blank" rel="noreferrer">Nemotron 3.5 Super and Lightning: Open, Efficient Mixture-of-Experts Hybrid Mamba-Transformer Models for Agentic AI</a><div class="authors">NVIDIA, :, Aastha Jhunjhunwala et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">MoE Hybrid Mamba-Transformer</td><td data-label="训练方法"><span class="chip t-RL">RL</span> <span class="chip t-蒸馏">蒸馏</span></td><td data-label="应用场景">智能体与软件工程</td><td data-label="核心创新">多教师 on-policy 蒸馏把纯文本基座转为多模态智能体，并原生集成投机解码</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">Nemotron 3.5 Super 与 Lightning：面向 Agentic AI 的开放高效 MoE 混合 Mamba-Transformer 模型</div><div class="facts"><div class="fact"><span>核心问题</span>推理、长上下文与智能体负载需要开放、参数高效且可低成本部署的 MoE 模型</div><div class="fact"><span>关键困难</span>大模型在智能体任务上算力开销高，多模态与长上下文能力难以与部署效率兼顾</div><div class="fact"><span>解决方案</span>MoE 混合 Mamba-Transformer 骨干，结合大规模蒸馏、长上下文训练与原生投机解码；Super 追加 Indic 继续预训练和软件工程中期训练，后训练含 SFT、RLVR/RLHF 与 MOPD 多教师蒸馏，测试时并行智能体执行与自验证</div><div class="fact"><span>主要结果</span>SWE-bench Pro 51.78%，活跃参数少约 4.6 倍仍超 Nemotron 3 Ultra；Indic 基准最高 +9.82pp；投机解码接受长度 +21.8%；NVFP4 量化恢复 99.62% 精度</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.38095v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.38095v1" target="_blank" rel="noreferrer">PDF</a>NVIDIA, :, Aastha Jhunjhunwala, Aayushi Ashokkumar Srivastava, Abhibha Gupta, Abhinav Garg, Abhinav Khattar, Achsah Wildish, Adam Rajfer, Adi Renduchintala, Adil Asif, Adriana Flores Miranda, Aileen Zaman, Aishwarya Chhabra, Akanksha Shukla, Akhiad Bercovich, Alejandra Rico, Aleksa Gordic, Aleksander Ficek, Alex Gronskiy, Alex Steiner, Alexander Bukharin, Alexandre Milesi, Ali Roshan Ghias, Ali Shehper, Ali Taghibakhshi, Alice Gatti, Alisa Liu, Alok Kumar, Alok Tripathy, Amala Sanjay Deshmukh, Aman Miryala, Aman Shanbhag, Ameya Sunil Mahabaleshwarkar, Ameya Velingker, Amir Klein, Amir Samani, Amit Zuker, Amnon Geifman, Anahita Bhiwandiwalla, Ananth Subramaniam, Andre Manoel, Andrea Santilli, Andrew Tao, Andrii Skliar, Anil Thomas, Anish Mahishi, Anna Shors, Anna Warno, Anuj Doshi, Anusha Kamath, Anwith Kiran, Ao Tang, Arham Mehta, Arnab Dhara, Arnav Komaragiri, Arnav Kundu, Arti Jain, Arun Rao, Arun Venkatesan, Arushi Goel, Asha Anoosheh, Ashish Vaswani, Ashwath Aithal, Asif Ahamed, Asma Kuriparambil Thekkumpate, Aswin Visva, Atefeh Sohrabizadeh, Avinash Vem, Ayush Dattagupta, Benedikt Schifferer, Benjamin Chislett, Bernard Nguyen, Besmira Nushi, Bilal Kartal, Bita Darvish Rouhani, Bobby Chen, Boris Ginsburg, Boxin Wang, Brandon Norick, Branislav Kisacanin, Brendan Johnson, Brian Dang, Brian Yu, Bryan Catanzaro, Byung-Kwan Lee, Carlo del Mundo, Chankyu Lee, Chantal Hwang, Charles Wang, Charlie Truong, Chen Cui, Cheng Wang, Cheng-Ping Hsieh, Chenhan Yu, Chenjie Luo, Chintan Patel, Chris Alexiuk, Chris Johnson, Chris Wing, Christian Munley, Coco Li, Collin McCarthy, Cynthia Gao, Dan Su, Dan Zhao, Dane Corneil, Danial Mohseni Taheri, Daniel Afrimi, Daniel Fatade, Daniel Lo, Daniel Machlab, Daniel Serebrenik, Daniele Molinari, Daniil Sorokin, Daria Gitman, Daria Levy, David Mosallanezhad, David Yu, Deepak Narayanan, Dev Churiwala, Devin O&#x27;Kelly, Dhruv Nathawani, Di Allan Wu, Dima Rekesh, Dina Yared, Dipendra Misra, Divyanshu Kakwani, Dmitry Belenko, Dominic Manno, Dongyang Fan, Dor Tsur, Duncan Riach, Dustin VanStee, Dylan Lu, Edgar Minasyan, Ehsan Hosseini-Asl, Eileen Long, Elena Lantz, Ellie Evans, Elliott Ning, Elvis Chen, Emanuel Scoullos, Eric Chung, Eric Harper, Eric Pham-Hung, Eric Tramel, Eric Yang, Erik Arakelyan, Evelina Bakhturina, Ewa Dobrowolska, Fadi Saady, Farzan Memarian, Fay Wang, Fei Jia, Felipe Soares, Felipe Vieira Frujeri, Feng Chen, Fengguang Lin, Ferenc Galko, Frankie Siino, Frederic Lafrance, Fuxiao Liu, Gantavya Bhatt, Garvit Kulshreshtha, George Armstrong, Giulio Lovisotto, Gomathy Venkata Krishnan, Gosia Lazuka, Grace Lam, Greg Heinrich, Greg Pauloski, Grzegorz Chlebus, Guilin Liu, Guo Chen, Guoming Zhang, Guyue Huang, Haifeng Qian, Hanrong Ye, Hao Gao, Hao Zhang, Haoqin Tu, Haran Kumar Shiv Kumar, Haribhau Hud, Harris Nover, Harrison Saturley-Hall, Harshil Kotamreddy, Hemil Desai, Henry Estela, Hexin Wang, Himanshu Singh, Hui Wang, Hung-Yueh Chiang, Igor Gitman, Ilia Karmanov, Ilya Loshchilov, Ingo Guehring, Itay Neeman, Ivan Moshkov, Jacky Kwok, Jakub Slowikowski, James Shen, Jane Polak Scowcroft, Jared Casper, Jatin Mitra, Jeff Willette, Jenna Diamond, Jenny Chen, Jesse Oliver, Jessica Medina, Jiacheng Xu, Jialin Song, Jian Hu, Jian Tu, Jian Zhang, Jiantao Jiao, Jiaqi Zeng, Jie-Fang Zhang, Jimmy Zhang, Jin Xu, Jingyu Xin, Jinhang Choi, Joey Conway, Joey Guman, John Kamalu, John Liu, John Roberts, Johnny Greco, Jonah Alben, Jonas Yang, Jonathan Cohen, Jonathan Li, Jonathan Raiman, Joseph Jennings, Juhi Mittal, Julia Gusak, Julien Veron Vialard, June Yang, Junkeun Yi, Jupinder Parmar, Ka Shun Shum, Kaiwen Shi, Kajal Jain, Kanishk Singla, Karan Sapra, Kari Briski, Kateryna Chumachenko, Katherine Huang, Katie Lyons, Keith Wyss, Keshav Santhanam, Keval Morabia, Kevin Shih, Kezhi Kong, Khanh Nguyen, Khushi Bhardwaj, Kiran Praveen, Konstantinos Krommydas, Krishna Puvvada, Krzysztof Pawelec, Kushal Shah, Li Ding, Lily Lee, Linda Liu, Linglin Jing, Luis Vega, Maarten Van Segbroeck, Mahan Fathi, Mahdi Nazemi, Maka Dong, Makesh Narsimhan Sreedhar, Maor Ashkenazi, Marc Cuevas, Marcin Chochowski, Marco Pavone, Markus Kliegl, Marta Stepniewska-Dziubinska, Martina Gonzalez Vilas, Martyna Patelka, Matan Rusanovsky, Matthieu Le, Matty Machczynski, Matvei Novikov, Mauricio Ferrato, Meenakshi Sharma, Mehrzad Samadi, Melissa Corpuz, Melissa Saelzer, Meng Xin, Mengru Wang, Mengxi Wu, Meriem Boubdir, Michael Boone, Michael Callahan, Michael Elad, Michael Lightstone, Michal Bien, Michal Zawalski, Miguel Martinez, Mikail Khona, Mike Chrzanowski, Mike Ranzinger, Mike Wojcikiewicz, Min-Hung Chen, Ming Kang, Mingjie Liu, Mingyuan Ma, Misha Nekorystnov, MJ Mikulski, Mohammad Qazim Bhat, Mohammad Shoeybi, Morgan Purcell, Mostofa Patwary, Nabin Mulepati, Nancy Agarwal, Narimane Hennouni, Nathan Sala, Nave Assaf, Nayeon Lee, Neal Vaidya, Negar Habibi, Netanel Haber, Nick Gupta, Nick Reamaroon, Nickson Quak, Nidhi Bhatia, Nik Spirin, Niket Agarwal, Nikolai Ludwig, Nima Tajbakhsh, Nithin Sunny, Oleksii Hrinchuk, Oleksii Kuchaiev, Olivier Delalleau, Omer Ullman Argov, Pablo Ribalta, Padmavathy Subramanian, Parth Mannan, Pavlo Molchanov, Pawel Morkisz, Peter Jin, Petr Lapukhov, Petro Junior Milan, Philip Monk, Pinky Xu, Piotr Januszewski, Piotr Laszkiewicz, Po-Han Huang, Praateek Mahajan, Pradeep Thalasta, Prakash Gurumurthy, Pranav Prashant Thombre, Prasoon Varshney, Pratyusha Maiti, Preeti Chadha, Pritam Biswas, Pritam Gundecha, Przemek Strzelczyk, Puhui Meng, Pulkit Kumar, Rabeeh Karimi Mahabadi, Rachel Oberman, Rajpreet Thethy, Ramani Akkati, Rameshwar Shivbhakta, Ran Zilberstein, Randy Gelhausen, Rasoul Shafipour, Raviraj Joshi, Ray Macalisang, Rayen Tian, Reka Kovacs, Renjie Pi, Resha Shetty, Ria C, Rima Shahbazyan, Rishabh Garg, Rita Fernandes Neves, Ritika Borkar, Ritu Gala, Riya Talwar, Riyad Islam, Robert Clark, Robert Kirby, Roger Waleffe, Rohan Joshi, Rohan Pillai, Rohit Jena, Rohit Watve, Roi Garnett, Roi Koren, Rongguang Ye, Russell J. Hewett, Ryan Prenger, Ryan Stewart, Ryota Egashira, Sadegh Mahdavi, Sai Nishanth Padala, Salika Dave, Sandhya Rani Narravula, Sandip Bhaskar, Sangkug Lym, Sanjeev Satheesh, Sarah Amirslani, Saran Vikas Murari, Saurabh Mishra, Saurabh Srivastava, Saurav Muralidharan, Sean Narenthiran, Sean Wang, Seokju Cho, Seong Hee Lee, Seonjin Na, Seonmyeong Bak, Seph Mard, Serge Panev, Sergei Kolchenko, Sergio Perez, Seth Henneman, Seth Poulos, Shahar Mor, Shantanu Acharya, Shaokun Zhang, Shaona Ghosh, Sharath Turuvekere Sreenivas, Shaun Kotek, Shaya Gharghabi, Sheng-Chieh Lin, Shengliang Xu, Shi Chen, Shihao Wang, Shilpa Amireddy, Shiqing Fan, Shiyang Chen, Shrimai Prabhumoye, Shriram Venugopal, Shuang Yu, Shubham Gandhi, Shubham Pachori, Shubham Toshniwal, Shuoyang Ding, Shwetha Krishnamurthy, Simeng Sun, Sivakumar Arayandi Thottakara, Somshubra Majumdar, Soumye Singhal, Sridurga Krithivasan, Sriharsha Niverty, Stephen Ge, Sugam Dipak Devare, Sukrit Rao, Sumeet Kumar Barua, Sungsoo Ha, Surya Nistala, Suseella Panguluri, Sweta Priyadarshi, Syeda Nahida Akter, Talor Abramovich, Tanay Varshney, Tandeep Singh Chandehoke, Teo Ene, Terry Kong, Thanh Do, Thinh Le, Tian Zhang, Tijmen Blankevoort, Tim Romanski, Tiyasa Mitra, Tom Balough, Tom Huang, Tomasz Grzegorzek, Tomer Asida, Tomer Bar Natan, Traian Rebedea, Trenton Starkey, Tugrul Konuk, Tuomas Rintamaki, Twinkle Vashishth, Tyler Kniess, Tyler Poon, Udi Karpas, Ushnish De, Utkarsh Vaidya, Vahid Noroozi, Vanshil Atul Shah, Venkat Srinivasan, Venkata Karri, Venmugil Elango, Vibhor Agrawal, Vibhu Jawa, Victor Cui, Victoria Edmonds, Vijay Korthikanti, Vikas Mehta, Vikranth Jeyakumar, Vinay Rao, Vineeth Kalluru Srinivas, Vitaly Kurin, Vitaly Lavrukhin, Wahidur Rahman, Wanli Jiang, Wasi Uddin Ahmad, Wataru Ishihara, Wei Du, Wei Ping, Wei-Ming Chen, Weiheng Chai, Weijia Chen, Wendy Quan, Wenliang Dai, Wenyan Cong, William Zhang, Wojciech Prazuch, Xiaowei Ren, Xin Yu, Xiwen Yu, Yan Wang, Yang Chen, Yang Yu, Yangyi Chen, Yaniv Galron, Yash Jain, Yashaswi Karnati, Ye Yu, Yejin Choi, Yemi Ibrahim, Yev Meyer, Yi Dong, Yi-Fu Wu, Yian Zhang, Yifan Zhang, Ying Lin, Yiyang Zhou, Yoav Miron, Yogendra Pandey, Yonatan Geifman, Yonggan Fu, Yoshi Suhara, Youngeun Kwon, Yu-Cheng Chou, Yu-Chiang Frank Wang, Yuanguo Kuang, Yuekai Zhang, Yugi Guvvala, Yuki Huang, Yunheng Zou, Yunsheng Liu, Zhenming Wang, Zhiding Yu, Zhiqi Li, Zhiyu Cheng, Zhongbo Zhu, Zhuolin Yang, Zichao Yue, Zihan Liu, Zijie Yan, Zirui Liu, Zoe Faul, Zuhair Ahmed · First 2026-10-28 · Latest 2026-10-28</div><details class="abs"><summary>Abstract</summary><div>We introduce Nemotron 3.5 Super and Nemotron 3.5 Lightning, open and efficient Mixture-of-Experts Hybrid Mamba-Transformer models designed for reasoning, long-context understanding, and agentic workloads. Super is a 120B-parameter, 12B-active multimodal model, while Lightning is a smaller 30B-parameter, 3B-active text model; both designed for efficient deployment. Both models combine large-scale distillation, long-context training, and native speculative decoding, while Super further incorporates Indic continued pretraining and agentic software-engineering mid-training. We develop a comprehensive post-training pipeline spanning supervised fine-tuning and reinforcement learning (RLVR and RLHF), complemented in Super by specialized teacher training and multi- teacher on-policy distillation (MOPD). This transforms Super from a text-only base model into a multimodal agent capable of reasoning over text, images, video, and interactive tool environments. We further explore test-time scaling through parallel agent execution and self-verification. Across training and deployment, we jointly optimize capability and efficiency. Indic continued pretraining improves Indian-language benchmarks by up to 9.82 percentage points, while agentic mid-training strengthens software-engineering capabilities and robustness across agent harnesses. The post-trained Super model achieves 51.78% on SWE-bench Pro, surpassing Nemotron 3 Ultra despite using approximately 4.6x fewer active parameters. Post-training MTP boosting improves speculative- decoding acceptance length by up to 21.8% under probabilistic draft sampling, while NVFP4 quantization achieves 99.62% median accuracy recovery relative to BF16. Inference optimizations enable up to 4,856 output tokens/s/GPU on GB200 while sustaining at least 50 tokens/s/user.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.38027 metatron: a promptable whole-body execution layer for humanoids metatron：面向人形机器人的可提示全身执行层 chen tessler yifeng jiang alec otto yi shi umar iqbal gal chechik xue bin peng humanoid controllers often require task-specific training despite sharing the need for balance and whole-body coordination. we present metatron, a promptable whole-body execution layer combining a generative base policy with a programmable skill layer. the base policy receives partial goals, collectively called a prompt, that can combine timed body-part targets, velocity commands, and style cues. it produces diverse whole-body motions consistent with these goals. training combines motion capture, synthetic recovery trajectories, and retargeted scene-interaction motions. after training, the policy is frozen. stateful programs called skills express task intent as prompts at each control step, drawing rough geometric sketches that the policy turns into coordinated movement. skills are ordinary code, refined by coding agents that analyze motion data and fit compact rules without task-specific policy training. on the physical unitree g1, one frozen checkpoint supports walking, recovery, teleoperated object pickup, and sitting on furniture. comparative evaluations show higher reaching success and push robustness than the tested reference-tracking pipelines. the same recipe produces climbing and acrobatics on a simulated character. metatron enables coding agents to turn learned motor capabilities into new skills through code, without further policy training. 代码agent 预训练 generative policy + programmatic skill … 人形机器人全身控制 冻结生成式基座策略加状态化代码技能层，用提示组合定时目标、速度与风格 人形控制器通常需按任务单独训练，无法复用共享的平衡与全身协调能力 任务特定策略难以同时覆盖行走、跌倒恢复、物体抓取与坐姿等差异极大的行为 基座策略接收定时身体部位目标、速度指令与风格提示，由动捕、合成恢复轨迹和重定向交互动作训练后冻结；技能为普通代码，每步输出提示，并由编码智能体分析运动数据拟合紧凑规则 unitree g1 上单一冻结检查点支持行走、恢复、遥操作取物与坐家具，到达成功率与抗推鲁棒性优于参考跟踪管线 " data-groups="代码Agent" data-training="预训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.38027v1" target="_blank" rel="noreferrer">2610.38027</a><span class="date">2026-10-27</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.38027v1" target="_blank" rel="noreferrer">METATRON: A Promptable Whole-Body Execution Layer for Humanoids</a><div class="authors">Chen Tessler, Yifeng Jiang, Alec Otto et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Generative policy + programmatic skill …</td><td data-label="训练方法"><span class="chip t-预训练">预训练</span></td><td data-label="应用场景">人形机器人全身控制</td><td data-label="核心创新">冻结生成式基座策略加状态化代码技能层，用提示组合定时目标、速度与风格</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">METATRON：面向人形机器人的可提示全身执行层</div><div class="facts"><div class="fact"><span>核心问题</span>人形控制器通常需按任务单独训练，无法复用共享的平衡与全身协调能力</div><div class="fact"><span>关键困难</span>任务特定策略难以同时覆盖行走、跌倒恢复、物体抓取与坐姿等差异极大的行为</div><div class="fact"><span>解决方案</span>基座策略接收定时身体部位目标、速度指令与风格提示，由动捕、合成恢复轨迹和重定向交互动作训练后冻结；技能为普通代码，每步输出提示，并由编码智能体分析运动数据拟合紧凑规则</div><div class="fact"><span>主要结果</span>Unitree G1 上单一冻结检查点支持行走、恢复、遥操作取物与坐家具，到达成功率与抗推鲁棒性优于参考跟踪管线</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.38027v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.38027v1" target="_blank" rel="noreferrer">PDF</a><a href="https://research.nvidia.com/labs/par/projects/metatron/" target="_blank" rel="noreferrer">Project1</a>Chen Tessler, Yifeng Jiang, Alec Otto, Yi Shi, Umar Iqbal, Gal Chechik, Xue Bin Peng · Project page: https://research.nvidia.com/labs/par/projects/metatron/ · First 2026-10-27 · Latest 2026-10-27</div><details class="abs"><summary>Abstract</summary><div>Humanoid controllers often require task-specific training despite sharing the need for balance and whole-body coordination. We present Metatron, a promptable whole-body execution layer combining a generative base policy with a programmable skill layer. The base policy receives partial goals, collectively called a prompt, that can combine timed body-part targets, velocity commands, and style cues. It produces diverse whole-body motions consistent with these goals. Training combines motion capture, synthetic recovery trajectories, and retargeted scene-interaction motions. After training, the policy is frozen. Stateful programs called skills express task intent as prompts at each control step, drawing rough geometric sketches that the policy turns into coordinated movement. Skills are ordinary code, refined by coding agents that analyze motion data and fit compact rules without task-specific policy training. On the physical Unitree G1, one frozen checkpoint supports walking, recovery, teleoperated object pickup, and sitting on furniture. Comparative evaluations show higher reaching success and push robustness than the tested reference-tracking pipelines. The same recipe produces climbing and acrobatics on a simulated character. Metatron enables coding agents to turn learned motor capabilities into new skills through code, without further policy training.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.34577 rethinking verification in agent harnesses 重新审视 agent harness 中的验证 zhengxin zhang erkang zhu yin lin claire cardie bolin ding jingren zhou agent harnesses enable large language models to act through tools, observe the results, and iteratively work toward a task goal. verification checks and revises agents&#x27; work to improve output quality. yet there is limited guidance on how harnesses should organize this effort. we study verification as an axis of test-time scaling by examining when to intervene, who checks the work, and how checking leads to revision. our framework spans four layers of the agent lifecycle: initial instructions, mid-turn reminders, completion gates, and independent review. we compare 17 designs across seven frontier coding models on terminal-bench (tb) and swe-bench verified (swe), and introduce visualbench for expert evaluation of visual and interactive artifacts. initial instructions and execution-time reminders yield modest, model-dependent average gains on the coding benchmarks, without substantially increasing average output token use. completion gates can yield larger gains but may substantially increase cost. independent review by a critic offers a more favorable accuracy-cost tradeoff, improving average accuracy by 5.9-9.5 percentage points on tb and 3.9-6.6 on swe at 1.13-1.25 and 1.00-1.04 times baseline cost, respectively. on visualbench, independent review achieves net preferences of 13.2-23.8 points over the baseline across its four designs, exceeding the evaluated l0-l2 designs. additional review rounds or independent critics further improve average tb accuracy by up to 3.5 percentage points. together, these results provide empirical guidance for verification design in agent harnesses and support independent review as a practical axis of test-time scaling. 代码agent 评测基准 免训练 llm agent harness 编码 agent 结果验证 按初始指令、轮中提醒、完成门、独立评审四层组织验证，并系统比较 17 种设计 agent harness 应如何组织验证工作，包括何时介入、由谁检查、检查如何转化为修订，目前缺乏指导 验证设计缺少系统化对比，收益与输出 token、成本之间的权衡不清晰 将验证视为测试时扩展的一个维度，在 tb、swe-bench verified 上跨 7 个编码模型比较 17 种设计，并提出 visualbench 做专家评测 独立评审在 tb 上平均准确率提升 5.9-9.5 个百分点，在 swe 上提升 3.9-6.6 个百分点，成本为基线的 1.13-1.25 倍和 1.00-1.04 倍；visualbench 净偏好 13.2-23.8 分 " data-groups="代码Agent" data-training="评测基准|免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.34577v1" target="_blank" rel="noreferrer">2610.34577</a><span class="date">2026-10-25</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.34577v1" target="_blank" rel="noreferrer">Rethinking Verification in Agent Harnesses</a><div class="authors">Zhengxin Zhang, Erkang Zhu, Yin Lin et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent harness</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span> <span class="chip t-免训练">免训练</span></td><td data-label="应用场景">编码 Agent 结果验证</td><td data-label="核心创新">按初始指令、轮中提醒、完成门、独立评审四层组织验证，并系统比较 17 种设计</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">重新审视 Agent Harness 中的验证</div><div class="facts"><div class="fact"><span>核心问题</span>Agent harness 应如何组织验证工作，包括何时介入、由谁检查、检查如何转化为修订，目前缺乏指导</div><div class="fact"><span>关键困难</span>验证设计缺少系统化对比，收益与输出 token、成本之间的权衡不清晰</div><div class="fact"><span>解决方案</span>将验证视为测试时扩展的一个维度，在 TB、SWE-bench Verified 上跨 7 个编码模型比较 17 种设计，并提出 VisualBench 做专家评测</div><div class="fact"><span>主要结果</span>独立评审在 TB 上平均准确率提升 5.9-9.5 个百分点，在 SWE 上提升 3.9-6.6 个百分点，成本为基线的 1.13-1.25 倍和 1.00-1.04 倍；VisualBench 净偏好 13.2-23.8 分</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.34577v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.34577v1" target="_blank" rel="noreferrer">PDF</a>Zhengxin Zhang, Erkang Zhu, Yin Lin, Claire Cardie, Bolin Ding, Jingren Zhou · 65 pages, including appendices · First 2026-10-25 · Latest 2026-10-25</div><details class="abs"><summary>Abstract</summary><div>Agent harnesses enable large language models to act through tools, observe the results, and iteratively work toward a task goal. Verification checks and revises agents&#x27; work to improve output quality. Yet there is limited guidance on how harnesses should organize this effort. We study verification as an axis of test-time scaling by examining when to intervene, who checks the work, and how checking leads to revision. Our framework spans four layers of the agent lifecycle: initial instructions, mid-turn reminders, completion gates, and independent review. We compare 17 designs across seven frontier coding models on Terminal-Bench (TB) and SWE-bench Verified (SWE), and introduce VisualBench for expert evaluation of visual and interactive artifacts. Initial instructions and execution-time reminders yield modest, model-dependent average gains on the coding benchmarks, without substantially increasing average output token use. Completion gates can yield larger gains but may substantially increase cost. Independent review by a critic offers a more favorable accuracy-cost tradeoff, improving average accuracy by 5.9-9.5 percentage points on TB and 3.9-6.6 on SWE at 1.13-1.25 and 1.00-1.04 times baseline cost, respectively. On VisualBench, independent review achieves net preferences of 13.2-23.8 points over the baseline across its four designs, exceeding the evaluated L0-L2 designs. Additional review rounds or independent critics further improve average TB accuracy by up to 3.5 percentage points. Together, these results provide empirical guidance for verification design in agent harnesses and support independent review as a practical axis of test-time scaling.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.34425 ctxagent - self-controlled context management of llm agents ctxagent —— llm agent 的自主上下文管理 matthias busch marius tacke roland c. aydin christian feiler christian j. cyron agent harnesses keep long sessions inside the context window by compacting the history when a token threshold is crossed. we study an alternative in which the model manages its own context: it decides when to compact, what to keep and what to write as the hand-off, given two tools and one paragraph of guidance. since earlier work found that open-weight models cannot manage their own context without scaffolding, we compare seven frontier models under identical conditions, with and without the context tools, on token cost and benchmark score, and we compare our harness with three widely used harnesses on two of these models. the benchmark is assembled from existing ones: coding exercises, multi-step scicode problems and swe-bench pro and terminal-bench 4.0 tasks are interleaved with planted facts, ephemeral observations and standing instructions, all checked deterministically, in sessions of 35-212 turns that resemble a user working through different tasks in one chat. most of the strongest models manage their context: they compact and curate regularly, the live context of the mixed sessions stays mostly below 100k tokens, and their benchmark scores mostly do not drop significantly. for the models that manage their context well, the cost reduction is substantial but varies between models, because some models compact so often that other costs increase. with claude opus 5.5, the self-managed harness matches claude code on task success at 34% lower cost than its explicit 200k-window configuration and 49% lower than its default, with no context window to choose. we release the agent, the benchmark and all result rows. 代码agent 评测基准 免训练 llm agent + context tools 长会话 agent 上下文管理 由模型自行决定何时压缩、保留哪些内容、写什么交接摘要，仅给两个工具和一段指引 长会话需在超出 token 阈值时压缩历史，但压缩时机与内容取舍完全由 agent harness 硬编码决定 此前发现开放权重模型在无脚手架时无法自我管理上下文，压缩频率与保留内容难以把握 给模型两个上下文工具与一段指引，在 35–212 轮混合任务会话（编码练习、scicode、swe-bench pro、terminal-bench 4.0 并植入事实与指令）中对比七个前沿模型的 token 成本与得分，并与三种常用 harness 比较 多数强模型能自主压缩，活跃上下文多低于 100k token 且得分无显著下降；claude opus 5.5 上成本比 200k 窗口配置低 34%、比默认低 49% " data-groups="代码Agent" data-training="评测基准|免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.34425v1" target="_blank" rel="noreferrer">2610.34425</a><span class="date">2026-10-25</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.34425v1" target="_blank" rel="noreferrer">CTXAgent - Self-Controlled Context Management of LLM Agents</a><div class="authors">Matthias Busch, Marius Tacke, Roland C. Aydin et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + context tools</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span> <span class="chip t-免训练">免训练</span></td><td data-label="应用场景">长会话 Agent 上下文管理</td><td data-label="核心创新">由模型自行决定何时压缩、保留哪些内容、写什么交接摘要，仅给两个工具和一段指引</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">CTXAgent —— LLM Agent 的自主上下文管理</div><div class="facts"><div class="fact"><span>核心问题</span>长会话需在超出 token 阈值时压缩历史，但压缩时机与内容取舍完全由 agent harness 硬编码决定</div><div class="fact"><span>关键困难</span>此前发现开放权重模型在无脚手架时无法自我管理上下文，压缩频率与保留内容难以把握</div><div class="fact"><span>解决方案</span>给模型两个上下文工具与一段指引，在 35–212 轮混合任务会话（编码练习、SciCode、SWE-bench Pro、Terminal-Bench 4.0 并植入事实与指令）中对比七个前沿模型的 token 成本与得分，并与三种常用 harness 比较</div><div class="fact"><span>主要结果</span>多数强模型能自主压缩，活跃上下文多低于 100k token 且得分无显著下降；Claude Opus 5.5 上成本比 200k 窗口配置低 34%、比默认低 49%</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.34425v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.34425v1" target="_blank" rel="noreferrer">PDF</a>Matthias Busch, Marius Tacke, Roland C. Aydin, Christian Feiler, Christian J. Cyron · First 2026-10-25 · Latest 2026-10-25</div><details class="abs"><summary>Abstract</summary><div>Agent harnesses keep long sessions inside the context window by compacting the history when a token threshold is crossed. We study an alternative in which the model manages its own context: it decides when to compact, what to keep and what to write as the hand-off, given two tools and one paragraph of guidance. Since earlier work found that open-weight models cannot manage their own context without scaffolding, we compare seven frontier models under identical conditions, with and without the context tools, on token cost and benchmark score, and we compare our harness with three widely used harnesses on two of these models. The benchmark is assembled from existing ones: coding exercises, multi-step SciCode problems and SWE-bench Pro and Terminal-Bench 4.0 tasks are interleaved with planted facts, ephemeral observations and standing instructions, all checked deterministically, in sessions of 35-212 turns that resemble a user working through different tasks in one chat. Most of the strongest models manage their context: they compact and curate regularly, the live context of the mixed sessions stays mostly below 100k tokens, and their benchmark scores mostly do not drop significantly. For the models that manage their context well, the cost reduction is substantial but varies between models, because some models compact so often that other costs increase. With Claude Opus 5.5, the self-managed harness matches Claude Code on task success at 34% lower cost than its explicit 200k-window configuration and 49% lower than its default, with no context window to choose. We release the agent, the benchmark and all result rows.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2610.34422 from gpu to tpu with coding agents: what works, what fails, and what it costs? 从 gpu 到 tpu 的编码智能体：什么有效、什么失败、成本多少？ hui sun anderson uchôa wesley k. g. assunção a coding agent can migrate a machine learning workload, report success, and still change how the model trains. rising compute costs, limited accelerator capacity, and vendor dependence are pushing organizations toward alternatives to graphics processing units (gpus); a key question is whether agent-generated migrations to tensor processing units (tpus) can be trusted and at what cost. we build a dataset of 148 pytorch ml research projects and use claude code to migrate ten of them from nvidia gpus to google cloud tpus. we independently assess whether each migration runs, preserves numerical behavior, executes on the intended hardware, maintains the project&#x27;s goal, and delivers acceptable performance. we also examine failures, human effort, and costs. eight projects meet our project-goal criterion, and migrations require 2.4 human interventions on average. of 70 execution attempts, 53 fail (76%), and 26 of these failures (49%) raise no error. the most frequent cause is repeated compilation and other execution inefficiencies, while interactions with third-party libraries can silently change the computation: in one four-chip migration, the agent reports success despite a change in gradient clipping that reduces accuracy from 86.53% to 84.89%. execution costs vary widely: in one workload, torchtpu, a pytorch execution backend for tpus, trains 1.86 times faster and 25% cheaper per run than the gpu. for practitioners, these findings motivate independent reference runs, verification under the intended hardware configuration, and workload-specific acceptance and stopping criteria that account for both computational and human costs. 代码agent 免训练 评测基准 llm coding agent gpu 到 tpu 迁移 独立核验运行、数值、硬件、目标与性能，量化静默失败和成本 编码智能体可报告迁移成功却改变模型训练行为，tpu 迁移能否可信及成本未知 迁移常出现编译低效、无报错静默失败，第三方库交互会悄然改变计算，仅凭成功报告难以信任 构建148个pytorch研究项目数据集，用claude code迁移10个到tpu，独立核验可运行、数值一致、硬件正确、目标保持与性能，并统计失败、人工干预和成本 8/10达目标，均需2.4次人工干预；70次执行53败(76%)，26次静默；准确率86.53→84.89；torchtpu快1.86倍省25% 需独立参考运行、目标硬件验证、按负载设验收与停止准则，并计入人力成本" data-groups="代码Agent" data-training="免训练|评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2610.34422v1" target="_blank" rel="noreferrer">2610.34422</a><span class="date">2026-10-25</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2610.34422v1" target="_blank" rel="noreferrer">From GPU to TPU with Coding Agents: What Works, What Fails, and What It Costs?</a><div class="authors">Hui Sun, Anderson Uchôa, Wesley K. G. Assunção</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM coding agent</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span> <span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">GPU 到 TPU 迁移</td><td data-label="核心创新">独立核验运行、数值、硬件、目标与性能，量化静默失败和成本</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">从 GPU 到 TPU 的编码智能体：什么有效、什么失败、成本多少？</div><div class="facts"><div class="fact"><span>核心问题</span>编码智能体可报告迁移成功却改变模型训练行为，TPU 迁移能否可信及成本未知</div><div class="fact"><span>关键困难</span>迁移常出现编译低效、无报错静默失败，第三方库交互会悄然改变计算，仅凭成功报告难以信任</div><div class="fact"><span>解决方案</span>构建148个PyTorch研究项目数据集，用Claude Code迁移10个到TPU，独立核验可运行、数值一致、硬件正确、目标保持与性能，并统计失败、人工干预和成本</div><div class="fact"><span>主要结果</span>8/10达目标，均需2.4次人工干预；70次执行53败(76%)，26次静默；准确率86.53→84.89；TorchTPU快1.86倍省25%</div><div class="fact"><span>未来方向</span>需独立参考运行、目标硬件验证、按负载设验收与停止准则，并计入人力成本</div></div><div class="meta"><a href="https://arxiv.org/abs/2610.34422v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2610.34422v1" target="_blank" rel="noreferrer">PDF</a>Hui Sun, Anderson Uchôa, Wesley K. G. Assunção · 12 pages, 2 figures, 2 tables. Submitted to the ICSE 2027 Software Engineering in Practice (SEIP) track · First 2026-10-25 · Latest 2026-10-25</div><details class="abs"><summary>Abstract</summary><div>A coding agent can migrate a machine learning workload, report success, and still change how the model trains. Rising compute costs, limited accelerator capacity, and vendor dependence are pushing organizations toward alternatives to graphics processing units (GPUs); a key question is whether agent-generated migrations to tensor processing units (TPUs) can be trusted and at what cost. We build a dataset of 148 PyTorch ML research projects and use Claude Code to migrate ten of them from NVIDIA GPUs to Google Cloud TPUs. We independently assess whether each migration runs, preserves numerical behavior, executes on the intended hardware, maintains the project&#x27;s goal, and delivers acceptable performance. We also examine failures, human effort, and costs. Eight projects meet our project-goal criterion, and migrations require 2.4 human interventions on average. Of 70 execution attempts, 53 fail (76%), and 26 of these failures (49%) raise no error. The most frequent cause is repeated compilation and other execution inefficiencies, while interactions with third-party libraries can silently change the computation: in one four-chip migration, the agent reports success despite a change in gradient clipping that reduces accuracy from 86.53% to 84.89%. Execution costs vary widely: in one workload, TorchTPU, a PyTorch execution backend for TPUs, trains 1.86 times faster and 25% cheaper per run than the GPU. For practitioners, these findings motivate independent reference runs, verification under the intended hardware configuration, and workload-specific acceptance and stopping criteria that account for both computational and human costs.</div></details></td></tr></tbody></table></div>
+    <details class="history"><summary>History</summary><div class="history-list"><a href="20261030_2130.html">20261030_2130</a>
+<a href="20261030_0704.html">20261030_0704</a>
+<a href="20261029_0656.html">20261029_0656</a>
+<a href="20261028_0648.html">20261028_0648</a>
+<a href="20261027_0659.html">20261027_0659</a>
+<a href="20261026_0525.html">20261026_0525</a>
+<a href="20261025_0522.html">20261025_0522</a>
+<a href="20261024_0547.html">20261024_0547</a>
+<a href="20261023_0606.html">20261023_0606</a>
+<a href="20261022_0603.html">20261022_0603</a>
+<a href="20261021_0601.html">20261021_0601</a>
+<a href="20261020_0643.html">20261020_0643</a>
+<a href="20261019_0512.html">20261019_0512</a>
+<a href="20261018_0511.html">20261018_0511</a>
+<a href="20261017_0552.html">20261017_0552</a>
+<a href="20261016_0554.html">20261016_0554</a>
+<a href="20261015_0600.html">20261015_0600</a>
+<a href="20261014_0711.html">20261014_0711</a>
+<a href="20261013_0912.html">20261013_0912</a>
+<a href="20261012_0637.html">20261012_0637</a>
+<a href="20261011_0608.html">20261011_0608</a>
+<a href="20261010_0700.html">20261010_0700</a>
+<a href="20261009_0737.html">20261009_0737</a>
+<a href="20261008_0725.html">20261008_0725</a>
+<a href="20261007_0651.html">20261007_0651</a>
+<a href="20261006_0832.html">20261006_0832</a>
+<a href="20261005_0608.html">20261005_0608</a>
+<a href="20261004_0557.html">20261004_0557</a>
+<a href="20261003_0656.html">20261003_0656</a>
+<a href="20261002_0658.html">20261002_0658</a>
+<a href="20261001_0646.html">20261001_0646</a>
+<a href="20260930_1209.html">20260930_1209</a>
+<a href="20260930_1005.html">20260930_1005</a>
+<a href="20260930_0656.html">20260930_0656</a>
+<a href="20260929_0737.html">20260929_0737</a>
+<a href="20260928_0546.html">20260928_0546</a>
+<a href="20260927_0552.html">20260927_0552</a>
+<a href="20260926_0604.html">20260926_0604</a>
+<a href="20260925_0600.html">20260925_0600</a>
+<a href="20260924_1505.html">20260924_1505</a>
+<a href="20260924_1308.html">20260924_1308</a>
+<a href="20260924_1112.html">20260924_1112</a>
+<a href="20260924_0601.html">20260924_0601</a>
+<a href="20260923_1530.html">20260923_1530</a>
+<a href="20260923_1508.html">20260923_1508</a>
+<a href="20260923_0559.html">20260923_0559</a>
+<a href="20260923_0546.html">20260923_0546</a>
+<a href="20260922_0634.html">20260922_0634</a>
+<a href="20260922_0624.html">20260922_0624</a>
+<a href="20260921_0526.html">20260921_0526</a>
+<a href="20260921_0509.html">20260921_0509</a>
+<a href="20260920_0525.html">20260920_0525</a>
+<a href="20260920_0514.html">20260920_0514</a>
+<a href="20260919_0536.html">20260919_0536</a>
+<a href="20260919_0523.html">20260919_0523</a>
+<a href="20260918_0605.html">20260918_0605</a>
+<a href="20260918_0553.html">20260918_0553</a>
+<a href="20260917_0604.html">20260917_0604</a>
+<a href="20260916_0606.html">20260916_0606</a>
+<a href="20260916_0554.html">20260916_0554</a>
+<a href="20260915_0627.html">20260915_0627</a>
+<a href="20260915_0618.html">20260915_0618</a>
+<a href="20260913_0522.html">20260913_0522</a>
+<a href="20260913_0510.html">20260913_0510</a>
+<a href="20260912_0541.html">20260912_0541</a>
+<a href="20260912_0530.html">20260912_0530</a>
+<a href="20260911_0534.html">20260911_0534</a>
+<a href="20260911_0521.html">20260911_0521</a>
+<a href="20260910_0539.html">20260910_0539</a>
+<a href="20260910_0528.html">20260910_0528</a>
+<a href="20260909_0547.html">20260909_0547</a>
+<a href="20260909_0533.html">20260909_0533</a>
+<a href="20260908_0559.html">20260908_0559</a>
+<a href="20260908_0553.html">20260908_0553</a>
+<a href="20260907_0513.html">20260907_0513</a>
+<a href="20260907_0500.html">20260907_0500</a>
+<a href="20260906_0507.html">20260906_0507</a>
+<a href="20260906_0453.html">20260906_0453</a>
+<a href="20260905_0523.html">20260905_0523</a>
+<a href="20260905_0512.html">20260905_0512</a>
+<a href="20260904_0540.html">20260904_0540</a>
+<a href="20260904_0533.html">20260904_0533</a>
+<a href="20260903_0545.html">20260903_0545</a>
+<a href="20260903_0530.html">20260903_0530</a>
+<a href="20260902_0544.html">20260902_0544</a>
+<a href="20260902_0533.html">20260902_0533</a>
+<a href="20260901_0712.html">20260901_0712</a>
+<a href="20260901_0706.html">20260901_0706</a>
+<a href="20260831_0555.html">20260831_0555</a>
+<a href="20260831_0548.html">20260831_0548</a>
+<a href="20260830_0540.html">20260830_0540</a>
+<a href="20260830_0528.html">20260830_0528</a>
+<a href="20260829_1004.html">20260829_1004</a>
+<a href="20260829_0959.html">20260829_0959</a>
+<a href="20260828_1134.html">20260828_1134</a>
+<a href="20260828_1025.html">20260828_1025</a>
+<a href="20260827_0547.html">20260827_0547</a>
+<a href="20260827_0533.html">20260827_0533</a>
+<a href="20260826_0339.html">20260826_0339</a>
+<a href="20260826_0326.html">20260826_0326</a>
+<a href="20260825_0337.html">20260825_0337</a>
+<a href="20260825_0324.html">20260825_0324</a>
+<a href="20260824_0329.html">20260824_0329</a>
+<a href="20260824_0318.html">20260824_0318</a>
+<a href="20260823_0330.html">20260823_0330</a>
+<a href="20260823_0319.html">20260823_0319</a>
+<a href="20260822_0332.html">20260822_0332</a>
+<a href="20260822_0322.html">20260822_0322</a>
+<a href="20260821_0338.html">20260821_0338</a>
+<a href="20260821_0326.html">20260821_0326</a>
+<a href="20260820_0343.html">20260820_0343</a>
+<a href="20260820_0335.html">20260820_0335</a>
+<a href="20260819_0338.html">20260819_0338</a>
+<a href="20260819_0324.html">20260819_0324</a>
+<a href="20260818_0335.html">20260818_0335</a>
+<a href="20260818_0323.html">20260818_0323</a>
+<a href="20260817_0328.html">20260817_0328</a>
+<a href="20260816_0328.html">20260816_0328</a>
+<a href="20260816_0318.html">20260816_0318</a>
+<a href="20260815_0352.html">20260815_0352</a>
+<a href="20260815_0344.html">20260815_0344</a>
+<a href="20260814_0359.html">20260814_0359</a>
+<a href="20260814_0354.html">20260814_0354</a>
+<a href="20260813_0403.html">20260813_0403</a>
+<a href="20260813_0359.html">20260813_0359</a>
+<a href="20260812_0404.html">20260812_0404</a>
+<a href="20260812_0358.html">20260812_0358</a>
+<a href="20260811_0357.html">20260811_0357</a>
+<a href="20260811_0352.html">20260811_0352</a>
+<a href="20260810_0341.html">20260810_0341</a>
+<a href="20260810_0329.html">20260810_0329</a>
+<a href="20260809_0338.html">20260809_0338</a>
+<a href="20260809_0325.html">20260809_0325</a>
+<a href="20260808_0356.html">20260808_0356</a>
+<a href="20260808_0348.html">20260808_0348</a>
+<a href="20260807_0844.html">20260807_0844</a>
+<a href="20260807_0838.html">20260807_0838</a>
+<a href="20260806_0437.html">20260806_0437</a>
+<a href="20260806_0422.html">20260806_0422</a>
+<a href="20260805_0439.html">20260805_0439</a>
+<a href="20260805_0422.html">20260805_0422</a>
+<a href="20260804_0437.html">20260804_0437</a>
+<a href="20260804_0423.html">20260804_0423</a>
+<a href="20260803_0416.html">20260803_0416</a>
+<a href="20260802_0414.html">20260802_0414</a>
+<a href="20260802_0408.html">20260802_0408</a>
+<a href="20260801_0426.html">20260801_0426</a>
+<a href="20260801_0416.html">20260801_0416</a>
+<a href="20260731_0421.html">20260731_0421</a>
+<a href="20260731_0413.html">20260731_0413</a>
+<a href="20260730_0416.html">20260730_0416</a>
+<a href="20260730_0410.html">20260730_0410</a>
+<a href="20260729_0413.html">20260729_0413</a>
+<a href="20260728_0417.html">20260728_0417</a>
+<a href="20260727_0416.html">20260727_0416</a>
+<a href="20260727_0411.html">20260727_0411</a>
+<a href="20260726_0414.html">20260726_0414</a>
+<a href="20260726_0409.html">20260726_0409</a>
+<a href="20260725_0432.html">20260725_0432</a>
+<a href="20260725_0415.html">20260725_0415</a>
+<a href="20260724_0419.html">20260724_0419</a>
+<a href="20260724_0410.html">20260724_0410</a>
+<a href="20260723_0418.html">20260723_0418</a>
+<a href="20260723_0415.html">20260723_0415</a>
+<a href="20260722_0423.html">20260722_0423</a>
+<a href="20260722_0418.html">20260722_0418</a>
+<a href="20260721_0427.html">20260721_0427</a>
+<a href="20260721_0418.html">20260721_0418</a>
+<a href="20260720_0411.html">20260720_0411</a>
+<a href="20260720_0406.html">20260720_0406</a>
+<a href="20260719_0407.html">20260719_0407</a>
+<a href="20260719_0403.html">20260719_0403</a>
+<a href="20260718_0413.html">20260718_0413</a>
+<a href="20260718_0403.html">20260718_0403</a>
+<a href="20260717_0408.html">20260717_0408</a>
+<a href="20260717_0359.html">20260717_0359</a>
+<a href="20260716_0417.html">20260716_0417</a>
+<a href="20260716_0405.html">20260716_0405</a>
+<a href="20260715_0420.html">20260715_0420</a>
+<a href="20260715_0407.html">20260715_0407</a>
+<a href="20260714_0421.html">20260714_0421</a>
+<a href="20260714_0409.html">20260714_0409</a>
+<a href="20260713_0409.html">20260713_0409</a>
+<a href="20260713_0405.html">20260713_0405</a>
+<a href="20260712_0409.html">20260712_0409</a>
+<a href="20260712_0402.html">20260712_0402</a>
+<a href="20260711_0439.html">20260711_0439</a>
+<a href="20260711_0418.html">20260711_0418</a>
+<a href="20260710_0454.html">20260710_0454</a>
+<a href="20260710_0444.html">20260710_0444</a>
+<a href="20260709_0426.html">20260709_0426</a>
+<a href="20260709_0419.html">20260709_0419</a>
+<a href="20260708_0455.html">20260708_0455</a>
+<a href="20260708_0448.html">20260708_0448</a>
+<a href="20260707_0456.html">20260707_0456</a>
+<a href="20260707_0451.html">20260707_0451</a>
+<a href="20260706_0421.html">20260706_0421</a>
+<a href="20260706_0410.html">20260706_0410</a>
+<a href="20260705_0415.html">20260705_0415</a>
+<a href="20260705_0407.html">20260705_0407</a>
+<a href="20260704_0421.html">20260704_0421</a>
+<a href="20260704_0413.html">20260704_0413</a>
+<a href="20260703_0425.html">20260703_0425</a>
+<a href="20260703_0417.html">20260703_0417</a>
+<a href="20260702_0452.html">20260702_0452</a>
+<a href="20260702_0447.html">20260702_0447</a>
+<a href="20260701_0502.html">20260701_0502</a>
+<a href="20260701_0455.html">20260701_0455</a>
+<a href="20260630_0454.html">20260630_0454</a>
+<a href="20260630_0452.html">20260630_0452</a>
+<a href="20260629_0420.html">20260629_0420</a>
+<a href="20260629_0410.html">20260629_0410</a>
+<a href="20260628_0423.html">20260628_0423</a>
+<a href="20260627_0450.html">20260627_0450</a>
+<a href="20260627_0430.html">20260627_0430</a>
+<a href="20260626_1438.html">20260626_1438</a>
+<a href="20260626_0502.html">20260626_0502</a>
+<a href="20260625_0455.html">20260625_0455</a>
+<a href="20260624_0505.html">20260624_0505</a>
+<a href="20260623_0535.html">20260623_0535</a>
+<a href="20260622_0445.html">20260622_0445</a>
+<a href="20260621_0422.html">20260621_0422</a>
+<a href="20260620_0442.html">20260620_0442</a>
+<a href="20260619_0531.html">20260619_0531</a>
+<a href="20260618_0519.html">20260618_0519</a>
+<a href="20260617_0545.html">20260617_0545</a>
+<a href="20260616_0549.html">20260616_0549</a>
+<a href="20260615_0423.html">20260615_0423</a>
+<a href="20260614_0423.html">20260614_0423</a>
+<a href="20260613_0505.html">20260613_0505</a>
+<a href="20260612_0528.html">20260612_0528</a>
+<a href="20260611_0528.html">20260611_0528</a>
+<a href="20260610_0504.html">20260610_0504</a>
+<a href="20260609_0514.html">20260609_0514</a>
+<a href="20260608_0421.html">20260608_0421</a>
+<a href="20260607_0418.html">20260607_0418</a>
+<a href="20260606_0451.html">20260606_0451</a>
+<a href="20260604_0557.html">20260604_0557</a>
+<a href="20260603_0556.html">20260603_0556</a>
+<a href="20260602_0615.html">20260602_0615</a>
+<a href="20260601_0419.html">20260601_0419</a>
+<a href="20260531_0414.html">20260531_0414</a>
+<a href="20260530_0512.html">20260530_0512</a>
+<a href="20260529_0515.html">20260529_0515</a>
+<a href="20260527_0459.html">20260527_0459</a>
+<a href="20260526_0426.html">20260526_0426</a>
+<a href="20260525_0417.html">20260525_0417</a>
+<a href="20260524_0411.html">20260524_0411</a>
+<a href="20260523_0445.html">20260523_0445</a>
+<a href="20260522_0454.html">20260522_0454</a>
+<a href="20260521_0508.html">20260521_0508</a>
+<a href="20260520_0449.html">20260520_0449</a>
+<a href="20260519_0442.html">20260519_0442</a>
+<a href="20260518_0409.html">20260518_0409</a>
+<a href="20260517_0425.html">20260517_0425</a>
+<a href="20260516_0436.html">20260516_0436</a>
+<a href="20260515_0457.html">20260515_0457</a>
+<a href="20260514_0507.html">20260514_0507</a>
+<a href="20260513_0503.html">20260513_0503</a>
+<a href="20260512_0505.html">20260512_0505</a>
+<a href="20260511_0418.html">20260511_0418</a>
+<a href="20260510_0414.html">20260510_0414</a>
+<a href="20260509_0426.html">20260509_0426</a>
+<a href="20260508_0435.html">20260508_0435</a>
+<a href="20260507_0454.html">20260507_0454</a>
+<a href="20260506_0427.html">20260506_0427</a>
+<a href="20260505_0436.html">20260505_0436</a>
+<a href="20260504_0410.html">20260504_0410</a>
+<a href="20260503_0414.html">20260503_0414</a>
+<a href="20260502_0426.html">20260502_0426</a>
+<a href="20260501_0429.html">20260501_0429</a>
+<a href="20260430_0430.html">20260430_0430</a>
+<a href="20260429_0437.html">20260429_0437</a>
+<a href="20260428_0429.html">20260428_0429</a>
+<a href="20260427_0405.html">20260427_0405</a>
+<a href="20260426_0404.html">20260426_0404</a>
+<a href="20260425_0410.html">20260425_0410</a>
+<a href="20260424_0430.html">20260424_0430</a>
+<a href="20260423_0426.html">20260423_0426</a>
+<a href="20260422_0424.html">20260422_0424</a>
+<a href="20260421_0418.html">20260421_0418</a>
+<a href="20260420_0359.html">20260420_0359</a>
+<a href="20260419_0358.html">20260419_0358</a>
+<a href="20260418_0415.html">20260418_0415</a>
+<a href="20260417_0421.html">20260417_0421</a>
+<a href="20260416_0425.html">20260416_0425</a>
+<a href="20260415_0426.html">20260415_0426</a>
+<a href="20260414_0423.html">20260414_0423</a>
+<a href="20260413_0352.html">20260413_0352</a>
+<a href="20260412_0347.html">20260412_0347</a>
+<a href="20260411_0356.html">20260411_0356</a>
+<a href="20260410_0412.html">20260410_0412</a>
+<a href="20260409_0411.html">20260409_0411</a>
+<a href="20260407_0404.html">20260407_0404</a>
+<a href="20260406_0347.html">20260406_0347</a>
+<a href="20260405_0344.html">20260405_0344</a>
+<a href="20260404_0350.html">20260404_0350</a>
+<a href="20260403_0400.html">20260403_0400</a>
+<a href="20260401_0408.html">20260401_0408</a>
+<a href="20260331_0407.html">20260331_0407</a>
+<a href="20260329_0347.html">20260329_0347</a>
+<a href="20260328_0350.html">20260328_0350</a>
+<a href="20260326_0357.html">20260326_0357</a>
+<a href="20260325_0405.html">20260325_0405</a>
+<a href="20260324_0400.html">20260324_0400</a>
+<a href="20260323_0342.html">20260323_0342</a>
+<a href="20260322_0340.html">20260322_0340</a>
+<a href="20260321_0347.html">20260321_0347</a>
+<a href="20260320_0356.html">20260320_0356</a>
+<a href="20260319_0358.html">20260319_0358</a>
+<a href="20260318_0405.html">20260318_0405</a>
+<a href="20260317_0401.html">20260317_0401</a>
+<a href="20260316_0343.html">20260316_0343</a>
+<a href="20260315_0341.html">20260315_0341</a>
+<a href="20260314_0344.html">20260314_0344</a>
+<a href="20260313_0352.html">20260313_0352</a>
+<a href="20260312_0352.html">20260312_0352</a>
+<a href="20260311_0347.html">20260311_0347</a>
+<a href="20260310_0350.html">20260310_0350</a>
+<a href="20260309_0338.html">20260309_0338</a>
+<a href="20260308_0337.html">20260308_0337</a>
+<a href="20260307_0347.html">20260307_0347</a>
+<a href="20260306_0402.html">20260306_0402</a>
+<a href="20260305_0348.html">20260305_0348</a>
+<a href="20260304_0348.html">20260304_0348</a>
+<a href="20260303_0348.html">20260303_0348</a>
+<a href="20260302_0336.html">20260302_0336</a>
+<a href="20260301_0339.html">20260301_0339</a>
+<a href="20260228_0348.html">20260228_0348</a>
+<a href="20260227_0354.html">20260227_0354</a>
+<a href="20260226_0402.html">20260226_0402</a>
+<a href="20260225_0404.html">20260225_0404</a>
+<a href="20260224_0406.html">20260224_0406</a>
+<a href="20260223_0338.html">20260223_0338</a>
+<a href="20260222_0339.html">20260222_0339</a>
+<a href="20260221_0345.html">20260221_0345</a>
+<a href="20260220_0348.html">20260220_0348</a>
+<a href="20260219_0358.html">20260219_0358</a>
+<a href="20260218_0358.html">20260218_0358</a>
+<a href="20260217_0343.html">20260217_0343</a>
+<a href="20260216_0339.html">20260216_0339</a>
+<a href="20260215_0338.html">20260215_0338</a>
+<a href="20260213_0401.html">20260213_0401</a>
+<a href="20260212_0404.html">20260212_0404</a>
+<a href="20260210_0409.html">20260210_0409</a>
+<a href="20260208_0339.html">20260208_0339</a>
+<a href="20260207_0349.html">20260207_0349</a>
+<a href="20260206_0347.html">20260206_0347</a>
+<a href="20260205_0346.html">20260205_0346</a>
+<a href="20260204_0354.html">20260204_0354</a>
+<a href="20260202_0337.html">20260202_0337</a>
+<a href="20260201_0333.html">20260201_0333</a>
+<a href="20260131_0345.html">20260131_0345</a>
+<a href="20260130_0341.html">20260130_0341</a>
+<a href="20260129_0344.html">20260129_0344</a>
+<a href="20260128_0341.html">20260128_0341</a>
+<a href="20260127_0338.html">20260127_0338</a>
+<a href="20260126_0330.html">20260126_0330</a>
+<a href="20260125_0329.html">20260125_0329</a>
+<a href="20260124_0337.html">20260124_0337</a>
+<a href="20260123_0337.html">20260123_0337</a>
+<a href="20260122_0343.html">20260122_0343</a>
+<a href="20260121_0424.html">20260121_0424</a>
+<a href="20260119_0329.html">20260119_0329</a>
+<a href="20260118_0327.html">20260118_0327</a>
+<a href="20260117_0332.html">20260117_0332</a>
+<a href="20260116_0339.html">20260116_0339</a>
+<a href="20260115_0334.html">20260115_0334</a>
+<a href="20260114_0333.html">20260114_0333</a>
+<a href="20260113_0334.html">20260113_0334</a>
+<a href="20260112_0331.html">20260112_0331</a>
+<a href="20260111_0329.html">20260111_0329</a>
+<a href="20260110_0333.html">20260110_0333</a>
+<a href="20260109_0334.html">20260109_0334</a>
+<a href="20260108_0335.html">20260108_0335</a>
+<a href="20260107_0330.html">20260107_0330</a>
+<a href="20260106_0336.html">20260106_0336</a>
+<a href="20260105_0328.html">20260105_0328</a>
+<a href="20260104_0328.html">20260104_0328</a>
+<a href="20260103_0325.html">20260103_0325</a>
+<a href="20260102_0339.html">20260102_0339</a>
+<a href="20260101_0329.html">20260101_0329</a>
+<a href="20251231_0333.html">20251231_0333</a>
+<a href="20251230_0332.html">20251230_0332</a>
+<a href="20251229_0329.html">20251229_0329</a>
+<a href="20251228_0332.html">20251228_0332</a>
+<a href="20251227_0329.html">20251227_0329</a>
+<a href="20251226_0330.html">20251226_0330</a>
+<a href="20251225_0329.html">20251225_0329</a>
+<a href="20251224_0331.html">20251224_0331</a>
+<a href="20251223_0332.html">20251223_0332</a>
+<a href="20251222_0328.html">20251222_0328</a>
+<a href="20251221_0329.html">20251221_0329</a>
+<a href="20251220_0330.html">20251220_0330</a>
+<a href="20251219_0330.html">20251219_0330</a>
+<a href="20251218_0345.html">20251218_0345</a>
+<a href="20251217_0332.html">20251217_0332</a>
+<a href="20251216_0333.html">20251216_0333</a>
+<a href="20251215_0333.html">20251215_0333</a>
+<a href="20251214_0327.html">20251214_0327</a>
+<a href="20251212_0333.html">20251212_0333</a>
+<a href="20251211_0331.html">20251211_0331</a>
+<a href="20251210_0332.html">20251210_0332</a>
+<a href="20251209_0331.html">20251209_0331</a>
+<a href="20251208_0328.html">20251208_0328</a>
+<a href="20251207_0327.html">20251207_0327</a>
+<a href="20251206_0330.html">20251206_0330</a>
+<a href="20251205_0331.html">20251205_0331</a>
+<a href="20251204_0331.html">20251204_0331</a>
+<a href="20251203_0333.html">20251203_0333</a>
+<a href="20251202_0335.html">20251202_0335</a>
+<a href="20251201_0328.html">20251201_0328</a>
+<a href="20251130_0327.html">20251130_0327</a>
+<a href="20251129_0328.html">20251129_0328</a>
+<a href="20251128_0327.html">20251128_0327</a>
+<a href="20251127_0327.html">20251127_0327</a>
+<a href="20251126_0329.html">20251126_0329</a>
+<a href="20251125_0327.html">20251125_0327</a>
+<a href="20251124_0327.html">20251124_0327</a>
+<a href="20251123_0326.html">20251123_0326</a>
+<a href="20251122_0328.html">20251122_0328</a>
+<a href="20251121_0328.html">20251121_0328</a>
+<a href="20251120_0329.html">20251120_0329</a>
+<a href="20251119_0328.html">20251119_0328</a>
+<a href="20251118_0328.html">20251118_0328</a>
+<a href="20251117_0326.html">20251117_0326</a>
+<a href="20251116_0325.html">20251116_0325</a>
+<a href="20251115_0327.html">20251115_0327</a>
+<a href="20251114_0328.html">20251114_0328</a>
+<a href="20251113_0330.html">20251113_0330</a>
+<a href="20251112_0329.html">20251112_0329</a>
+<a href="20251111_0328.html">20251111_0328</a>
+<a href="20251110_0325.html">20251110_0325</a>
+<a href="20251109_0326.html">20251109_0326</a>
+<a href="20251108_0328.html">20251108_0328</a>
+<a href="20251107_0328.html">20251107_0328</a>
+<a href="20251106_0329.html">20251106_0329</a>
+<a href="20251105_0326.html">20251105_0326</a>
+<a href="20251104_0327.html">20251104_0327</a>
+<a href="20251103_0324.html">20251103_0324</a>
+<a href="20251102_0326.html">20251102_0326</a>
+<a href="20251101_0324.html">20251101_0324</a>
+<a href="20251031_0328.html">20251031_0328</a>
+<a href="20251030_0330.html">20251030_0330</a>
+<a href="20251029_0329.html">20251029_0329</a>
+<a href="20251028_0329.html">20251028_0329</a>
+<a href="20251027_0322.html">20251027_0322</a>
+<a href="20251026_0327.html">20251026_0327</a>
+<a href="20251025_0331.html">20251025_0331</a>
+<a href="20251024_0329.html">20251024_0329</a>
+<a href="20251023_0329.html">20251023_0329</a>
+<a href="20251022_0330.html">20251022_0330</a>
+<a href="20251021_0331.html">20251021_0331</a>
+<a href="20251020_0328.html">20251020_0328</a>
+<a href="20251019_0321.html">20251019_0321</a>
+<a href="20251018_0327.html">20251018_0327</a>
+<a href="20251017_0320.html">20251017_0320</a>
+<a href="20251016_0328.html">20251016_0328</a>
+<a href="20251015_0328.html">20251015_0328</a>
+<a href="20251014_0323.html">20251014_0323</a>
+<a href="20251011_0328.html">20251011_0328</a>
+<a href="20251010_0330.html">20251010_0330</a>
+<a href="20251009_0321.html">20251009_0321</a>
+<a href="20251008_0343.html">20251008_0343</a>
+<a href="20251007_0353.html">20251007_0353</a>
+<a href="20251006_0325.html">20251006_0325</a>
+<a href="20251005_0350.html">20251005_0350</a>
+<a href="20251004_0352.html">20251004_0352</a>
+<a href="20251003_0352.html">20251003_0352</a>
+<a href="20251002_0356.html">20251002_0356</a>
+<a href="20251001_0321.html">20251001_0321</a>
+<a href="20250925_0335.html">20250925_0335</a>
+<a href="20250924_0350.html">20250924_0350</a>
+<a href="20250923_0348.html">20250923_0348</a>
+<a href="20250922_0346.html">20250922_0346</a>
+<a href="20250921_0345.html">20250921_0345</a>
+<a href="20250920_0342.html">20250920_0342</a>
+<a href="20250919_0346.html">20250919_0346</a>
+<a href="20250918_0342.html">20250918_0342</a>
+<a href="20250917_0336.html">20250917_0336</a>
+<a href="20250916_0333.html">20250916_0333</a>
+<a href="20250915_0333.html">20250915_0333</a>
+<a href="20250914_0328.html">20250914_0328</a>
+<a href="20250913_0322.html">20250913_0322</a>
+<a href="20250912_0335.html">20250912_0335</a>
+<a href="20250911_0337.html">20250911_0337</a>
+<a href="20250910_0338.html">20250910_0338</a>
+<a href="20250909_0341.html">20250909_0341</a>
+<a href="20250908_0342.html">20250908_0342</a>
+<a href="20250907_0333.html">20250907_0333</a>
+<a href="20250906_0350.html">20250906_0350</a>
+<a href="20250905_0319.html">20250905_0319</a>
+<a href="20250904_0323.html">20250904_0323</a>
+<a href="20250903_0355.html">20250903_0355</a>
+<a href="20250902_0325.html">20250902_0325</a>
+<a href="20250901_0355.html">20250901_0355</a>
+<a href="20250831_0355.html">20250831_0355</a>
+<a href="20250830_0356.html">20250830_0356</a>
+<a href="20250829_0355.html">20250829_0355</a>
+<a href="20250828_0333.html">20250828_0333</a>
+<a href="20250827_1654.html">20250827_1654</a>
+<a href="20250827_1602.html">20250827_1602</a>
+<a href="20250827_1557.html">20250827_1557</a>
+<a href="20250827_0320.html">20250827_0320</a>
+<a href="20250826_0320.html">20250826_0320</a>
+<a href="20250825_1752.html">20250825_1752</a>
+<a href="20250825_1709.html">20250825_1709</a>
+<a href="20250825_1652.html">20250825_1652</a>
+<a href="20250825_1647.html">20250825_1647</a>
+<a href="20250825_1645.html">20250825_1645</a>
+<a href="20250825_1631.html">20250825_1631</a>
+<a href="20250825_1606.html">20250825_1606</a>
+<a href="20250825_1559.html">20250825_1559</a>
+<a href="20250825_1558.html">20250825_1558</a>
+<a href="20250825_1556.html">20250825_1556</a>
+<a href="20250825_1531.html">20250825_1531</a>
+<a href="20250825_1525.html">20250825_1525</a>
+<a href="20250825_1516.html">20250825_1516</a>
+<a href="20250825_1450.html">20250825_1450</a>
+<a href="20250825_1444.html">20250825_1444</a>
+<a href="20250825_1438.html">20250825_1438</a>
+<a href="20250825_1414.html">20250825_1414</a>
+<a href="20250825_1413.html">20250825_1413</a>
+<a href="20250825_1410.html">20250825_1410</a>
+<a href="20250825_1408.html">20250825_1408</a>
+<a href="20250825_1405.html">20250825_1405</a>
+<a href="20250825_1401.html">20250825_1401</a>
+<a href="20250825_1355.html">20250825_1355</a>
+<a href="20250825_1347.html">20250825_1347</a>
+<a href="20250825_1345.html">20250825_1345</a>
+<a href="20250825_1344.html">20250825_1344</a>
+<a href="20250825_1343.html">20250825_1343</a>
+<a href="20250825_1340.html">20250825_1340</a>
+<a href="20250825_1339.html">20250825_1339</a>
+<a href="20250825_1333.html">20250825_1333</a>
+<a href="20250825_1323.html">20250825_1323</a>
+<a href="20250825_1317.html">20250825_1317</a>
+<a href="20250825_1243.html">20250825_1243</a>
+<a href="20250824_0342.html">20250824_0342</a>
+<a href="20250823_0343.html">20250823_0343</a>
+<a href="20250823_0142.html">20250823_0142</a>
+<a href="20250822_2331.html">20250822_2331</a>
+<a href="20250822_2308.html">20250822_2308</a>
+<a href="20250822_2258.html">20250822_2258</a>
+<a href="20250822_2241.html">20250822_2241</a>
+<a href="20250822_2228.html">20250822_2228</a>
+<a href="20250822_2206.html">20250822_2206</a>
+<a href="20250822_2147.html">20250822_2147</a>
+<a href="20250822_2111.html">20250822_2111</a>
+<a href="20250822_1259.html">20250822_1259</a>
+<a href="20250822_1233.html">20250822_1233</a>
+<a href="20250822_1229.html">20250822_1229</a>
+<a href="20250822_1223.html">20250822_1223</a>
+<a href="20250822_1210.html">20250822_1210</a>
+<a href="20250822_1201.html">20250822_1201</a>
+<a href="20250822_1111.html">20250822_1111</a>
+<a href="20250822_1058.html">20250822_1058</a>
+<a href="20250822_1052.html">20250822_1052</a>
+<a href="20250822_1045.html">20250822_1045</a>
+<a href="20250822_0657.html">20250822_0657</a>
+<a href="20250822_0553.html">20250822_0553</a></div></details>
+    <div class="footer">Generated by arxiv-tracker</div>
+  </div>
+</body></html>
