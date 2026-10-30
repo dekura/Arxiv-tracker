@@ -173,6 +173,44 @@ jobs:
           # 这个 action 用 read 只解析第一行。写成多行时 .state/seen.json 不会被提交，跨天去重等于没开。
           file_pattern: "docs/** outputs/** .state/**"
 
+      # 放在最后一步：job.status 才能覆盖检索、飞书和提交的结果。
+      # always() 会在成功、失败、取消时都通知；conclusion 区分这三种结果。
+      - name: Notify Grok Bot
+        if: always()
+        env:
+          GROK_WEBHOOK_URL: ${{ secrets.GROK_WEBHOOK_URL }}
+          GROK_WEBHOOK_KEY: ${{ secrets.GROK_WEBHOOK_KEY }}
+          NOTIFY_REPO: ${{ github.repository }}
+          NOTIFY_WORKFLOW: ${{ github.workflow }}
+          NOTIFY_CONCLUSION: ${{ job.status }}
+          NOTIFY_REF: ${{ github.ref }}
+          NOTIFY_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GROK_WEBHOOK_URL:-}" ] || [ -z "${GROK_WEBHOOK_KEY:-}" ]; then
+            echo "GROK_WEBHOOK_URL or GROK_WEBHOOK_KEY is not set. Add both under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json, os
+          payload = {
+              "repo": os.environ["NOTIFY_REPO"],
+              "workflow": os.environ["NOTIFY_WORKFLOW"],
+              "conclusion": os.environ["NOTIFY_CONCLUSION"],
+              "ref": os.environ["NOTIFY_REF"],
+              "run_url": os.environ["NOTIFY_RUN_URL"],
+          }
+          path = os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "grok_notify.json")
+          with open(path, "w", encoding="utf-8") as fh:
+              json.dump(payload, fh, ensure_ascii=False)
+              fh.write("\n")
+          print("conclusion=" + payload["conclusion"])
+          PY
+          curl -sS -f -X POST "$GROK_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $GROK_WEBHOOK_KEY" \
+            --data-binary @"${RUNNER_TEMP:-/tmp}/grok_notify.json"
+
 
 
 # 之后到仓库 Settings → Pages：

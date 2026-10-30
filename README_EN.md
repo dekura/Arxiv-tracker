@@ -74,6 +74,9 @@ Click **Fork** on the top-right.
 
 - `OPENAI_COMPAT_API_KEY`: API key for any OpenAI-compatible provider (e.g., **DeepSeek**, **SiliconFlow**)
 - `SMTP_PASS`: QQ **SMTP App Password** (not your login password)
+- `FEISHU_WEBHOOK_URL`: Lark/Feishu custom-bot webhook for the digest card
+- `GROK_WEBHOOK_URL`: Grok Bot webhook URL
+- `GROK_WEBHOOK_KEY`: Bearer token for the Grok Bot webhook
 
 **Variables**
 
