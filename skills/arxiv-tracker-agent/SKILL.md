@@ -71,7 +71,7 @@ Report the generated `outputs/arxiv_*.json`, `outputs/arxiv_*.md`, and `docs/ind
 Use the existing `.github/workflows/digest.yml` as the production scheduler. Confirm:
 
 - `on.schedule` has the desired cron time. GitHub cron is UTC.
-- Repository secrets/variables include `OPENAI_COMPAT_API_KEY` or provider-specific keys, `SMTP_PASS`, `EMAIL_TO`, `EMAIL_SENDER`, and `SMTP_USER` as needed. Feishu delivery needs `FEISHU_WEBHOOK_URL`. The end-of-job Grok Bot status webhook needs `GROK_WEBHOOK_URL` and `GROK_WEBHOOK_KEY`.
+- Repository secrets/variables include `OPENAI_COMPAT_API_KEY` or provider-specific keys, `SMTP_PASS`, `EMAIL_TO`, `EMAIL_SENDER`, and `SMTP_USER` as needed. Feishu delivery needs `FEISHU_WEBHOOK_URL`. The Grok Bot digest uses the same summary text and needs `GROK_WEBHOOK_URL` and `GROK_WEBHOOK_KEY`.
 - Pages is configured to deploy from `main` and `/docs`.
 - The auto-commit step includes `docs/**`, `outputs/**`, and `.state/**`.
 

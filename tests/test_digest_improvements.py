@@ -17,6 +17,7 @@ from arxiv_tracker.query import build_search_query, date_window
 from arxiv_tracker.research_analysis import merge_group_items
 from arxiv_tracker.sitegen import generate_site
 from scripts.send_feishu_digest import MAX_CHARS, build_markdown
+from scripts.send_grok_digest import build_message, send as send_grok
 
 
 def _llm_json(**overrides):
@@ -283,6 +284,51 @@ class DigestImprovementsTests(unittest.TestCase):
     def test_feishu_empty_digest(self):
         lark = build_markdown({"items": [], "groups": ["Agentic RL"]})
         self.assertIn("今天没有新的命中", lark)
+
+    def test_grok_message_uses_the_feishu_summary(self):
+        payload = self._feishu_payload()
+        message = build_message(
+            payload,
+            repo="dekura/arxiv-tracker",
+            workflow="arxiv-digest",
+            ref="refs/heads/main",
+            run_url="https://github.com/dekura/arxiv-tracker/actions/runs/1",
+        )
+        self.assertEqual(message["summary"], build_markdown(payload))
+        self.assertEqual(message["text"], message["summary"])
+        self.assertEqual(message["title"], "📚 arXiv 每日论文速递")
+        self.assertNotIn("conclusion", message)
+        self.assertIn("Learning to Use Tools in Agents", message["summary"])
+        self.assertEqual(message["repo"], "dekura/arxiv-tracker")
+        self.assertEqual(message["run_url"], "https://github.com/dekura/arxiv-tracker/actions/runs/1")
+
+    def test_grok_send_posts_the_summary_with_bearer_token(self):
+        captured = {}
+
+        class Response:
+            status = 204
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+        def urlopen(request, timeout):
+            captured["auth"] = request.get_header("Authorization")
+            captured["type"] = request.get_header("Content-type")
+            captured["body"] = json.loads(request.data.decode())
+            captured["timeout"] = timeout
+            return Response()
+
+        message = {"title": "📚 arXiv 每日论文速递", "summary": "📅 2026-09-30 · 1 篇", "text": "📅 2026-09-30 · 1 篇"}
+        with patch("scripts.send_grok_digest.urllib.request.urlopen", urlopen):
+            status = send_grok("https://example.test/hook", "secret-token", message)
+        self.assertEqual(status, 204)
+        self.assertEqual(captured["auth"], "Bearer secret-token")
+        self.assertEqual(captured["body"], message)
+        self.assertEqual(captured["timeout"], 30)
+        self.assertIn("application/json", captured["type"])
 
     def test_markdown_attachment_has_table_and_structured_fields(self):
         with tempfile.TemporaryDirectory() as tmp:
