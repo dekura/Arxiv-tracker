@@ -8919,6 +8919,124 @@
   },
   "saved": "2026-11-05"
  },
+ "2611.02566@p1": {
+  "data": {
+   "challenge": "文本相似度指标奖励表面重合、无法衡量精确率，人工评审评论噪声大且专家之间意见不一致，导致评测不可靠。",
+   "future": "",
+   "problem": "代码审查难以完全自动化：需 diff 之外的上下文、作者意图与主观设计判断；现有基准缺乏标准化，依赖含噪评论文本相似度打分。",
+   "results": "在 8 个审查智能体、4 个骨干模型及 Gemini Code Assist 上评测：最强系统 KDDR 仅约 33%，Gemini Code Assist 为 8.1%。",
+   "solution": "过滤出可被审查发现的缺陷并锚定到单一来源 PR，构建 584 条实例（含 174 条 Verified 子集），标注缺陷类别、影响与严重度；用 KDDR 测已知缺陷检出，用有用率测可执行评论比例，三位独立 LLM 评审。",
+   "tags": {
+    "application": "代码审查智能体评测",
+    "architecture": "LLM + code review harness",
+    "innovation": "以缺陷为中心，将 SWE-Bench issue 重构为带完整仓库上下文的 PR 审查任务，并提出 KDDR 与有用率两项指标",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "CR-Bench-v2：评估 AI 代码审查智能体真实世界效用的基准"
+  },
+  "saved": "2026-11-06"
+ },
+ "2611.03534@p1": {
+  "data": {
+   "challenge": "法规体量大且变化快，通用编码代理与检索管线难以给出有据可查的正确证据",
+   "future": "",
+   "problem": "新发电与负荷接入需核查大量法规并开展网络研究，两项技能稀缺",
+   "results": "519项电力任务得分最高且最快；LegalBench-RAG领先，Enterprise RAG Challenge、ViDoRe V3第一；加固包成本降33-67%",
+   "solution": "Grid Ontology 表示法规标准并随使用演化，Grid Studio 调用领域工具与成熟求解器，工程师决策，答案可追溯且过程可回放",
+   "tags": {
+    "application": "电网接入评估",
+    "architecture": "LLM agents + ontology + solvers",
+    "innovation": "用可检索电网本体支撑答案引用，并回放工具调用验证过程",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "面向自动化电力系统研究与电网接入评估的智能体框架"
+  },
+  "saved": "2026-11-06"
+ },
+ "2611.03551@p1": {
+  "data": {
+   "challenge": "现有 coding agent 评测多关注代码生成，缺少对需求发现、权限/硬件约束与交付验收的端到端考察",
+   "future": "建议人工复核发现的需求、执行中监控计划，并明确硬件、预算与生产检查的实验环境规范",
+   "problem": "LLM agent 能否像前向部署工程师一样，从模糊客户请求中发现需求并完成企业 Text-to-SQL 部署",
+   "results": "最强模型发现超 80% 隐藏需求，开源权重模型 40–50%；8 种 coding-agent 配置仅 25% 运行通过全部验收标准",
+   "solution": "模拟客户从模糊请求出发，agent 在发现阶段挖掘验收标准、数据权限与硬件约束，在交付阶段规划并执行后训练配方；跨 15 个模型和 8 种 coding-agent 配置评测",
+   "tags": {
+    "application": "企业 Text-to-SQL 交付",
+    "architecture": "LLM agent + simulated customer",
+    "innovation": "用模拟客户隐藏验收标准，分需求发现与后训练交付两阶段评测 agent",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "LLM agent 能成为前向部署工程师吗？企业 Text-to-SQL 的需求发现与交付"
+  },
+  "saved": "2026-11-06"
+ },
+ "2611.03575@p1": {
+  "data": {
+   "challenge": "常规任务成功率指标看不到有害副作用，现有安全评测又只看有害结果，无法度量成功与伤害共存的情形",
+   "future": "",
+   "problem": "编码代理可能在完成用户良性任务的同时误删文件、削弱访问控制或损坏数据，形成「有害成功」",
+   "results": "VeriHarm-Bench 上 GPT-5.6-Sol、Claude-Opus-5 等前沿代理平均任务准确率 95%，但安全成功率平均仅 37%",
+   "solution": "对编码任务做最小扰动以在不破坏任务良性和原目标的前提下诱发有害行为，自动合成可执行危害测试，与原有正确性测试共同计算安全成功率",
+   "tags": {
+    "application": "编码代理安全评测",
+    "architecture": "LLM coding agent + harm tests",
+    "innovation": "最小扰动良性编码任务诱发附带伤害，并自动合成可执行危害测试与正确性测试联合判定",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "VeriHarm-Bench：可验证地度量 LLM 编码代理的「有害成功」"
+  },
+  "saved": "2026-11-06"
+ },
+ "2611.03634@p1": {
+  "data": {
+   "challenge": "真实网站在线评测内容漂移、访问受限、认证流程覆盖不足；合成环境缺乏功能深度与视觉保真",
+   "future": "",
+   "problem": "GUI 网页 Agent 需要稳定可交互的环境，既能评测又能训练，且覆盖需登录的多步流程",
+   "results": "Qwen 4B 级 GUI Agent 在 WebHarbor 中 RL 训练后可泛化到未见任务，在四个基准上与领先开源 GUI 网页 Agent 表现相当",
+   "solution": "构建 153 个可执行、Docker 化的真实网站复刻环境，含 3518 个任务，覆盖多步与登录后工作流，并提供高保真合成环境用于低成本 RL",
+   "tags": {
+    "application": "GUI 网页 Agent 训练与评测",
+    "architecture": "Dockerized website environments",
+    "innovation": "任务驱动的人机协作迭代：环境随新任务扩展功能，编码 Agent 实现改动，人工审计视觉与功能",
+    "training": [
+     "RL",
+     "评测基准"
+    ]
+   },
+   "title_zh": "WebHarbor：为演化型 GUI Agent 环境对真实网站进行停靠重建"
+  },
+  "saved": "2026-11-06"
+ },
+ "2611.03998@p1": {
+  "data": {
+   "challenge": "循环结构使显存与 KV-cache 随循环次数线性增长，不同难度样本的循环收益不均",
+   "future": "",
+   "problem": "固定深度模型无法按推理算力预算弹性调节，且靠加长输出提升效果成本高",
+   "results": "≥2 次循环时 12 个基准平均超过 Qwen3.5-9B、Gemma 4 12B、Gemma 4 26B-A4B；4 次循环在 agentic 基准生成 token 减少 1.3-2.5 倍",
+   "solution": "nGPT 骨干分输入块、共享循环块与输出块，推理时循环次数可变；仅缓存最后一轮 KV 控制显存；SFT+RLVR 用难度感知循环课程，难样本走更深循环",
+   "tags": {
+    "application": "编码与智能体长上下文任务",
+    "architecture": "Looped normalized Transformer (nGPT)",
+    "innovation": "共享循环块可按推理预算弹性重复，配难度感知的循环深度课程",
+    "training": [
+     "预训练",
+     "RLVR"
+    ]
+   },
+   "title_zh": "Dory1.0-4B：一种循环式归一化 GPT（nGPT）"
+  },
+  "saved": "2026-11-06"
+ },
  "2611.04072@p1": {
   "data": {
    "challenge": "多智能体各自独立优化与部分可观测性，使去中心化策略优化通常只能保证到稳定点",
@@ -8938,6 +9056,82 @@
   },
   "saved": "2026-11-05"
  },
+ "2611.04367@p1": {
+  "data": {
+   "challenge": "现有评估未控制同一策略的措辞变化，难以区分策略内容与表达方式对遵循的影响",
+   "future": "",
+   "problem": "编码智能体不总遵循 Agent Context File 中的策略，措辞如何影响指令遵循尚不清楚",
+   "results": "条件式措辞的遵循率低于规定式和解释式；规定式与解释式孰优随 harness-model 组合变化",
+   "solution": "在四个 harness-model 组合的 86 个基准任务 ACF 中插入同一策略的四种措辞，测量并比较指令遵循率",
+   "tags": {
+    "application": "编码智能体指令遵循",
+    "architecture": "Coding agent harness",
+    "innovation": "将同一策略以四种措辞注入 ACF，比较合规率差异",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "编码智能体是否遵循 AGENTS.md？策略措辞对指令遵循的影响"
+  },
+  "saved": "2026-11-06"
+ },
+ "2611.04383@p1": {
+  "data": {
+   "challenge": "现有代码含失败后加入的防护与未记录假设，再生成或通过测试却丢失生产关键行为",
+   "future": "需明确替换间连续性如何建立，再生成是降低还是转移维护成本",
+   "problem": "智能体能否以再生成取代维护，以及替换后如何保持行为连续性、保留隐性知识",
+   "results": "公开案例显示智能体可替换现有实现，但未证明重复再生成安全或经济",
+   "solution": "以实践者文献做探索性综述，辨析再生成相对维护的成本、安全性，以及支撑再生成的工件与流程",
+   "tags": {
+    "application": "软件再生成与维护",
+    "architecture": "",
+    "innovation": "提出 regeneration 概念：实现可丢弃，用智能体按需求与测试重建替代维护",
+    "training": [
+     "其他"
+    ]
+   },
+   "title_zh": "一次性实现：软件工程究竟为了什么？"
+  },
+  "saved": "2026-11-06"
+ },
+ "2611.04466@p1": {
+  "data": {
+   "challenge": "仅靠日志难以呈现中间状态与失败原因，出错往往需重启整个任务，已完成的进度被浪费",
+   "future": "",
+   "problem": "长时运行的编程智能体执行过程难以被用户检查、理解与引导",
+   "results": "SWE-bench Verified 通过率 65.0%→68.0%，输入 token 减少 23.0%、成本降低 15.5%；用户研究显示准确率与效率优于日志交互",
+   "solution": "基于 OpenCode 实现 Observe-Understand-Intervene-Evolve 流程：交互式轨迹可视化、从历史步骤分叉注入局部修正、轨迹与反馈蒸馏为技能",
+   "tags": {
+    "application": "编程智能体轨迹干预",
+    "architecture": "Coding agent + interactive trace UI",
+    "innovation": "执行轨迹可视化并支持从任意步骤分叉重跑，再把轨迹与人类反馈蒸馏为可复用技能",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "从旁观到引导：通过执行轨迹实现人类与编程智能体的协作"
+  },
+  "saved": "2026-11-06"
+ },
+ "2611.04579@p1": {
+  "data": {
+   "challenge": "手机端资源与渠道受限，现有 harness 不提供去中心化作者下的开放发布与组合，个性化请求难满足",
+   "future": "",
+   "problem": "移动代理能力捆绑在单体流水线，缺乏开放组合点，用户与第三方无法发布、安装和组合新行为",
+   "results": "Android 原型显示运行时强制架构边界、真实日常请求适配声明组合空间、意图经检索或委托编写到达设备执行且信任决策留在设备本地",
+   "solution": "冻结底座与持久必需层处理定位、主动触发和稀缺通道；统一插件契约使扩展可组合、可检查、可替换；Web 编码代理生成候选工件并在设备端按同一契约验证准入",
+   "tags": {
+    "application": "移动端日常任务代理",
+    "architecture": "Plugin-based mobile agent harness",
+    "innovation": "冻结底座加统一插件契约，支持设备端生成、验证与准入扩展",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "FreeForm Harness：面向开放可组合扩展的移动原生 Agent Harness"
+  },
+  "saved": "2026-11-06"
+ },
  "2611.04774@p1": {
   "data": {
    "challenge": "非加性奖励与长历史依赖使现有方法难以在保留理论保证的同时实现多项式时间优化",
@@ -8956,6 +9150,44 @@
    "title_zh": "带子模轨迹奖励的合作多智能体强化学习"
   },
   "saved": "2026-11-05"
+ },
+ "2611.04977@p1": {
+  "data": {
+   "challenge": "LLM 编码智能体易选错证据源、丢失空间与时间元数据、执行非法几何操作，且难以处理大型产物",
+   "future": "",
+   "problem": "灾害响应需多源地理空间多步工作流，单步检索或代码生成难以保持空间范围、时间上下文与中间执行状态",
+   "results": "在 GeoFaham-Bench（40 任务，17 条真实灾害记录）上总体得分 0.940，次优基线 0.879，token 用量少 7.5 倍",
+   "solution": "按矢量、地图要素、影像、栅格拆分专家智能体；Orchestrator 用双账本循环做依赖规划、校验与重规划；Response Store 外置完整产物与类型化元数据，智能体只传标识符与摘要",
+   "tags": {
+    "application": "灾害响应地理空间分析",
+    "architecture": "Domain-specific multi-agent LLM system",
+    "innovation": "Orchestrator 双账本控制循环 + Response Store 外置大型地理产物",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "GeoFaham：面向灾害响应的领域专用多智能体地理空间分析"
+  },
+  "saved": "2026-11-06"
+ },
+ "2611.05094@p1": {
+  "data": {
+   "challenge": "几乎所有控制都是同一模型执行的指令，缺少外部强制，智能体易偏离协议",
+   "future": "编排器自行运行并判定检查，缺乏独立校验，是工作流薄弱点",
+   "problem": "编码智能体按规格、计划、任务列表工作的工作流是否可控可审计，尤其是未声明的文件改动",
+   "results": "7个项目9个特性、581个计划任务完成288个；5个特性全部任务完成；交付目录仅1处未声明改动且被检出；编排器247次块检查记录11次未声明改动，仅4次中止",
+   "solution": "每阶段须用户批准才进入下一阶段；审查子智能体按阶段专属缺陷清单核查产物；执行子智能体只能改任务列出的文件；每块任务后编排器做文件清单检查检测未声明改动",
+   "tags": {
+    "application": "规格驱动编码工作流",
+    "architecture": "Multi-agent coding-agent workflow",
+    "innovation": "阶段门控人工批准＋固定缺陷清单审查子智能体＋文件清单检查抓未声明改动",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "门控式规格驱动工作流：编码智能体工作的审计追踪研究"
+  },
+  "saved": "2026-11-06"
  },
  "2611.05263@p1": {
   "data": {
@@ -8996,6 +9228,64 @@
    "title_zh": "稳定智能体强化学习中的在线策略定向引导"
   },
   "saved": "2026-11-05"
+ },
+ "2611.05320@p1": {
+  "data": {
+   "challenge": "每一步都消耗机器人和操作员时间，新任务无法复用，仿真到真实存在视觉与动力学差距",
+   "future": "",
+   "problem": "遥操作采集机器人示范成本高、每新任务从头开始，能否由编码 Agent 替代遥操作员生成真实可部署数据",
+   "results": "五个真实任务 93 vs 84/100 成功，分布偏移下 87 vs 46；每任务适配 $21，每 episode $0.80",
+   "solution": "给定数据请求与一次标定 episode，Agent 在仿真中写场景、专家控制器和成功判定；仿真提供精确动作，视频模型条件于真实图像一致渲染多视角，独立评审准入",
+   "tags": {
+    "application": "真实机器人数据采集",
+    "architecture": "LLM agent + simulator + renderer",
+    "innovation": "编码 Agent 自动编写仿真场景、专家控制器和成功判定，并用视频模型渲染多视角数据",
+    "training": [
+     "其他"
+    ]
+   },
+   "title_zh": "PyRUA-DataFarm：LLM Agent 作为低成本遥操作员生成真实可部署机器人数据"
+  },
+  "saved": "2026-11-06"
+ },
+ "2611.05345@p1": {
+  "data": {
+   "challenge": "现有草稿模型训练只追求接受率，忽略思考过程接受结果在约30步后改变输出分布",
+   "future": "",
+   "problem": "投机解码被视为纯加速手段，但长程智能体中验证窗口噪声会随机影响推理准确率",
+   "results": "复杂智能体编码基准端到端成功率提升，目标模型及输出分布不变，仅训练0.06%至0.28%托管参数",
+   "solution": "在智能体轨迹中识别关键决策点，以对抗偏好训练草稿模型使其在这些点被拒，验证重启后关键 token 由目标模型在最不噪条件下采样",
+   "tags": {
+    "application": "长时程智能体编码",
+    "architecture": "Draft-target speculative decoding",
+    "innovation": "训练草稿模型在关键决策点主动被拒，使关键推理 token 由目标模型低噪重采样",
+    "training": [
+     "偏好优化"
+    ]
+   },
+   "title_zh": "对抗式投机推理提升长时程智能体"
+  },
+  "saved": "2026-11-06"
+ },
+ "2611.05609@p1": {
+  "data": {
+   "challenge": "监督分布内数据会掩盖能力整合不完整，蒸馏未充分迁移教师泛化能力并导致OOD遗忘",
+   "future": "需设计显式支持OOD保持与泛化的能力整合算法",
+   "problem": "多教师策略内蒸馏在RL后整合中分布内表现接近教师，但分布外泛化与组合能力巩固不足",
+   "results": "外推设定OOD分数低于基座2.45-16.25%；组合设定低于最佳教师18.19-24.34%；缓解后消除OOD遗忘",
+   "solution": "考察教师能力与数据覆盖两个瓶颈并联合缓解，提出基于更新几何的修补和基础保留回放以提升OOD性能",
+   "tags": {
+    "application": "多任务能力整合",
+    "architecture": "Multi-teacher on-policy distillation",
+    "innovation": "揭示策略内蒸馏分布外泛化不足，并用更新几何与基础保留回放修补",
+    "training": [
+     "蒸馏",
+     "RL"
+    ]
+   },
+   "title_zh": "论策略内蒸馏在RL后整合中的泛化局限性"
+  },
+  "saved": "2026-11-06"
  },
  "2611.05665@p1": {
   "data": {

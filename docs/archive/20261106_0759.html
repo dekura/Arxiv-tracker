@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>arXiv 论文速递</title><style>
+:root {
+  --bg:#f6f7f9; --card:#ffffff; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --row:#f8fafc; --acc:#2563eb;
+}
+:root[data-theme="dark"] {
+  --bg:#0b0f17; --card:#111827; --text:#e5e7eb; --muted:#94a3b8; --border:#1f2937; --row:#0f1623; --acc:#2563eb;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:13.5px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+.container{width:96vw;max-width:1680px;margin:0 auto;padding:14px 0 24px}
+.header{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+h1{font-size:20px;margin:0}
+.btn{border:1px solid var(--border);background:var(--card);color:var(--text);padding:5px 10px;border-radius:8px;cursor:pointer;font:inherit}
+.btn:hover{border-color:var(--acc)}
+.stats{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.stat strong{font-size:15px;margin-right:3px}
+.stat-group{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.stat-label{color:var(--muted);font-size:12px}
+.chip{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:0 8px;font-size:12px;line-height:20px;white-space:nowrap;background:var(--card);color:var(--text)}
+button.chip{cursor:pointer;font-family:inherit} button.chip:hover,button.chip.on{border-color:var(--acc);color:var(--acc)}
+.chip b{margin-left:3px}
+.t-预训练{background:rgba(59,130,246,.12)} .t-继续预训练{background:rgba(14,165,233,.12)} .t-SFT{background:rgba(16,185,129,.14)}
+.t-RL{background:rgba(245,158,11,.16)} .t-RLVR{background:rgba(249,115,22,.16)} .t-偏好优化{background:rgba(236,72,153,.13)}
+.t-蒸馏{background:rgba(139,92,246,.14)} .t-免训练{background:rgba(100,116,139,.14)} .t-评测基准{background:rgba(234,179,8,.16)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.filters input[type=search]{flex:1;min-width:240px;border:1px solid var(--border);border-radius:8px;padding:7px 10px;background:var(--card);color:var(--text);font:inherit}
+.filters select{border:1px solid var(--border);border-radius:8px;padding:6px 8px;background:var(--card);color:var(--text);font:inherit}
+.filters label{display:flex;gap:5px;align-items:center;white-space:nowrap}
+.visible-count{color:var(--muted);margin-left:auto}
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:auto}
+table.papers{width:100%;border-collapse:collapse;table-layout:fixed}
+.papers th{position:sticky;top:0;z-index:1;background:var(--card);text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:8px;border-bottom:1px solid var(--border)}
+.papers td{padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere}
+.papers tr[hidden]{display:none!important}
+.paper-row{cursor:pointer} .paper-row:hover td{background:var(--row)}
+.paper-row.open td{background:var(--row);border-bottom-color:transparent}
+.pid a{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.pid .date{display:block;color:var(--muted);font-size:11px}
+.ptitle{font-weight:600} .ptitle a{color:var(--text)} .ptitle a:hover{color:var(--acc)}
+.caret{display:inline-block;width:12px;color:var(--muted);transition:transform .15s} .open .caret{transform:rotate(90deg)}
+.authors{color:var(--muted);font-size:12px;font-weight:400}
+.muted{color:var(--muted)}
+.code a{display:inline-block;background:var(--acc);color:#fff;border-radius:6px;padding:0 7px;font-size:12px;font-weight:600;margin:0 4px 3px 0}
+.detail-row td{background:var(--row);padding:4px 12px 14px 32px}
+.title-zh{font-size:14px;font-weight:600;margin:2px 0 8px}
+.facts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.fact{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 9px}
+.fact span{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:2px}
+.meta{color:var(--muted);font-size:12px;margin-top:8px}
+.meta a{margin-right:10px}
+details.abs{margin-top:6px} details.abs summary{cursor:pointer;color:var(--acc);font-size:12px}
+details.abs div{margin-top:4px;white-space:pre-wrap;font-size:12.5px}
+.empty td{text-align:center;color:var(--muted);padding:24px}
+.history{margin-top:14px} .history summary{cursor:pointer;color:var(--acc)}
+.history-list{columns:6 140px;margin-top:6px} .history-list a{display:block;font-size:12px}
+.footer{color:var(--muted);font-size:12px;margin-top:12px}
+@media (max-width:1100px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+  .container{width:auto;padding:10px}
+  table.papers,.papers tbody,.papers tr,.papers td{display:block;width:100%}
+  .papers thead,.papers colgroup{display:none}
+  .paper-row{border-bottom:1px solid var(--border);padding:8px 0}
+  .papers td{border:0;padding:2px 10px}
+  .papers td[data-label]::before{content:attr(data-label) "：";color:var(--muted);font-size:12px}
+  .detail-row td{padding:4px 10px 12px}
+  .facts{grid-template-columns:1fr}
+}
+</style>
+<script>
+(function() {
+  const root = document.documentElement;
+  function apply(t) {
+    const dark = t === 'dark' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
+  }
+  let theme = localStorage.getItem('theme') || 'light';
+  if (!['light', 'dark', 'auto'].includes(theme)) theme = 'light';
+  apply(theme);
+  window.__toggleTheme = function() {
+    theme = theme === 'light' ? 'dark' : theme === 'dark' ? 'auto' : 'light';
+    localStorage.setItem('theme', theme);
+    apply(theme);
+    const el = document.getElementById('theme-label');
+    if (el) el.textContent = theme.toUpperCase();
+  };
+  function setOpen(row, open) {
+    const detail = row.nextElementSibling;
+    row.classList.toggle('open', open);
+    if (detail && detail.classList.contains('detail-row')) detail.hidden = !open;
+  }
+  window.__toggleRow = function(event, row) {
+    if (event.target.closest('a')) return;
+    setOpen(row, !row.classList.contains('open'));
+  };
+  window.__expandAll = function(open) {
+    document.querySelectorAll('.paper-row').forEach(row => { if (!row.hidden) setOpen(row, open); });
+  };
+  window.__pick = function(kind, value) {
+    const select = document.getElementById(kind + '-filter');
+    select.value = select.value === value ? '' : value;
+    window.__filter();
+  };
+  window.__filter = function() {
+    const query = (document.getElementById('paper-search').value || '').trim().toLocaleLowerCase();
+    const group = document.getElementById('group-filter').value;
+    const training = document.getElementById('training-filter').value;
+    const onlyCode = document.getElementById('code-only').checked;
+    let visible = 0;
+    document.querySelectorAll('.paper-row').forEach(row => {
+      const match = (!query || row.dataset.search.includes(query)) &&
+        (!group || row.dataset.groups.split('|').includes(group)) &&
+        (!training || row.dataset.training.split('|').includes(training)) &&
+        (!onlyCode || row.dataset.hasCode === 'true');
+      row.hidden = !match;
+      const detail = row.nextElementSibling;
+      if (detail && detail.classList.contains('detail-row')) detail.hidden = !match || !row.classList.contains('open');
+      if (match) visible += 1;
+    });
+    document.getElementById('visible-count').textContent = visible;
+    document.querySelectorAll('button.chip[data-kind]').forEach(chip => {
+      const value = document.getElementById(chip.dataset.kind + '-filter').value;
+      chip.classList.toggle('on', chip.dataset.value === value);
+    });
+  };
+  document.addEventListener('DOMContentLoaded', () => {
+    const label = document.getElementById('theme-label');
+    if (label) label.textContent = theme.toUpperCase();
+    window.__filter();
+  });
+})();
+</script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>arXiv 论文速递</h1>
+      <div><button class="btn" onclick="__toggleTheme()">Theme: <span id="theme-label">AUTO</span></button>
+      <span class="muted" style="margin-left:8px">更新于 2026-11-06 07:59</span></div>
+    </div>
+    <div class="stats"><span class="stat"><strong>2026-11-06</strong></span><span class="stat"><strong>15</strong>篇</span><span class="stat"><strong>3</strong>篇有代码</span><span class="stat-group"><span class="stat-label">方向</span><button class="chip" data-kind="group" data-value="代码预训练" onclick="__pick('group', this.dataset.value)">代码预训练<b>0</b></button><button class="chip" data-kind="group" data-value="代码后训练" onclick="__pick('group', this.dataset.value)">代码后训练<b>0</b></button><button class="chip" data-kind="group" data-value="代码Agent" onclick="__pick('group', this.dataset.value)">代码Agent<b>15</b></button><button class="chip" data-kind="group" data-value="Agentic RL" onclick="__pick('group', this.dataset.value)">Agentic RL<b>0</b></button></span><span class="stat-group"><span class="stat-label">训练方法</span><button class="chip t-预训练" data-kind="training" data-value="预训练" onclick="__pick('training', this.dataset.value)">预训练<b>1</b></button><button class="chip t-RL" data-kind="training" data-value="RL" onclick="__pick('training', this.dataset.value)">RL<b>2</b></button><button class="chip t-RLVR" data-kind="training" data-value="RLVR" onclick="__pick('training', this.dataset.value)">RLVR<b>1</b></button><button class="chip t-偏好优化" data-kind="training" data-value="偏好优化" onclick="__pick('training', this.dataset.value)">偏好优化<b>1</b></button><button class="chip t-蒸馏" data-kind="training" data-value="蒸馏" onclick="__pick('training', this.dataset.value)">蒸馏<b>1</b></button><button class="chip t-免训练" data-kind="training" data-value="免训练" onclick="__pick('training', this.dataset.value)">免训练<b>6</b></button><button class="chip t-评测基准" data-kind="training" data-value="评测基准" onclick="__pick('training', this.dataset.value)">评测基准<b>6</b></button><button class="chip t-其他" data-kind="training" data-value="其他" onclick="__pick('training', this.dataset.value)">其他<b>2</b></button></span></div><div class="filters"><input id="paper-search" type="search" placeholder="搜索编号、标题、作者、架构、场景、摘要…" aria-label="搜索论文" oninput="__filter()"><select id="group-filter" aria-label="方向" onchange="__filter()"><option value="">全部方向</option><option value="代码预训练">代码预训练</option><option value="代码后训练">代码后训练</option><option value="代码Agent">代码Agent</option><option value="Agentic RL">Agentic RL</option></select><select id="training-filter" aria-label="训练方法" onchange="__filter()"><option value="">全部训练方法</option><option value="预训练">预训练</option><option value="RL">RL</option><option value="RLVR">RLVR</option><option value="偏好优化">偏好优化</option><option value="蒸馏">蒸馏</option><option value="免训练">免训练</option><option value="评测基准">评测基准</option><option value="其他">其他</option></select><label><input id="code-only" type="checkbox" onchange="__filter()"> 只看有代码</label><button class="btn" onclick="__expandAll(true)">全部展开</button><button class="btn" onclick="__expandAll(false)">全部收起</button><span class="visible-count">显示 <b id="visible-count">15</b> / 15</span></div><div class="table-wrap"><table class="papers"><colgroup><col style="width:92px"><col style="width:24%"><col style="width:108px"><col style="width:150px"><col style="width:118px"><col style="width:140px"><col><col style="width:76px"></colgroup><thead><tr><th>论文编号</th><th>Title</th><th>方向</th><th>模型架构</th><th>训练方法</th><th>应用场景</th><th>核心创新</th><th>Code</th></tr></thead><tbody><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.05609 on the generalization limitation of on-policy distillation for post-rl consolidation 论策略内蒸馏在rl后整合中的泛化局限性 yichen wang yufa zhou siqi zhu haozheng luo jingzhi bao zhichao liu zijun wei multi-teacher on-policy distillation (mopd) extends on-policy distillation (opd) to consolidate capabilities from multiple teachers. although prior work reports near-perfect in-distribution (ind) distillation performance, we find that this can mask incomplete capability consolidation beyond the supervised distribution. a preliminary study on synthetic reasoning shows that opd does not fully transfer teachers&#x27; generalization capabilities. we then extend this investigation to real-world tasks, evaluating extrapolative and compositional generalization across mathematical reasoning, coding, agent, and long-context capabilities using qwen3 models. across extrapolative settings, opd and mopd reach 96.04-102.73% of their teachers&#x27; ind scores. yet their out-of-distribution (ood) scores remain 2.45-16.25% below the base model&#x27;s. across three compositional settings, mopd improves ind performance over the base model, but its performance on composed tasks as ood remains 18.19-24.34% below that of the best teachers. to understand these gaps, we examine teacher capability and data coverage as two potential bottlenecks. jointly alleviating these bottlenecks eliminates ood forgetting in our experiments and suggests the potential for generalization beyond the teacher. (m)opd also reduces ood forgetting on average relative to its reinforcement learning (rl) baselines. analysis of the associated update geometry reveals smaller and more spectrally concentrated updates on average than those of the rl baselines, along with greater shared update structure under mopd. motivated by these findings, we propose geometry-based patching and base-preserving replay to improve ood performance while largely preserving ind performance. our findings identify a blind spot in capability consolidation via (m)opd, highlighting the need for algorithms that explicitly support ood retention and generalization. 代码agent 蒸馏 rl multi-teacher on-policy distillation 多任务能力整合 揭示策略内蒸馏分布外泛化不足，并用更新几何与基础保留回放修补 多教师策略内蒸馏在rl后整合中分布内表现接近教师，但分布外泛化与组合能力巩固不足 监督分布内数据会掩盖能力整合不完整，蒸馏未充分迁移教师泛化能力并导致ood遗忘 考察教师能力与数据覆盖两个瓶颈并联合缓解，提出基于更新几何的修补和基础保留回放以提升ood性能 外推设定ood分数低于基座2.45-16.25%；组合设定低于最佳教师18.19-24.34%；缓解后消除ood遗忘 需设计显式支持ood保持与泛化的能力整合算法" data-groups="代码Agent" data-training="蒸馏|RL" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.05609v1" target="_blank" rel="noreferrer">2611.05609</a><span class="date">2026-11-03</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.05609v1" target="_blank" rel="noreferrer">On the Generalization Limitation of On-Policy Distillation for Post-RL Consolidation</a><div class="authors">Yichen Wang, Yufa Zhou, Siqi Zhu et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Multi-teacher on-policy distillation</td><td data-label="训练方法"><span class="chip t-蒸馏">蒸馏</span> <span class="chip t-RL">RL</span></td><td data-label="应用场景">多任务能力整合</td><td data-label="核心创新">揭示策略内蒸馏分布外泛化不足，并用更新几何与基础保留回放修补</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">论策略内蒸馏在RL后整合中的泛化局限性</div><div class="facts"><div class="fact"><span>核心问题</span>多教师策略内蒸馏在RL后整合中分布内表现接近教师，但分布外泛化与组合能力巩固不足</div><div class="fact"><span>关键困难</span>监督分布内数据会掩盖能力整合不完整，蒸馏未充分迁移教师泛化能力并导致OOD遗忘</div><div class="fact"><span>解决方案</span>考察教师能力与数据覆盖两个瓶颈并联合缓解，提出基于更新几何的修补和基础保留回放以提升OOD性能</div><div class="fact"><span>主要结果</span>外推设定OOD分数低于基座2.45-16.25%；组合设定低于最佳教师18.19-24.34%；缓解后消除OOD遗忘</div><div class="fact"><span>未来方向</span>需设计显式支持OOD保持与泛化的能力整合算法</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.05609v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.05609v1" target="_blank" rel="noreferrer">PDF</a>Yichen Wang, Yufa Zhou, Siqi Zhu, Haozheng Luo, Jingzhi Bao, Zhichao Liu, Zijun Wei · 27 pages, 12 figures. Project page: https://yichenzw.com/opd-generalization.github.io/ · First 2026-11-03 · Latest 2026-11-03</div><details class="abs"><summary>Abstract</summary><div>Multi-teacher on-policy distillation (MOPD) extends on-policy distillation (OPD) to consolidate capabilities from multiple teachers. Although prior work reports near-perfect in-distribution (IND) distillation performance, we find that this can mask incomplete capability consolidation beyond the supervised distribution. A preliminary study on synthetic reasoning shows that OPD does not fully transfer teachers&#x27; generalization capabilities. We then extend this investigation to real-world tasks, evaluating extrapolative and compositional generalization across mathematical reasoning, coding, agent, and long-context capabilities using Qwen3 models. Across extrapolative settings, OPD and MOPD reach 96.04-102.73% of their teachers&#x27; IND scores. Yet their out-of-distribution (OOD) scores remain 2.45-16.25% below the base model&#x27;s. Across three compositional settings, MOPD improves IND performance over the base model, but its performance on composed tasks as OOD remains 18.19-24.34% below that of the best teachers. To understand these gaps, we examine teacher capability and data coverage as two potential bottlenecks. Jointly alleviating these bottlenecks eliminates OOD forgetting in our experiments and suggests the potential for generalization beyond the teacher. (M)OPD also reduces OOD forgetting on average relative to its reinforcement learning (RL) baselines. Analysis of the associated update geometry reveals smaller and more spectrally concentrated updates on average than those of the RL baselines, along with greater shared update structure under MOPD. Motivated by these findings, we propose geometry-based patching and base-preserving replay to improve OOD performance while largely preserving IND performance. Our findings identify a blind spot in capability consolidation via (M)OPD, highlighting the need for algorithms that explicitly support OOD retention and generalization.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.05345 adversarial speculative reasoning improves long horizon agents 对抗式投机推理提升长时程智能体 hongyin luo wei fang lijie yang owen stepan daniel suit jeff krapf dana wensberg jack o&#x27;brien speculative decoding has been treated purely as a systems optimization that speeds up large language model decoding without changing the model behavior. under this view, the growing effort to train better draft models has been focused solely on acceptance rate. we argue that this view does not hold true for long-horizon agent reasoning. measuring frontier open-weight models on complex agentic tasks with different speculative decoding approaches, we found that numerical noise grows within verification windows, and the draft acceptance results of the thinking process can change the output distribution of the model after 30 steps, thus noticeably influencing the reasoning accuracy of long-horizon agents in random directions. in this work, we improve the reasoning capability of target models by controlling such noise. while we cannot change the overall token distribution verified by the target model, we can encode critical reasoning with highest precision by training the draft model to be rejected. we identify these points in agent traces and train the draft model to favor adversarial preference. at inference the trained draft and the target part ways precisely at these decision points, verification restarts, so that critical thinking tokens are sampled from the target model and encoded under its least noisy conditions. this approach makes critical reasoning better indexed and more durable over a long horizon. on complex agentic coding benchmarks, our approach raises end-to-end success rate with no change to the target model or its output distribution. our results recast the speculative decoding mechanism from a pure accelerator into an active allocator for context precision that improves the accuracy of long-horizon agents by training 0.06% to 0.28% of hosted parameters. 代码agent 偏好优化 draft-target speculative decoding 长时程智能体编码 训练草稿模型在关键决策点主动被拒，使关键推理 token 由目标模型低噪重采样 投机解码被视为纯加速手段，但长程智能体中验证窗口噪声会随机影响推理准确率 现有草稿模型训练只追求接受率，忽略思考过程接受结果在约30步后改变输出分布 在智能体轨迹中识别关键决策点，以对抗偏好训练草稿模型使其在这些点被拒，验证重启后关键 token 由目标模型在最不噪条件下采样 复杂智能体编码基准端到端成功率提升，目标模型及输出分布不变，仅训练0.06%至0.28%托管参数 " data-groups="代码Agent" data-training="偏好优化" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.05345v1" target="_blank" rel="noreferrer">2611.05345</a><span class="date">2026-11-03</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.05345v1" target="_blank" rel="noreferrer">Adversarial Speculative Reasoning Improves Long Horizon Agents</a><div class="authors">Hongyin Luo, Wei Fang, Lijie Yang et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Draft-target speculative decoding</td><td data-label="训练方法"><span class="chip t-偏好优化">偏好优化</span></td><td data-label="应用场景">长时程智能体编码</td><td data-label="核心创新">训练草稿模型在关键决策点主动被拒，使关键推理 token 由目标模型低噪重采样</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">对抗式投机推理提升长时程智能体</div><div class="facts"><div class="fact"><span>核心问题</span>投机解码被视为纯加速手段，但长程智能体中验证窗口噪声会随机影响推理准确率</div><div class="fact"><span>关键困难</span>现有草稿模型训练只追求接受率，忽略思考过程接受结果在约30步后改变输出分布</div><div class="fact"><span>解决方案</span>在智能体轨迹中识别关键决策点，以对抗偏好训练草稿模型使其在这些点被拒，验证重启后关键 token 由目标模型在最不噪条件下采样</div><div class="fact"><span>主要结果</span>复杂智能体编码基准端到端成功率提升，目标模型及输出分布不变，仅训练0.06%至0.28%托管参数</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.05345v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.05345v1" target="_blank" rel="noreferrer">PDF</a>Hongyin Luo, Wei Fang, Lijie Yang, Owen Stepan, Daniel Suit, Jeff Krapf, Dana Wensberg, Jack O&#x27;Brien · First 2026-11-03 · Latest 2026-11-03</div><details class="abs"><summary>Abstract</summary><div>Speculative decoding has been treated purely as a systems optimization that speeds up large language model decoding without changing the model behavior. Under this view, the growing effort to train better draft models has been focused solely on acceptance rate. We argue that this view does not hold true for long-horizon agent reasoning. Measuring frontier open-weight models on complex agentic tasks with different speculative decoding approaches, we found that numerical noise grows within verification windows, and the draft acceptance results of the thinking process can change the output distribution of the model after 30 steps, thus noticeably influencing the reasoning accuracy of long-horizon agents in random directions. In this work, we improve the reasoning capability of target models by controlling such noise. While we cannot change the overall token distribution verified by the target model, we can encode critical reasoning with highest precision by training the draft model to be rejected. We identify these points in agent traces and train the draft model to favor adversarial preference. At inference the trained draft and the target part ways precisely at these decision points, verification restarts, so that critical thinking tokens are sampled from the target model and encoded under its least noisy conditions. This approach makes critical reasoning better indexed and more durable over a long horizon. On complex agentic coding benchmarks, our approach raises end-to-end success rate with no change to the target model or its output distribution. Our results recast the speculative decoding mechanism from a pure accelerator into an active allocator for context precision that improves the accuracy of long-horizon agents by training 0.06% to 0.28% of hosted parameters.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.05320 pyrua-datafarm: llm agent as a cost-efficient teleoperator for real-ready robot data pyrua-datafarm：llm agent 作为低成本遥操作员生成真实可部署机器人数据 kewei zhang juncheng ma guodong lv duomin wang feixiang ruan ruiyang si chuanrui zhang yuxuan chen hao chen yichen liu yintianrun zhang yufan deng enze xie daquan zhou teleoperation remains the default way to collect robot demonstrations, but every episode costs robot and operator time, and every new task starts from scratch. we ask whether a coding agent can take over the teleoperator&#x27;s job. in our datafarm, the agent receives a data request and one calibration episode of the robot in the target scene and rebuilds the task in simulation: it writes the scene, an expert controller, and a success judge. the simulator supplies exact actions, and a video model conditioned on real images renders each rollout as photographic video, generating all camera views together consistently. the output is real-ready data: synchronized camera views labelled with the robot&#x27;s actions, on which a policy can be trained directly and deployed on the real robot. independent judges certify the expert and every rendered episode before admission. on five real-robot tasks, policies trained only on farm data match policies trained on as many teleoperated episodes (93 vs. 84 successes in 100 trials), and under an unseen tablecloth and coloured light they keep 87 successes where the teleoperation-trained policies fall to 46. adapting a task is fully automatic and costs \$21 of api usage on average, paid once per task, plus \$5 for a render contract; every further episode costs \$0.80 on average for simulation, rendering, and review, with no robot or operator. one hour of three-view data for a task costs \$107 on average, these costs included, slightly below a quote of \$117 for teleoperation in china and below \$290 in labour alone in north america. 代码agent 其他 llm agent + simulator + renderer 真实机器人数据采集 编码 agent 自动编写仿真场景、专家控制器和成功判定，并用视频模型渲染多视角数据 遥操作采集机器人示范成本高、每新任务从头开始，能否由编码 agent 替代遥操作员生成真实可部署数据 每一步都消耗机器人和操作员时间，新任务无法复用，仿真到真实存在视觉与动力学差距 给定数据请求与一次标定 episode，agent 在仿真中写场景、专家控制器和成功判定；仿真提供精确动作，视频模型条件于真实图像一致渲染多视角，独立评审准入 五个真实任务 93 vs 84/100 成功，分布偏移下 87 vs 46；每任务适配 $21，每 episode $0.80 " data-groups="代码Agent" data-training="其他" data-has-code="true"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.05320v1" target="_blank" rel="noreferrer">2611.05320</a><span class="date">2026-11-03</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.05320v1" target="_blank" rel="noreferrer">PyRUA-DataFarm: LLM Agent as a Cost-Efficient Teleoperator for Real-Ready Robot Data</a><div class="authors">Kewei Zhang, Juncheng Ma, Guodong Lv et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + simulator + renderer</td><td data-label="训练方法"><span class="chip t-其他">其他</span></td><td data-label="应用场景">真实机器人数据采集</td><td data-label="核心创新">编码 Agent 自动编写仿真场景、专家控制器和成功判定，并用视频模型渲染多视角数据</td><td class="code" data-label="Code"><a href="https://github.com/DAGroup-PKU/PyRUA-Lean/tree/DataFarm" target="_blank" rel="noreferrer">Code</a></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">PyRUA-DataFarm：LLM Agent 作为低成本遥操作员生成真实可部署机器人数据</div><div class="facts"><div class="fact"><span>核心问题</span>遥操作采集机器人示范成本高、每新任务从头开始，能否由编码 Agent 替代遥操作员生成真实可部署数据</div><div class="fact"><span>关键困难</span>每一步都消耗机器人和操作员时间，新任务无法复用，仿真到真实存在视觉与动力学差距</div><div class="fact"><span>解决方案</span>给定数据请求与一次标定 episode，Agent 在仿真中写场景、专家控制器和成功判定；仿真提供精确动作，视频模型条件于真实图像一致渲染多视角，独立评审准入</div><div class="fact"><span>主要结果</span>五个真实任务 93 vs 84/100 成功，分布偏移下 87 vs 46；每任务适配 $21，每 episode $0.80</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.05320v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.05320v1" target="_blank" rel="noreferrer">PDF</a><a href="https://dagroup-pku.github.io/PyRUA-Lean/DataFarm" target="_blank" rel="noreferrer">Project1</a>Kewei Zhang, Juncheng Ma, Guodong Lv, Duomin Wang, Feixiang Ruan, Ruiyang Si, Chuanrui Zhang, Yuxuan Chen, Hao Chen, Yichen Liu, Yintianrun Zhang, Yufan Deng, Enze Xie, Daquan Zhou · 22 pages, 9 figures, 9 tables. Project page: https://dagroup-pku.github.io/PyRUA-Lean/DataFarm Code: https://github.com/DAGroup-PKU/PyRUA-Lean/tree/DataFarm · First 2026-11-03 · Latest 2026-11-03</div><details class="abs"><summary>Abstract</summary><div>Teleoperation remains the default way to collect robot demonstrations, but every episode costs robot and operator time, and every new task starts from scratch. We ask whether a coding agent can take over the teleoperator&#x27;s job. In our DataFarm, the agent receives a data request and one calibration episode of the robot in the target scene and rebuilds the task in simulation: it writes the scene, an expert controller, and a success judge. The simulator supplies exact actions, and a video model conditioned on real images renders each rollout as photographic video, generating all camera views together consistently. The output is real-ready data: synchronized camera views labelled with the robot&#x27;s actions, on which a policy can be trained directly and deployed on the real robot. Independent judges certify the expert and every rendered episode before admission. On five real-robot tasks, policies trained only on farm data match policies trained on as many teleoperated episodes (93 vs. 84 successes in 100 trials), and under an unseen tablecloth and coloured light they keep 87 successes where the teleoperation-trained policies fall to 46. Adapting a task is fully automatic and costs \$21 of API usage on average, paid once per task, plus \$5 for a render contract; every further episode costs \$0.80 on average for simulation, rendering, and review, with no robot or operator. One hour of three-view data for a task costs \$107 on average, these costs included, slightly below a quote of \$117 for teleoperation in China and below \$290 in labour alone in North America.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.05094 a gated spec-driven workflow: an audit-trail study of coding-agent work 门控式规格驱动工作流：编码智能体工作的审计追踪研究 rodrigo figueiredo abdo pedro carvalho brom spec-driven development (sdd) asks a coding agent to work from specifications, plans, and task lists rather than from the chat transcript. we study one such workflow for claude code, in which almost every control is an instruction carried out by the same model that it constrains. the user must approve each stage before the next begins. a reviewer subagent checks each artefact against a fixed, stage-specific defect list, and an executor subagent may only touch the files listed in its task. after each block of tasks, the orchestrator runs a file-inventory check to detect undeclared changes. we analyse the logs and transcripts of nine features in seven projects, all run by the authors, ranging from a fortran solver and python programs to books and this paper. of these, five finished with every planned task done, including the fortran solver feature, and 288 of the 581 planned tasks were completed block by block. the executor kept to its declared files: it left only one undeclared change in the deliverable folder, and the check caught it, although its reports record other departures from the protocol. the weak point was the orchestrator, which runs and judges its own checks. it recorded undeclared changes in 11 of 247 block checks, mostly from the authors&#x27; in-round requests and the environment, and stopped work in only four. 代码agent 免训练 multi-agent coding-agent workflow 规格驱动编码工作流 阶段门控人工批准＋固定缺陷清单审查子智能体＋文件清单检查抓未声明改动 编码智能体按规格、计划、任务列表工作的工作流是否可控可审计，尤其是未声明的文件改动 几乎所有控制都是同一模型执行的指令，缺少外部强制，智能体易偏离协议 每阶段须用户批准才进入下一阶段；审查子智能体按阶段专属缺陷清单核查产物；执行子智能体只能改任务列出的文件；每块任务后编排器做文件清单检查检测未声明改动 7个项目9个特性、581个计划任务完成288个；5个特性全部任务完成；交付目录仅1处未声明改动且被检出；编排器247次块检查记录11次未声明改动，仅4次中止 编排器自行运行并判定检查，缺乏独立校验，是工作流薄弱点" data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.05094v1" target="_blank" rel="noreferrer">2611.05094</a><span class="date">2026-11-03</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.05094v1" target="_blank" rel="noreferrer">A Gated Spec-Driven Workflow: An Audit-Trail Study of Coding-Agent Work</a><div class="authors">Rodrigo Figueiredo Abdo, Pedro Carvalho Brom</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Multi-agent coding-agent workflow</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">规格驱动编码工作流</td><td data-label="核心创新">阶段门控人工批准＋固定缺陷清单审查子智能体＋文件清单检查抓未声明改动</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">门控式规格驱动工作流：编码智能体工作的审计追踪研究</div><div class="facts"><div class="fact"><span>核心问题</span>编码智能体按规格、计划、任务列表工作的工作流是否可控可审计，尤其是未声明的文件改动</div><div class="fact"><span>关键困难</span>几乎所有控制都是同一模型执行的指令，缺少外部强制，智能体易偏离协议</div><div class="fact"><span>解决方案</span>每阶段须用户批准才进入下一阶段；审查子智能体按阶段专属缺陷清单核查产物；执行子智能体只能改任务列出的文件；每块任务后编排器做文件清单检查检测未声明改动</div><div class="fact"><span>主要结果</span>7个项目9个特性、581个计划任务完成288个；5个特性全部任务完成；交付目录仅1处未声明改动且被检出；编排器247次块检查记录11次未声明改动，仅4次中止</div><div class="fact"><span>未来方向</span>编排器自行运行并判定检查，缺乏独立校验，是工作流薄弱点</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.05094v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.05094v1" target="_blank" rel="noreferrer">PDF</a>Rodrigo Figueiredo Abdo, Pedro Carvalho Brom · 15 pages, 2 figures, 6 tables · First 2026-11-03 · Latest 2026-11-03</div><details class="abs"><summary>Abstract</summary><div>Spec-driven development (SDD) asks a coding agent to work from specifications, plans, and task lists rather than from the chat transcript. We study one such workflow for Claude Code, in which almost every control is an instruction carried out by the same model that it constrains. The user must approve each stage before the next begins. A reviewer subagent checks each artefact against a fixed, stage-specific defect list, and an executor subagent may only touch the files listed in its task. After each block of tasks, the orchestrator runs a file-inventory check to detect undeclared changes. We analyse the logs and transcripts of nine features in seven projects, all run by the authors, ranging from a Fortran solver and Python programs to books and this paper. Of these, five finished with every planned task done, including the Fortran solver feature, and 288 of the 581 planned tasks were completed block by block. The executor kept to its declared files: it left only one undeclared change in the deliverable folder, and the check caught it, although its reports record other departures from the protocol. The weak point was the orchestrator, which runs and judges its own checks. It recorded undeclared changes in 11 of 247 block checks, mostly from the authors&#x27; in-round requests and the environment, and stopped work in only four.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.04977 geofaham: domain-specialized multi-agent geospatial analytics for disaster response geofaham：面向灾害响应的领域专用多智能体地理空间分析 muhammad sohail danish gilles q. hacheme akram zaytar satej s. soman inbal becker-reshef juan lavista ferres salman khan girmaw abebe tadesse real-world geospatial decision support requires more than single-step retrieval or code generation. disaster-response questions often involve multi-source workflows that combine spatial databases, map-derived features, satellite imagery, raster products, and reusable geospatial artifacts, where correctness depends on preserving spatial scope, temporal context, and intermediate execution state. while large language models and coding agents offer a promising interface for such workflows, they struggle with geospatial-specific failure modes, including handling large artifacts, selecting the wrong evidence source, losing spatial or temporal metadata, and applying invalid geometric operations. we introduce geofaham, a domain-specialized multi-agent system for geospatial disaster analytics. geofaham decomposes workflows into specialist agents for vector operations, map feature retrieval, imagery discovery, and raster analysis, coordinated by an orchestrator with a dual-ledger control loop for dependency-aware planning, progress tracking, validation, and replanning. to support artifact-centric collaboration, geofaham uses a response store that persists full geospatial outputs and typed metadata outside the llm context window while agents exchange compact identifiers and summaries. we also introduce geofaham-bench, a 40-task benchmark grounded in 17 real-world disaster records, designed to evaluate multi-step geospatial reasoning, cross-source integration, raster-vector computation, artifact generation, and recovery under non-rigid ground truth. we evaluate geofaham on geofaham-bench against strong general-purpose coding-agent baselines, including codex, claude code, and opencode. geofaham achieves the best overall performance, scoring 0.940 versus the next-best 0.879, while using 7.5 times fewer tokens. our code and benchmark are publicly available at https://github.com/microsoft/geofaham. 代码agent 免训练 domain-specific multi-agent llm system 灾害响应地理空间分析 orchestrator 双账本控制循环 + response store 外置大型地理产物 灾害响应需多源地理空间多步工作流，单步检索或代码生成难以保持空间范围、时间上下文与中间执行状态 llm 编码智能体易选错证据源、丢失空间与时间元数据、执行非法几何操作，且难以处理大型产物 按矢量、地图要素、影像、栅格拆分专家智能体；orchestrator 用双账本循环做依赖规划、校验与重规划；response store 外置完整产物与类型化元数据，智能体只传标识符与摘要 在 geofaham-bench（40 任务，17 条真实灾害记录）上总体得分 0.940，次优基线 0.879，token 用量少 7.5 倍 " data-groups="代码Agent" data-training="免训练" data-has-code="true"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.04977v1" target="_blank" rel="noreferrer">2611.04977</a><span class="date">2026-11-03</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.04977v1" target="_blank" rel="noreferrer">GeoFaham: Domain-Specialized Multi-Agent Geospatial Analytics for Disaster Response</a><div class="authors">Muhammad Sohail Danish, Gilles Q. Hacheme, Akram Zaytar et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Domain-specific multi-agent LLM system</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">灾害响应地理空间分析</td><td data-label="核心创新">Orchestrator 双账本控制循环 + Response Store 外置大型地理产物</td><td class="code" data-label="Code"><a href="https://github.com/microsoft/GeoFaham" target="_blank" rel="noreferrer">Code</a></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">GeoFaham：面向灾害响应的领域专用多智能体地理空间分析</div><div class="facts"><div class="fact"><span>核心问题</span>灾害响应需多源地理空间多步工作流，单步检索或代码生成难以保持空间范围、时间上下文与中间执行状态</div><div class="fact"><span>关键困难</span>LLM 编码智能体易选错证据源、丢失空间与时间元数据、执行非法几何操作，且难以处理大型产物</div><div class="fact"><span>解决方案</span>按矢量、地图要素、影像、栅格拆分专家智能体；Orchestrator 用双账本循环做依赖规划、校验与重规划；Response Store 外置完整产物与类型化元数据，智能体只传标识符与摘要</div><div class="fact"><span>主要结果</span>在 GeoFaham-Bench（40 任务，17 条真实灾害记录）上总体得分 0.940，次优基线 0.879，token 用量少 7.5 倍</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.04977v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.04977v1" target="_blank" rel="noreferrer">PDF</a>Muhammad Sohail Danish, Gilles Q. Hacheme, Akram Zaytar, Satej S. Soman, Inbal Becker-Reshef, Juan Lavista Ferres, Salman Khan, Girmaw Abebe Tadesse · First 2026-11-03 · Latest 2026-11-03</div><details class="abs"><summary>Abstract</summary><div>Real-world geospatial decision support requires more than single-step retrieval or code generation. Disaster-response questions often involve multi-source workflows that combine spatial databases, map-derived features, satellite imagery, raster products, and reusable geospatial artifacts, where correctness depends on preserving spatial scope, temporal context, and intermediate execution state. While large language models and coding agents offer a promising interface for such workflows, they struggle with geospatial-specific failure modes, including handling large artifacts, selecting the wrong evidence source, losing spatial or temporal metadata, and applying invalid geometric operations. We introduce GeoFaham, a domain-specialized multi-agent system for geospatial disaster analytics. GeoFaham decomposes workflows into specialist agents for vector operations, map feature retrieval, imagery discovery, and raster analysis, coordinated by an Orchestrator with a dual-ledger control loop for dependency-aware planning, progress tracking, validation, and replanning. To support artifact-centric collaboration, GeoFaham uses a Response Store that persists full geospatial outputs and typed metadata outside the LLM context window while agents exchange compact identifiers and summaries. We also introduce GeoFaham-Bench, a 40-task benchmark grounded in 17 real-world disaster records, designed to evaluate multi-step geospatial reasoning, cross-source integration, raster-vector computation, artifact generation, and recovery under non-rigid ground truth. We evaluate GeoFaham on GeoFaham-Bench against strong general-purpose coding-agent baselines, including Codex, Claude Code, and OpenCode. GeoFaham achieves the best overall performance, scoring 0.940 versus the next-best 0.879, while using 7.5 times fewer tokens. Our code and benchmark are publicly available at https://github.com/microsoft/GeoFaham.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.02566 cr-bench-v2: evaluating the real-world utility of ai code review agents cr-bench-v2：评估 ai 代码审查智能体真实世界效用的基准 kristen pereira neelabh sinha rajat ghosh debojyoti dutta the rapid growth of automated code generation has created a pressing need for automated code review. yet code review resists full automation: it depends on context beyond the \textit{diff}, on the author&#x27;s intent, and on judgments about design and maintainability on which even expert reviewers disagree. existing code review benchmarks lack standardization and rely largely on noisy human review comments scored with text-similarity metrics, which reward surface overlap and fail to measure precision. we introduce \texttt{cr-bench}, a defect-centric evaluation framework that recasts swe-bench issues as pull-request review tasks with full repository context. after filtering for review-detectable defects and grounding each to a single originating pull request, \texttt{cr-bench} contains 584 instances, with a 174-instance \texttt{cr-bench-verified} subset derived from swe-bench verified. each instance pairs a pull request with a known defect, its ground-truth fix, and a taxonomy label for bug category, impact, and severity. we propose two complementary metrics: \emph{known-defect detection rate} (kddr), which measures whether an agent identifies the labeled defect, and \emph{usefulness rate}, which measures the fraction of review comments that are actionable. we evaluate eight code review agents over four backbones, plus commercially available gemini code assist, using three independent llm judges. even the strongest systems detect only about one-third of known defects (kddr $\approx$ 33\%), and gemini code assist detects 8.1\%. 代码agent 评测基准 llm + code review harness 代码审查智能体评测 以缺陷为中心，将 swe-bench issue 重构为带完整仓库上下文的 pr 审查任务，并提出 kddr 与有用率两项指标 代码审查难以完全自动化：需 diff 之外的上下文、作者意图与主观设计判断；现有基准缺乏标准化，依赖含噪评论文本相似度打分。 文本相似度指标奖励表面重合、无法衡量精确率，人工评审评论噪声大且专家之间意见不一致，导致评测不可靠。 过滤出可被审查发现的缺陷并锚定到单一来源 pr，构建 584 条实例（含 174 条 verified 子集），标注缺陷类别、影响与严重度；用 kddr 测已知缺陷检出，用有用率测可执行评论比例，三位独立 llm 评审。 在 8 个审查智能体、4 个骨干模型及 gemini code assist 上评测：最强系统 kddr 仅约 33%，gemini code assist 为 8.1%。 " data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.02566v2" target="_blank" rel="noreferrer">2611.02566</a><span class="date">2026-11-03</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.02566v2" target="_blank" rel="noreferrer">CR-Bench-v2: Evaluating the Real-World Utility of AI Code Review Agents</a><div class="authors">Kristen Pereira, Neelabh Sinha, Rajat Ghosh et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM + code review harness</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">代码审查智能体评测</td><td data-label="核心创新">以缺陷为中心，将 SWE-Bench issue 重构为带完整仓库上下文的 PR 审查任务，并提出 KDDR 与有用率两项指标</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">CR-Bench-v2：评估 AI 代码审查智能体真实世界效用的基准</div><div class="facts"><div class="fact"><span>核心问题</span>代码审查难以完全自动化：需 diff 之外的上下文、作者意图与主观设计判断；现有基准缺乏标准化，依赖含噪评论文本相似度打分。</div><div class="fact"><span>关键困难</span>文本相似度指标奖励表面重合、无法衡量精确率，人工评审评论噪声大且专家之间意见不一致，导致评测不可靠。</div><div class="fact"><span>解决方案</span>过滤出可被审查发现的缺陷并锚定到单一来源 PR，构建 584 条实例（含 174 条 Verified 子集），标注缺陷类别、影响与严重度；用 KDDR 测已知缺陷检出，用有用率测可执行评论比例，三位独立 LLM 评审。</div><div class="fact"><span>主要结果</span>在 8 个审查智能体、4 个骨干模型及 Gemini Code Assist 上评测：最强系统 KDDR 仅约 33%，Gemini Code Assist 为 8.1%。</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.02566v2" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.02566v2" target="_blank" rel="noreferrer">PDF</a>Kristen Pereira, Neelabh Sinha, Rajat Ghosh, Debojyoti Dutta · revise the prompt template format for better readability · First 2026-11-02 · Latest 2026-11-03</div><details class="abs"><summary>Abstract</summary><div>The rapid growth of automated code generation has created a pressing need for automated code review. Yet code review resists full automation: it depends on context beyond the \textit{diff}, on the author&#x27;s intent, and on judgments about design and maintainability on which even expert reviewers disagree. Existing code review benchmarks lack standardization and rely largely on noisy human review comments scored with text-similarity metrics, which reward surface overlap and fail to measure precision. We introduce \texttt{CR-Bench}, a defect-centric evaluation framework that recasts SWE-Bench issues as pull-request review tasks with full repository context. After filtering for review-detectable defects and grounding each to a single originating pull request, \texttt{CR-Bench} contains 584 instances, with a 174-instance \texttt{CR-Bench-Verified} subset derived from SWE-Bench Verified. Each instance pairs a pull request with a known defect, its ground-truth fix, and a taxonomy label for bug category, impact, and severity. We propose two complementary metrics: \emph{Known-Defect Detection Rate} (KDDR), which measures whether an agent identifies the labeled defect, and \emph{Usefulness Rate}, which measures the fraction of review comments that are actionable. We evaluate eight code review agents over four backbones, plus commercially available Gemini Code Assist, using three independent LLM judges. Even the strongest systems detect only about one-third of known defects (KDDR $\approx$ 33\%), and Gemini Code Assist detects 8.1\%.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.04579 freeform harness: a mobile-native agent harness for open and composable extensions freeform harness：面向开放可组合扩展的移动原生 agent harness bo zhang pengbo zhang jiaxin jiao yue liu mobile phones support many everyday agent tasks, but current mobile agents bundle capabilities into monolithic pipelines with no open recombination point. users and third parties cannot publish, install, and compose new behaviors, leaving personalized daily-life requests underserved. we argue that the missing piece is a substrate: although phones are the web&#x27;s dominant access point, open publication and composition under decentralized authorship stop at the agent harness. we present freeform harness (ffh), a mobile-native agent harness for open, composable extensions. a frozen base and a permanence-aware required layer handle mobile constraints, including location, proactive triggering, and scarce channels. a uniform plugin contract makes independently authored extensions composable, checkable, and replaceable over a frozen socket set. ffh also supports end-user authorship through a tiered commissioned-authoring path. when no existing extension matches a user&#x27;s intent, a web coding agent generates a candidate artifact, which is validated and admitted on device under the same contract as other extensions. an android prototype spans device, market, and cloud. evaluation shows that architectural boundaries are enforced at runtime; realistic daily-life requests fit the declared composition space without widening it; and user intent reaches on-device execution through retrieval or commissioned authoring, with final trust decisions remaining device-local. ffh advances the agentic web from &quot;everything is a plugin&quot; toward &quot;everyone is a developer&quot; on mobile. 代码agent 免训练 plugin-based mobile agent harness 移动端日常任务代理 冻结底座加统一插件契约，支持设备端生成、验证与准入扩展 移动代理能力捆绑在单体流水线，缺乏开放组合点，用户与第三方无法发布、安装和组合新行为 手机端资源与渠道受限，现有 harness 不提供去中心化作者下的开放发布与组合，个性化请求难满足 冻结底座与持久必需层处理定位、主动触发和稀缺通道；统一插件契约使扩展可组合、可检查、可替换；web 编码代理生成候选工件并在设备端按同一契约验证准入 android 原型显示运行时强制架构边界、真实日常请求适配声明组合空间、意图经检索或委托编写到达设备执行且信任决策留在设备本地 " data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.04579v1" target="_blank" rel="noreferrer">2611.04579</a><span class="date">2026-11-03</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.04579v1" target="_blank" rel="noreferrer">FreeForm Harness: A Mobile-Native Agent Harness for Open and Composable Extensions</a><div class="authors">Bo Zhang, Pengbo Zhang, Jiaxin Jiao et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Plugin-based mobile agent harness</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">移动端日常任务代理</td><td data-label="核心创新">冻结底座加统一插件契约，支持设备端生成、验证与准入扩展</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">FreeForm Harness：面向开放可组合扩展的移动原生 Agent Harness</div><div class="facts"><div class="fact"><span>核心问题</span>移动代理能力捆绑在单体流水线，缺乏开放组合点，用户与第三方无法发布、安装和组合新行为</div><div class="fact"><span>关键困难</span>手机端资源与渠道受限，现有 harness 不提供去中心化作者下的开放发布与组合，个性化请求难满足</div><div class="fact"><span>解决方案</span>冻结底座与持久必需层处理定位、主动触发和稀缺通道；统一插件契约使扩展可组合、可检查、可替换；Web 编码代理生成候选工件并在设备端按同一契约验证准入</div><div class="fact"><span>主要结果</span>Android 原型显示运行时强制架构边界、真实日常请求适配声明组合空间、意图经检索或委托编写到达设备执行且信任决策留在设备本地</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.04579v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.04579v1" target="_blank" rel="noreferrer">PDF</a>Bo Zhang, Pengbo Zhang, Jiaxin Jiao, Yue Liu · First 2026-11-03 · Latest 2026-11-03</div><details class="abs"><summary>Abstract</summary><div>Mobile phones support many everyday agent tasks, but current mobile agents bundle capabilities into monolithic pipelines with no open recombination point. Users and third parties cannot publish, install, and compose new behaviors, leaving personalized daily-life requests underserved. We argue that the missing piece is a substrate: although phones are the Web&#x27;s dominant access point, open publication and composition under decentralized authorship stop at the agent harness. We present FreeForm Harness (FFH), a mobile-native agent harness for open, composable extensions. A frozen base and a permanence-aware required layer handle mobile constraints, including location, proactive triggering, and scarce channels. A uniform plugin contract makes independently authored extensions composable, checkable, and replaceable over a frozen socket set. FFH also supports end-user authorship through a tiered commissioned-authoring path. When no existing extension matches a user&#x27;s intent, a Web coding agent generates a candidate artifact, which is validated and admitted on device under the same contract as other extensions. An Android prototype spans device, market, and cloud. Evaluation shows that architectural boundaries are enforced at runtime; realistic daily-life requests fit the declared composition space without widening it; and user intent reaches on-device execution through retrieval or commissioned authoring, with final trust decisions remaining device-local. FFH advances the agentic Web from &quot;everything is a plugin&quot; toward &quot;everyone is a developer&quot; on mobile.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.04466 from watching to steering: enabling human-coding agent collaboration through execution traces 从旁观到引导：通过执行轨迹实现人类与编程智能体的协作 xiaoke yan jiaying lei danqing shi zichen wang nan cao recent advances in large language models (llms) have enabled coding agents to autonomously perform complex software development tasks, yet their long-running execution remains difficult for users to inspect, understand, and steer. we present vibetrace, an interactive trace visualization and intervention system for agentic programming built upon opencode. vibetrace introduces a human-agent collaboration paradigm of observe, understand, intervene, and evolve. it (1) visualizes agent workflows as interactive execution traces for inspecting actions, intermediate states, and failures; (2) enables users to fork execution from prior steps and provide targeted corrections without restarting validated progress; and (3) distills traces and human feedback into reusable skills for continual agent evolution. on swe-bench verified, distilled skills reduce input tokens by 23.0% and cost by 15.5%, while improving pass rate from 65.0% to 68.0%. user studies further demonstrate improved accuracy and efficiency over conventional log-based interaction. 代码agent 免训练 coding agent + interactive trace ui 编程智能体轨迹干预 执行轨迹可视化并支持从任意步骤分叉重跑，再把轨迹与人类反馈蒸馏为可复用技能 长时运行的编程智能体执行过程难以被用户检查、理解与引导 仅靠日志难以呈现中间状态与失败原因，出错往往需重启整个任务，已完成的进度被浪费 基于 opencode 实现 observe-understand-intervene-evolve 流程：交互式轨迹可视化、从历史步骤分叉注入局部修正、轨迹与反馈蒸馏为技能 swe-bench verified 通过率 65.0%→68.0%，输入 token 减少 23.0%、成本降低 15.5%；用户研究显示准确率与效率优于日志交互 " data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.04466v1" target="_blank" rel="noreferrer">2611.04466</a><span class="date">2026-11-03</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.04466v1" target="_blank" rel="noreferrer">From Watching to Steering: Enabling Human-Coding Agent Collaboration through Execution Traces</a><div class="authors">Xiaoke Yan, Jiaying Lei, Danqing Shi et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Coding agent + interactive trace UI</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">编程智能体轨迹干预</td><td data-label="核心创新">执行轨迹可视化并支持从任意步骤分叉重跑，再把轨迹与人类反馈蒸馏为可复用技能</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">从旁观到引导：通过执行轨迹实现人类与编程智能体的协作</div><div class="facts"><div class="fact"><span>核心问题</span>长时运行的编程智能体执行过程难以被用户检查、理解与引导</div><div class="fact"><span>关键困难</span>仅靠日志难以呈现中间状态与失败原因，出错往往需重启整个任务，已完成的进度被浪费</div><div class="fact"><span>解决方案</span>基于 OpenCode 实现 Observe-Understand-Intervene-Evolve 流程：交互式轨迹可视化、从历史步骤分叉注入局部修正、轨迹与反馈蒸馏为技能</div><div class="fact"><span>主要结果</span>SWE-bench Verified 通过率 65.0%→68.0%，输入 token 减少 23.0%、成本降低 15.5%；用户研究显示准确率与效率优于日志交互</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.04466v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.04466v1" target="_blank" rel="noreferrer">PDF</a>Xiaoke Yan, Jiaying Lei, Danqing Shi, Zichen Wang, Nan Cao · 16 pages,10 figures · First 2026-11-03 · Latest 2026-11-03</div><details class="abs"><summary>Abstract</summary><div>Recent advances in large language models (LLMs) have enabled coding agents to autonomously perform complex software development tasks, yet their long-running execution remains difficult for users to inspect, understand, and steer. We present Vibetrace, an interactive trace visualization and intervention system for agentic programming built upon OpenCode. Vibetrace introduces a human-agent collaboration paradigm of Observe, Understand, Intervene, and Evolve. It (1) visualizes agent workflows as interactive execution traces for inspecting actions, intermediate states, and failures; (2) enables users to fork execution from prior steps and provide targeted corrections without restarting validated progress; and (3) distills traces and human feedback into reusable skills for continual agent evolution. On SWE-bench Verified, distilled skills reduce input tokens by 23.0% and cost by 15.5%, while improving pass rate from 65.0% to 68.0%. User studies further demonstrate improved accuracy and efficiency over conventional log-based interaction.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.04383 disposable implementations: what is software engineering for? 一次性实现：软件工程究竟为了什么？ christoph treude existing implementations are usually maintained for most of their life and replaced only as an exception. coding agents may change that. if agents can produce new implementations from requirements, tests, architectural constraints, and operational records that survive replacement, changing a system may no longer require modifying its existing codebase. we call this process regeneration. an implementation is disposable when regeneration becomes a routine alternative to maintenance. regenerating and verifying a clean implementation from current requirements and tests may be cheaper than having agents navigate (and potentially compound) existing technical debt, and could eliminate much of that debt. yet existing code may contain knowledge absent from the preserved artifacts, including safeguards introduced after failures and assumptions that were never documented. a regenerated implementation may pass the available tests and still lose behavior that matters in production. this leaves open how to establish continuity across replacements and whether regeneration reduces maintenance effort or shifts it to the artifacts and processes that support it. we examine these questions through an exploratory review of practitioner literature. published examples show that agents can replace existing implementations, but do not establish that repeated regeneration is safe or economical. if implementations become disposable, what should software engineering preserve? 代码agent 其他  软件再生成与维护 提出 regeneration 概念：实现可丢弃，用智能体按需求与测试重建替代维护 智能体能否以再生成取代维护，以及替换后如何保持行为连续性、保留隐性知识 现有代码含失败后加入的防护与未记录假设，再生成或通过测试却丢失生产关键行为 以实践者文献做探索性综述，辨析再生成相对维护的成本、安全性，以及支撑再生成的工件与流程 公开案例显示智能体可替换现有实现，但未证明重复再生成安全或经济 需明确替换间连续性如何建立，再生成是降低还是转移维护成本" data-groups="代码Agent" data-training="其他" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.04383v1" target="_blank" rel="noreferrer">2611.04383</a><span class="date">2026-11-03</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.04383v1" target="_blank" rel="noreferrer">Disposable Implementations: What Is Software Engineering For?</a><div class="authors">Christoph Treude</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构"><span class="muted">—</span></td><td data-label="训练方法"><span class="chip t-其他">其他</span></td><td data-label="应用场景">软件再生成与维护</td><td data-label="核心创新">提出 regeneration 概念：实现可丢弃，用智能体按需求与测试重建替代维护</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">一次性实现：软件工程究竟为了什么？</div><div class="facts"><div class="fact"><span>核心问题</span>智能体能否以再生成取代维护，以及替换后如何保持行为连续性、保留隐性知识</div><div class="fact"><span>关键困难</span>现有代码含失败后加入的防护与未记录假设，再生成或通过测试却丢失生产关键行为</div><div class="fact"><span>解决方案</span>以实践者文献做探索性综述，辨析再生成相对维护的成本、安全性，以及支撑再生成的工件与流程</div><div class="fact"><span>主要结果</span>公开案例显示智能体可替换现有实现，但未证明重复再生成安全或经济</div><div class="fact"><span>未来方向</span>需明确替换间连续性如何建立，再生成是降低还是转移维护成本</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.04383v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.04383v1" target="_blank" rel="noreferrer">PDF</a>Christoph Treude · First 2026-11-03 · Latest 2026-11-03</div><details class="abs"><summary>Abstract</summary><div>Existing implementations are usually maintained for most of their life and replaced only as an exception. Coding agents may change that. If agents can produce new implementations from requirements, tests, architectural constraints, and operational records that survive replacement, changing a system may no longer require modifying its existing codebase. We call this process regeneration. An implementation is disposable when regeneration becomes a routine alternative to maintenance. Regenerating and verifying a clean implementation from current requirements and tests may be cheaper than having agents navigate (and potentially compound) existing technical debt, and could eliminate much of that debt. Yet existing code may contain knowledge absent from the preserved artifacts, including safeguards introduced after failures and assumptions that were never documented. A regenerated implementation may pass the available tests and still lose behavior that matters in production. This leaves open how to establish continuity across replacements and whether regeneration reduces maintenance effort or shifts it to the artifacts and processes that support it. We examine these questions through an exploratory review of practitioner literature. Published examples show that agents can replace existing implementations, but do not establish that repeated regeneration is safe or economical. If implementations become disposable, what should software engineering preserve?</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.04367 do coding agents follow agents.md? the effect of policy wording on instruction compliance 编码智能体是否遵循 agents.md？策略措辞对指令遵循的影响 rikuto tsuchida youmei fan kazumasa shimari raula gaikovina kula kenichi matsumoto coding agents do not always follow the policies in an agent context file (acf). we inserted one policy, in four styles, into the acfs of 86 benchmark tasks across four harness-model combinations. conditional phrasing was followed less often than prescriptive and explanatory. the better of those two varied by combination. 代码agent 评测基准 coding agent harness 编码智能体指令遵循 将同一策略以四种措辞注入 acf，比较合规率差异 编码智能体不总遵循 agent context file 中的策略，措辞如何影响指令遵循尚不清楚 现有评估未控制同一策略的措辞变化，难以区分策略内容与表达方式对遵循的影响 在四个 harness-model 组合的 86 个基准任务 acf 中插入同一策略的四种措辞，测量并比较指令遵循率 条件式措辞的遵循率低于规定式和解释式；规定式与解释式孰优随 harness-model 组合变化 " data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.04367v1" target="_blank" rel="noreferrer">2611.04367</a><span class="date">2026-11-03</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.04367v1" target="_blank" rel="noreferrer">Do Coding Agents Follow AGENTS.md? The Effect of Policy Wording on Instruction Compliance</a><div class="authors">Rikuto Tsuchida, Youmei Fan, Kazumasa Shimari et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Coding agent harness</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">编码智能体指令遵循</td><td data-label="核心创新">将同一策略以四种措辞注入 ACF，比较合规率差异</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">编码智能体是否遵循 AGENTS.md？策略措辞对指令遵循的影响</div><div class="facts"><div class="fact"><span>核心问题</span>编码智能体不总遵循 Agent Context File 中的策略，措辞如何影响指令遵循尚不清楚</div><div class="fact"><span>关键困难</span>现有评估未控制同一策略的措辞变化，难以区分策略内容与表达方式对遵循的影响</div><div class="fact"><span>解决方案</span>在四个 harness-model 组合的 86 个基准任务 ACF 中插入同一策略的四种措辞，测量并比较指令遵循率</div><div class="fact"><span>主要结果</span>条件式措辞的遵循率低于规定式和解释式；规定式与解释式孰优随 harness-model 组合变化</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.04367v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.04367v1" target="_blank" rel="noreferrer">PDF</a>Rikuto Tsuchida, Youmei Fan, Kazumasa Shimari, Raula Gaikovina Kula, Kenichi Matsumoto · 4 pages, 1 figure, 4 tables. (c) IEICE. This paper has been submitted to IEICE and is currently under review · First 2026-11-03 · Latest 2026-11-03</div><details class="abs"><summary>Abstract</summary><div>Coding agents do not always follow the policies in an Agent Context File (ACF). We inserted one policy, in four styles, into the ACFs of 86 benchmark tasks across four harness-model combinations. Conditional phrasing was followed less often than Prescriptive and Explanatory. The better of those two varied by combination.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.03998 dory1.0-4b: a looped normalized-gpt dory1.0-4b：一种循环式归一化 gpt（ngpt） maxim fishman simeng sun shantanu acharya faisal ladhak brian chmiel santiago akle serano ron banner boris ginsburg krishna c. puvvada we introduce dory1.0-4b, a 4-billion-parameter looped (latent-recurrent) language model with elastic depth: a single checkpoint serves different inference compute budgets. dory1.0-4b is built on a normalized transformer (ngpt) backbone with interleaved sliding-window and full-attention layers, organized into an input block, a shared recurrent block, and an output block. at inference, the recurrent block can be applied a variable number of times. we pre-trained dory1.0-4b on 6 trillion tokens. the first 4.5 trillion tokens were trained in nvfp4, and additional pre-training then extended the context length to 256k tokens. next, we post-trained the model using supervised fine-tuning (sft) and reinforcement learning with verifiable rewards (rlvr), with a difficulty-aware loop curriculum that routes harder prompts to deeper loops. increasing the loop count improves accuracy, with the largest gains on coding, agentic, and long-context benchmarks. with two or more loops, dory1.0-4b outperforms larger models such as qwen3.5-9b, gemma 4 12b, and gemma 4 26b-a4b on average across 12 benchmarks. looping also makes dory1.0-4b more token-efficient on agentic benchmarks: with four loops, it generates 1.3-2.5x fewer tokens than with one loop, as the extra computation is spent in latent space rather than on longer outputs. to reduce memory during looping, dory1.0-4b caches keys and values only from the last loop, keeping its kv-cache footprint equal to that of a non-looped model at any loop count while retaining most of the accuracy gains. we open-source the bf16, mxfp8, nvfp4, and gguf quantized checkpoints. 代码agent 预训练 rlvr looped normalized transformer (ngpt) 编码与智能体长上下文任务 共享循环块可按推理预算弹性重复，配难度感知的循环深度课程 固定深度模型无法按推理算力预算弹性调节，且靠加长输出提升效果成本高 循环结构使显存与 kv-cache 随循环次数线性增长，不同难度样本的循环收益不均 ngpt 骨干分输入块、共享循环块与输出块，推理时循环次数可变；仅缓存最后一轮 kv 控制显存；sft+rlvr 用难度感知循环课程，难样本走更深循环 ≥2 次循环时 12 个基准平均超过 qwen3.5-9b、gemma 4 12b、gemma 4 26b-a4b；4 次循环在 agentic 基准生成 token 减少 1.3-2.5 倍 " data-groups="代码Agent" data-training="预训练|RLVR" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.03998v1" target="_blank" rel="noreferrer">2611.03998</a><span class="date">2026-11-02</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.03998v1" target="_blank" rel="noreferrer">Dory1.0-4B: A Looped Normalized-GPT</a><div class="authors">Maxim Fishman, Simeng Sun, Shantanu Acharya et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Looped normalized Transformer (nGPT)</td><td data-label="训练方法"><span class="chip t-预训练">预训练</span> <span class="chip t-RLVR">RLVR</span></td><td data-label="应用场景">编码与智能体长上下文任务</td><td data-label="核心创新">共享循环块可按推理预算弹性重复，配难度感知的循环深度课程</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">Dory1.0-4B：一种循环式归一化 GPT（nGPT）</div><div class="facts"><div class="fact"><span>核心问题</span>固定深度模型无法按推理算力预算弹性调节，且靠加长输出提升效果成本高</div><div class="fact"><span>关键困难</span>循环结构使显存与 KV-cache 随循环次数线性增长，不同难度样本的循环收益不均</div><div class="fact"><span>解决方案</span>nGPT 骨干分输入块、共享循环块与输出块，推理时循环次数可变；仅缓存最后一轮 KV 控制显存；SFT+RLVR 用难度感知循环课程，难样本走更深循环</div><div class="fact"><span>主要结果</span>≥2 次循环时 12 个基准平均超过 Qwen3.5-9B、Gemma 4 12B、Gemma 4 26B-A4B；4 次循环在 agentic 基准生成 token 减少 1.3-2.5 倍</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.03998v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.03998v1" target="_blank" rel="noreferrer">PDF</a>Maxim Fishman, Simeng Sun, Shantanu Acharya, Faisal Ladhak, Brian Chmiel, Santiago Akle Serano, Ron Banner, Boris Ginsburg, Krishna C. Puvvada · First 2026-11-02 · Latest 2026-11-02</div><details class="abs"><summary>Abstract</summary><div>We introduce Dory1.0-4B, a 4-billion-parameter looped (latent-recurrent) language model with elastic depth: a single checkpoint serves different inference compute budgets. Dory1.0-4B is built on a normalized Transformer (nGPT) backbone with interleaved sliding-window and full-attention layers, organized into an input block, a shared recurrent block, and an output block. At inference, the recurrent block can be applied a variable number of times. We pre-trained Dory1.0-4B on 6 trillion tokens. The first 4.5 trillion tokens were trained in NVFP4, and additional pre-training then extended the context length to 256K tokens. Next, we post-trained the model using Supervised Fine-Tuning (SFT) and Reinforcement Learning with Verifiable Rewards (RLVR), with a difficulty-aware loop curriculum that routes harder prompts to deeper loops. Increasing the loop count improves accuracy, with the largest gains on coding, agentic, and long-context benchmarks. With two or more loops, Dory1.0-4B outperforms larger models such as Qwen3.5-9B, Gemma 4 12B, and Gemma 4 26B-A4B on average across 12 benchmarks. Looping also makes Dory1.0-4B more token-efficient on agentic benchmarks: with four loops, it generates 1.3-2.5x fewer tokens than with one loop, as the extra computation is spent in latent space rather than on longer outputs. To reduce memory during looping, Dory1.0-4B caches keys and values only from the last loop, keeping its KV-cache footprint equal to that of a non-looped model at any loop count while retaining most of the accuracy gains. We open-source the BF16, MXFP8, NVFP4, and GGUF quantized checkpoints.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.03634 webharbor: docking real websites for evolving gui agent environments webharbor：为演化型 gui agent 环境对真实网站进行停靠重建 zhaoyang wang qianhui wu boyu gou demi wang jiacheng zhang peichun hua qize li shi qiu yifan jiang yifan zhang zexu jin baolin peng bolin shen chetan bansal dehan kong deren lei dongshen peng fengqing jiang hao cheng haoqing wang jiaming shan jicheng wang jingguang zhou jixuan he kaide zeng kangyu zhu lama moukheiber mufan qiu peng xia qihan sun qingwei lin qiushi sun ruichen zhang shuqing luo si qin sicheng fan tao xiong wenlin yao xinyu zhang xinyue zeng xuanrui li xuchao zhang yian wang yichao liu yiming liang yiyang zhou yizhu jiao yuetai li yurun chen yuxuan zhang zheyuan yang zhiyuan yao zhongyang li zihao li zili wang jianfeng gao huaxiu yao gui web agents require realistic and interactive environments that remain stable during both evaluation and training. live website evaluation suffers from changing content, access restrictions, and limited coverage of authenticated workflows, while existing synthetic environments for training often lack functional depth and visual fidelity. we propose webharbor, a suite of 153 executable and dockerized website environments that faithfully reconstruct the visual interfaces, content, and functional workflows of real-world web services under deterministic control. we build webharbor through task-driven human-agent collaboration, where environments evolve as new tasks expand their functional scope, coding agents implement the required changes, and human contributors audit visual fidelity, functional correctness, and task validity. the resulting suite comprises 3,518 tasks spanning multi-step and post-authentication workflows, where existing works often fail to cover. beyond reliable evaluation, webharbor provides high-fidelity synthetic web environments for cost-efficient reinforcement learning (rl). we demonstrate that a qwen 4b-level gui agent trained with rl in webharbor generalizes to unseen tasks and performs competitively with leading open-source gui web agents across four benchmarks. the code and data are publicly available at https://github.com/aiming-lab/webharbor. 代码agent rl 评测基准 dockerized website environments gui 网页 agent 训练与评测 任务驱动的人机协作迭代：环境随新任务扩展功能，编码 agent 实现改动，人工审计视觉与功能 gui 网页 agent 需要稳定可交互的环境，既能评测又能训练，且覆盖需登录的多步流程 真实网站在线评测内容漂移、访问受限、认证流程覆盖不足；合成环境缺乏功能深度与视觉保真 构建 153 个可执行、docker 化的真实网站复刻环境，含 3518 个任务，覆盖多步与登录后工作流，并提供高保真合成环境用于低成本 rl qwen 4b 级 gui agent 在 webharbor 中 rl 训练后可泛化到未见任务，在四个基准上与领先开源 gui 网页 agent 表现相当 " data-groups="代码Agent" data-training="RL|评测基准" data-has-code="true"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.03634v1" target="_blank" rel="noreferrer">2611.03634</a><span class="date">2026-11-02</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.03634v1" target="_blank" rel="noreferrer">WebHarbor: Docking Real Websites for Evolving GUI Agent Environments</a><div class="authors">Zhaoyang Wang, Qianhui Wu, Boyu Gou et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Dockerized website environments</td><td data-label="训练方法"><span class="chip t-RL">RL</span> <span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">GUI 网页 Agent 训练与评测</td><td data-label="核心创新">任务驱动的人机协作迭代：环境随新任务扩展功能，编码 Agent 实现改动，人工审计视觉与功能</td><td class="code" data-label="Code"><a href="https://github.com/aiming-lab/WebHarbor" target="_blank" rel="noreferrer">Code</a></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">WebHarbor：为演化型 GUI Agent 环境对真实网站进行停靠重建</div><div class="facts"><div class="fact"><span>核心问题</span>GUI 网页 Agent 需要稳定可交互的环境，既能评测又能训练，且覆盖需登录的多步流程</div><div class="fact"><span>关键困难</span>真实网站在线评测内容漂移、访问受限、认证流程覆盖不足；合成环境缺乏功能深度与视觉保真</div><div class="fact"><span>解决方案</span>构建 153 个可执行、Docker 化的真实网站复刻环境，含 3518 个任务，覆盖多步与登录后工作流，并提供高保真合成环境用于低成本 RL</div><div class="fact"><span>主要结果</span>Qwen 4B 级 GUI Agent 在 WebHarbor 中 RL 训练后可泛化到未见任务，在四个基准上与领先开源 GUI 网页 Agent 表现相当</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.03634v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.03634v1" target="_blank" rel="noreferrer">PDF</a>Zhaoyang Wang, Qianhui Wu, Boyu Gou, Demi Wang, Jiacheng Zhang, Peichun Hua, Qize Li, Shi Qiu, Yifan Jiang, Yifan Zhang, Zexu Jin, Baolin Peng, Bolin Shen, Chetan Bansal, Dehan Kong, Deren Lei, Dongshen Peng, Fengqing Jiang, Hao Cheng, Haoqing Wang, Jiaming Shan, Jicheng Wang, Jingguang Zhou, Jixuan He, Kaide Zeng, Kangyu Zhu, Lama Moukheiber, Mufan Qiu, Peng Xia, Qihan Sun, Qingwei Lin, Qiushi Sun, Ruichen Zhang, Shuqing Luo, Si Qin, Sicheng Fan, Tao Xiong, Wenlin Yao, Xinyu Zhang, Xinyue Zeng, Xuanrui Li, Xuchao Zhang, Yian Wang, Yichao Liu, Yiming Liang, Yiyang Zhou, Yizhu Jiao, Yuetai Li, Yurun Chen, Yuxuan Zhang, Zheyuan Yang, Zhiyuan Yao, Zhongyang Li, Zihao Li, Zili Wang, Jianfeng Gao, Huaxiu Yao · 31 pages · First 2026-11-02 · Latest 2026-11-02</div><details class="abs"><summary>Abstract</summary><div>GUI web agents require realistic and interactive environments that remain stable during both evaluation and training. Live website evaluation suffers from changing content, access restrictions, and limited coverage of authenticated workflows, while existing synthetic environments for training often lack functional depth and visual fidelity. We propose WebHarbor, a suite of 153 executable and dockerized website environments that faithfully reconstruct the visual interfaces, content, and functional workflows of real-world web services under deterministic control. We build WebHarbor through task-driven human-agent collaboration, where environments evolve as new tasks expand their functional scope, coding agents implement the required changes, and human contributors audit visual fidelity, functional correctness, and task validity. The resulting suite comprises 3,518 tasks spanning multi-step and post-authentication workflows, where existing works often fail to cover. Beyond reliable evaluation, WebHarbor provides high-fidelity synthetic web environments for cost-efficient reinforcement learning (RL). We demonstrate that a Qwen 4B-level GUI agent trained with RL in WebHarbor generalizes to unseen tasks and performs competitively with leading open-source GUI web agents across four benchmarks. The code and data are publicly available at https://github.com/aiming-lab/WebHarbor.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.03575 veriharm-bench: measuring harmful success in llm coding agents verifiably veriharm-bench：可验证地度量 llm 编码代理的「有害成功」 wei-lin chen zhepei wei xinyu zhu yu-min tseng tzu-han lin yu meng large language model (llm) coding agents increasingly operate with shell access, allowing them to write scripts, move files, alter permissions, and modify system configurations. however, an agent may achieve a user&#x27;s goal while causing unintended harm, such as deleting unrelated files, weakening access controls, or corrupting data, in response to benign inputs without explicit jailbreaking. this failure mode is particularly important because apparent task success may reassure users that an agent behaved correctly, causing harmful side effects to go unnoticed. we call this harmful success: the agent successfully completes the intended benign task while simultaneously causing unintended harm. despite its importance, harmful success is difficult to measure because conventional task-success metrics overlook harmful behaviors, while existing safety evaluations are often designed solely to assess harmful outcomes. we introduce veriharm, an automatic framework for constructing programmatically verifiable benchmarks that directly measure harmful success. veriharm minimally perturbs coding tasks to elicit unintended harmful behavior while maintaining the benignity of the task and preserving the original task objective. it then synthesizes executable harm tests that, together with the original task-correctness tests, evaluate both task accuracy and harmful outcomes. frontier agents, including gpt-5.6-sol and claude-opus-5, achieve an average task accuracy of 95% on our curated veriharm-bench, yet still struggle to complete tasks safely: their safe success rate, the fraction of tasks completed successfully without triggering the designated harm, averages only 37%. these results suggest that successful task completion can frequently coexist with unintended harm, and that task-success metrics alone may substantially understate the potential safety risks of coding agents. 代码agent 评测基准 免训练 llm coding agent + harm tests 编码代理安全评测 最小扰动良性编码任务诱发附带伤害，并自动合成可执行危害测试与正确性测试联合判定 编码代理可能在完成用户良性任务的同时误删文件、削弱访问控制或损坏数据，形成「有害成功」 常规任务成功率指标看不到有害副作用，现有安全评测又只看有害结果，无法度量成功与伤害共存的情形 对编码任务做最小扰动以在不破坏任务良性和原目标的前提下诱发有害行为，自动合成可执行危害测试，与原有正确性测试共同计算安全成功率 veriharm-bench 上 gpt-5.6-sol、claude-opus-5 等前沿代理平均任务准确率 95%，但安全成功率平均仅 37% " data-groups="代码Agent" data-training="评测基准|免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.03575v1" target="_blank" rel="noreferrer">2611.03575</a><span class="date">2026-11-02</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.03575v1" target="_blank" rel="noreferrer">VeriHarm-Bench: Measuring Harmful Success in LLM Coding Agents Verifiably</a><div class="authors">Wei-Lin Chen, Zhepei Wei, Xinyu Zhu et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM coding agent + harm tests</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span> <span class="chip t-免训练">免训练</span></td><td data-label="应用场景">编码代理安全评测</td><td data-label="核心创新">最小扰动良性编码任务诱发附带伤害，并自动合成可执行危害测试与正确性测试联合判定</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">VeriHarm-Bench：可验证地度量 LLM 编码代理的「有害成功」</div><div class="facts"><div class="fact"><span>核心问题</span>编码代理可能在完成用户良性任务的同时误删文件、削弱访问控制或损坏数据，形成「有害成功」</div><div class="fact"><span>关键困难</span>常规任务成功率指标看不到有害副作用，现有安全评测又只看有害结果，无法度量成功与伤害共存的情形</div><div class="fact"><span>解决方案</span>对编码任务做最小扰动以在不破坏任务良性和原目标的前提下诱发有害行为，自动合成可执行危害测试，与原有正确性测试共同计算安全成功率</div><div class="fact"><span>主要结果</span>VeriHarm-Bench 上 GPT-5.6-Sol、Claude-Opus-5 等前沿代理平均任务准确率 95%，但安全成功率平均仅 37%</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.03575v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.03575v1" target="_blank" rel="noreferrer">PDF</a>Wei-Lin Chen, Zhepei Wei, Xinyu Zhu, Yu-Min Tseng, Tzu-Han Lin, Yu Meng · Preprint · First 2026-11-02 · Latest 2026-11-02</div><details class="abs"><summary>Abstract</summary><div>Large language model (LLM) coding agents increasingly operate with shell access, allowing them to write scripts, move files, alter permissions, and modify system configurations. However, an agent may achieve a user&#x27;s goal while causing unintended harm, such as deleting unrelated files, weakening access controls, or corrupting data, in response to benign inputs without explicit jailbreaking. This failure mode is particularly important because apparent task success may reassure users that an agent behaved correctly, causing harmful side effects to go unnoticed. We call this harmful success: the agent successfully completes the intended benign task while simultaneously causing unintended harm. Despite its importance, harmful success is difficult to measure because conventional task-success metrics overlook harmful behaviors, while existing safety evaluations are often designed solely to assess harmful outcomes. We introduce VeriHarm, an automatic framework for constructing programmatically verifiable benchmarks that directly measure harmful success. VeriHarm minimally perturbs coding tasks to elicit unintended harmful behavior while maintaining the benignity of the task and preserving the original task objective. It then synthesizes executable harm tests that, together with the original task-correctness tests, evaluate both task accuracy and harmful outcomes. Frontier agents, including GPT-5.6-Sol and Claude-Opus-5, achieve an average task accuracy of 95% on our curated VeriHarm-Bench, yet still struggle to complete tasks safely: their safe success rate, the fraction of tasks completed successfully without triggering the designated harm, averages only 37%. These results suggest that successful task completion can frequently coexist with unintended harm, and that task-success metrics alone may substantially understate the potential safety risks of coding agents.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.03551 can llm agents be forward-deployed engineers? requirement discovery and delivery for enterprise text-to-sql llm agent 能成为前向部署工程师吗？企业 text-to-sql 的需求发现与交付 marianne menglin liu rongguang wang zheng wang yewen wang leonid boytsov tao sheng sujith ravi dan roth llm coding agents can increasingly automate model post-training, but whether they can act as forward-deployed engineer (fde) agents, discovering customer requirements and turning them into deployment decisions, remains unclear. we study this on a real enterprise text-to-sql engagement: a simulated customer, grounded in the real use case&#x27;s requirements, starts with an ambiguous request. an agent must discover acceptance criteria, data permissions, and hardware constraints in the discovery phase, then plan and execute a post-training recipe in the delivery phase. across 15 models, the strongest discover over 80% of withheld requirements and open-weight models discover 40-50%; in the delivery phase, only 25% of runs across eight coding-agent configurations pass all acceptance criteria. we identify four bottlenecks in this engagement: (1) incomplete discovery, with 40% of withheld requirements missing or misrepresented; (2) unreliable execution; (3) underused compute budgets and a lack of systematic comparisons across base models and post-training methods; and (4) benchmark accuracy does not guarantee production readiness. we suggest human review of discovered requirements, monitoring of the agent&#x27;s plan during execution, and an explicit experiment-environment specification covering hardware, budget scope, and production checks. 代码agent 评测基准 llm agent + simulated customer 企业 text-to-sql 交付 用模拟客户隐藏验收标准，分需求发现与后训练交付两阶段评测 agent llm agent 能否像前向部署工程师一样，从模糊客户请求中发现需求并完成企业 text-to-sql 部署 现有 coding agent 评测多关注代码生成，缺少对需求发现、权限/硬件约束与交付验收的端到端考察 模拟客户从模糊请求出发，agent 在发现阶段挖掘验收标准、数据权限与硬件约束，在交付阶段规划并执行后训练配方；跨 15 个模型和 8 种 coding-agent 配置评测 最强模型发现超 80% 隐藏需求，开源权重模型 40–50%；8 种 coding-agent 配置仅 25% 运行通过全部验收标准 建议人工复核发现的需求、执行中监控计划，并明确硬件、预算与生产检查的实验环境规范" data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.03551v1" target="_blank" rel="noreferrer">2611.03551</a><span class="date">2026-11-02</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.03551v1" target="_blank" rel="noreferrer">Can LLM Agents Be Forward-Deployed Engineers? Requirement Discovery and Delivery for Enterprise Text-to-SQL</a><div class="authors">Marianne Menglin Liu, Rongguang Wang, Zheng Wang et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + simulated customer</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">企业 Text-to-SQL 交付</td><td data-label="核心创新">用模拟客户隐藏验收标准，分需求发现与后训练交付两阶段评测 agent</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">LLM agent 能成为前向部署工程师吗？企业 Text-to-SQL 的需求发现与交付</div><div class="facts"><div class="fact"><span>核心问题</span>LLM agent 能否像前向部署工程师一样，从模糊客户请求中发现需求并完成企业 Text-to-SQL 部署</div><div class="fact"><span>关键困难</span>现有 coding agent 评测多关注代码生成，缺少对需求发现、权限/硬件约束与交付验收的端到端考察</div><div class="fact"><span>解决方案</span>模拟客户从模糊请求出发，agent 在发现阶段挖掘验收标准、数据权限与硬件约束，在交付阶段规划并执行后训练配方；跨 15 个模型和 8 种 coding-agent 配置评测</div><div class="fact"><span>主要结果</span>最强模型发现超 80% 隐藏需求，开源权重模型 40–50%；8 种 coding-agent 配置仅 25% 运行通过全部验收标准</div><div class="fact"><span>未来方向</span>建议人工复核发现的需求、执行中监控计划，并明确硬件、预算与生产检查的实验环境规范</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.03551v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.03551v1" target="_blank" rel="noreferrer">PDF</a>Marianne Menglin Liu, Rongguang Wang, Zheng Wang, Yewen Wang, Leonid Boytsov, Tao Sheng, Sujith Ravi, Dan Roth · First 2026-11-02 · Latest 2026-11-02</div><details class="abs"><summary>Abstract</summary><div>LLM coding agents can increasingly automate model post-training, but whether they can act as forward-deployed engineer (FDE) agents, discovering customer requirements and turning them into deployment decisions, remains unclear. We study this on a real enterprise text-to-SQL engagement: a simulated customer, grounded in the real use case&#x27;s requirements, starts with an ambiguous request. An agent must discover acceptance criteria, data permissions, and hardware constraints in the discovery phase, then plan and execute a post-training recipe in the delivery phase. Across 15 models, the strongest discover over 80% of withheld requirements and open-weight models discover 40-50%; in the delivery phase, only 25% of runs across eight coding-agent configurations pass all acceptance criteria. We identify four bottlenecks in this engagement: (1) incomplete discovery, with 40% of withheld requirements missing or misrepresented; (2) unreliable execution; (3) underused compute budgets and a lack of systematic comparisons across base models and post-training methods; and (4) benchmark accuracy does not guarantee production readiness. We suggest human review of discovered requirements, monitoring of the agent&#x27;s plan during execution, and an explicit experiment-environment specification covering hardware, budget scope, and production checks.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.03534 an agentic framework for automated power system studies and grid connection assessment 面向自动化电力系统研究与电网接入评估的智能体框架 maoxun huang kshitij kapoor eli louise connecting new generation and demand to the grid depends on two scarce skills: checking applications against a large, changing body of regulation, and running the network studies that decide where and how a project connects. we present grid agents, an ai system that brings both together, and the methodology we use to evaluate it. the grid ontology is its knowledge system. it represents the regulation, standards and engineering knowledge that grid work depends on, makes it searchable, and evolves as the agents learn from use. every answer drawn from it rests on evidence the agents cite. grid studio is an agent system specialised for power-system engineering. it works in its own engineering environment with domain tools and a study framework, draws on the grid ontology, and relies on established solvers for every number it reports. in both, engineers make the decisions. we bring eight published power-system benchmark families, previously scattered across separate papers, into one suite of 519 tasks, and we verify not only each answer but the work behind it, by replaying the agent&#x27;s tool calls. the grid ontology cites the right regulatory evidence more often than a general coding agent or retrieval pipelines, leads on legalbench-rag and ranks first on the public leaderboards of the enterprise rag challenge and vidore v3. grid studio scores highest on the 519 power-system tasks and is the fastest of all the systems we compare, both by a statistically significant margin. with an optimiser in the loop, its reinforcement packages cost 33-67% less on average than those the agent designs alone. 代码agent 免训练 评测基准 llm agents + ontology + solvers 电网接入评估 用可检索电网本体支撑答案引用，并回放工具调用验证过程 新发电与负荷接入需核查大量法规并开展网络研究，两项技能稀缺 法规体量大且变化快，通用编码代理与检索管线难以给出有据可查的正确证据 grid ontology 表示法规标准并随使用演化，grid studio 调用领域工具与成熟求解器，工程师决策，答案可追溯且过程可回放 519项电力任务得分最高且最快；legalbench-rag领先，enterprise rag challenge、vidore v3第一；加固包成本降33-67% " data-groups="代码Agent" data-training="免训练|评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.03534v1" target="_blank" rel="noreferrer">2611.03534</a><span class="date">2026-11-02</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.03534v1" target="_blank" rel="noreferrer">An Agentic Framework for Automated Power System Studies and Grid Connection Assessment</a><div class="authors">MaoXun Huang, Kshitij Kapoor, Eli Louise</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agents + ontology + solvers</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span> <span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">电网接入评估</td><td data-label="核心创新">用可检索电网本体支撑答案引用，并回放工具调用验证过程</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">面向自动化电力系统研究与电网接入评估的智能体框架</div><div class="facts"><div class="fact"><span>核心问题</span>新发电与负荷接入需核查大量法规并开展网络研究，两项技能稀缺</div><div class="fact"><span>关键困难</span>法规体量大且变化快，通用编码代理与检索管线难以给出有据可查的正确证据</div><div class="fact"><span>解决方案</span>Grid Ontology 表示法规标准并随使用演化，Grid Studio 调用领域工具与成熟求解器，工程师决策，答案可追溯且过程可回放</div><div class="fact"><span>主要结果</span>519项电力任务得分最高且最快；LegalBench-RAG领先，Enterprise RAG Challenge、ViDoRe V3第一；加固包成本降33-67%</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.03534v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.03534v1" target="_blank" rel="noreferrer">PDF</a>MaoXun Huang, Kshitij Kapoor, Eli Louise · 8 pages for the main paper with 6 pages for Appendix · First 2026-11-02 · Latest 2026-11-02</div><details class="abs"><summary>Abstract</summary><div>Connecting new generation and demand to the grid depends on two scarce skills: checking applications against a large, changing body of regulation, and running the network studies that decide where and how a project connects. We present Grid Agents, an AI system that brings both together, and the methodology we use to evaluate it. The Grid Ontology is its knowledge system. It represents the regulation, standards and engineering knowledge that grid work depends on, makes it searchable, and evolves as the agents learn from use. Every answer drawn from it rests on evidence the agents cite. Grid Studio is an agent system specialised for power-system engineering. It works in its own engineering environment with domain tools and a study framework, draws on the Grid Ontology, and relies on established solvers for every number it reports. In both, engineers make the decisions. We bring eight published power-system benchmark families, previously scattered across separate papers, into one suite of 519 tasks, and we verify not only each answer but the work behind it, by replaying the agent&#x27;s tool calls. The Grid Ontology cites the right regulatory evidence more often than a general coding agent or retrieval pipelines, leads on LegalBench-RAG and ranks first on the public leaderboards of the Enterprise RAG Challenge and ViDoRe V3. Grid Studio scores highest on the 519 power-system tasks and is the fastest of all the systems we compare, both by a statistically significant margin. With an optimiser in the loop, its reinforcement packages cost 33-67% less on average than those the agent designs alone.</div></details></td></tr></tbody></table></div>
+    <details class="history"><summary>History</summary><div class="history-list"><a href="20261105_1720.html">20261105_1720</a>
+<a href="20261102_0632.html">20261102_0632</a>
+<a href="20261101_0606.html">20261101_0606</a>
+<a href="20261031_0645.html">20261031_0645</a>
+<a href="20261030_2201.html">20261030_2201</a>
+<a href="20261030_2151.html">20261030_2151</a>
+<a href="20261030_2130.html">20261030_2130</a>
+<a href="20261030_0704.html">20261030_0704</a>
+<a href="20261029_0656.html">20261029_0656</a>
+<a href="20261028_0648.html">20261028_0648</a>
+<a href="20261027_0659.html">20261027_0659</a>
+<a href="20261026_0525.html">20261026_0525</a>
+<a href="20261025_0522.html">20261025_0522</a>
+<a href="20261024_0547.html">20261024_0547</a>
+<a href="20261023_0606.html">20261023_0606</a>
+<a href="20261022_0603.html">20261022_0603</a>
+<a href="20261021_0601.html">20261021_0601</a>
+<a href="20261020_0643.html">20261020_0643</a>
+<a href="20261019_0512.html">20261019_0512</a>
+<a href="20261018_0511.html">20261018_0511</a>
+<a href="20261017_0552.html">20261017_0552</a>
+<a href="20261016_0554.html">20261016_0554</a>
+<a href="20261015_0600.html">20261015_0600</a>
+<a href="20261014_0711.html">20261014_0711</a>
+<a href="20261013_0912.html">20261013_0912</a>
+<a href="20261012_0637.html">20261012_0637</a>
+<a href="20261011_0608.html">20261011_0608</a>
+<a href="20261010_0700.html">20261010_0700</a>
+<a href="20261009_0737.html">20261009_0737</a>
+<a href="20261008_0725.html">20261008_0725</a>
+<a href="20261007_0651.html">20261007_0651</a>
+<a href="20261006_0832.html">20261006_0832</a>
+<a href="20261005_0608.html">20261005_0608</a>
+<a href="20261004_0557.html">20261004_0557</a>
+<a href="20261003_0656.html">20261003_0656</a>
+<a href="20261002_0658.html">20261002_0658</a>
+<a href="20261001_0646.html">20261001_0646</a>
+<a href="20260930_1209.html">20260930_1209</a>
+<a href="20260930_1005.html">20260930_1005</a>
+<a href="20260930_0656.html">20260930_0656</a>
+<a href="20260929_0737.html">20260929_0737</a>
+<a href="20260928_0546.html">20260928_0546</a>
+<a href="20260927_0552.html">20260927_0552</a>
+<a href="20260926_0604.html">20260926_0604</a>
+<a href="20260925_0600.html">20260925_0600</a>
+<a href="20260924_1505.html">20260924_1505</a>
+<a href="20260924_1308.html">20260924_1308</a>
+<a href="20260924_1112.html">20260924_1112</a>
+<a href="20260924_0601.html">20260924_0601</a>
+<a href="20260923_1530.html">20260923_1530</a>
+<a href="20260923_1508.html">20260923_1508</a>
+<a href="20260923_0559.html">20260923_0559</a>
+<a href="20260923_0546.html">20260923_0546</a>
+<a href="20260922_0634.html">20260922_0634</a>
+<a href="20260922_0624.html">20260922_0624</a>
+<a href="20260921_0526.html">20260921_0526</a>
+<a href="20260921_0509.html">20260921_0509</a>
+<a href="20260920_0525.html">20260920_0525</a>
+<a href="20260920_0514.html">20260920_0514</a>
+<a href="20260919_0536.html">20260919_0536</a>
+<a href="20260919_0523.html">20260919_0523</a>
+<a href="20260918_0605.html">20260918_0605</a>
+<a href="20260918_0553.html">20260918_0553</a>
+<a href="20260917_0604.html">20260917_0604</a>
+<a href="20260916_0606.html">20260916_0606</a>
+<a href="20260916_0554.html">20260916_0554</a>
+<a href="20260915_0627.html">20260915_0627</a>
+<a href="20260915_0618.html">20260915_0618</a>
+<a href="20260913_0522.html">20260913_0522</a>
+<a href="20260913_0510.html">20260913_0510</a>
+<a href="20260912_0541.html">20260912_0541</a>
+<a href="20260912_0530.html">20260912_0530</a>
+<a href="20260911_0534.html">20260911_0534</a>
+<a href="20260911_0521.html">20260911_0521</a>
+<a href="20260910_0539.html">20260910_0539</a>
+<a href="20260910_0528.html">20260910_0528</a>
+<a href="20260909_0547.html">20260909_0547</a>
+<a href="20260909_0533.html">20260909_0533</a>
+<a href="20260908_0559.html">20260908_0559</a>
+<a href="20260908_0553.html">20260908_0553</a>
+<a href="20260907_0513.html">20260907_0513</a>
+<a href="20260907_0500.html">20260907_0500</a>
+<a href="20260906_0507.html">20260906_0507</a>
+<a href="20260906_0453.html">20260906_0453</a>
+<a href="20260905_0523.html">20260905_0523</a>
+<a href="20260905_0512.html">20260905_0512</a>
+<a href="20260904_0540.html">20260904_0540</a>
+<a href="20260904_0533.html">20260904_0533</a>
+<a href="20260903_0545.html">20260903_0545</a>
+<a href="20260903_0530.html">20260903_0530</a>
+<a href="20260902_0544.html">20260902_0544</a>
+<a href="20260902_0533.html">20260902_0533</a>
+<a href="20260901_0712.html">20260901_0712</a>
+<a href="20260901_0706.html">20260901_0706</a>
+<a href="20260831_0555.html">20260831_0555</a>
+<a href="20260831_0548.html">20260831_0548</a>
+<a href="20260830_0540.html">20260830_0540</a>
+<a href="20260830_0528.html">20260830_0528</a>
+<a href="20260829_1004.html">20260829_1004</a>
+<a href="20260829_0959.html">20260829_0959</a>
+<a href="20260828_1134.html">20260828_1134</a>
+<a href="20260828_1025.html">20260828_1025</a>
+<a href="20260827_0547.html">20260827_0547</a>
+<a href="20260827_0533.html">20260827_0533</a>
+<a href="20260826_0339.html">20260826_0339</a>
+<a href="20260826_0326.html">20260826_0326</a>
+<a href="20260825_0337.html">20260825_0337</a>
+<a href="20260825_0324.html">20260825_0324</a>
+<a href="20260824_0329.html">20260824_0329</a>
+<a href="20260824_0318.html">20260824_0318</a>
+<a href="20260823_0330.html">20260823_0330</a>
+<a href="20260823_0319.html">20260823_0319</a>
+<a href="20260822_0332.html">20260822_0332</a>
+<a href="20260822_0322.html">20260822_0322</a>
+<a href="20260821_0338.html">20260821_0338</a>
+<a href="20260821_0326.html">20260821_0326</a>
+<a href="20260820_0343.html">20260820_0343</a>
+<a href="20260820_0335.html">20260820_0335</a>
+<a href="20260819_0338.html">20260819_0338</a>
+<a href="20260819_0324.html">20260819_0324</a>
+<a href="20260818_0335.html">20260818_0335</a>
+<a href="20260818_0323.html">20260818_0323</a>
+<a href="20260817_0328.html">20260817_0328</a>
+<a href="20260816_0328.html">20260816_0328</a>
+<a href="20260816_0318.html">20260816_0318</a>
+<a href="20260815_0352.html">20260815_0352</a>
+<a href="20260815_0344.html">20260815_0344</a>
+<a href="20260814_0359.html">20260814_0359</a>
+<a href="20260814_0354.html">20260814_0354</a>
+<a href="20260813_0403.html">20260813_0403</a>
+<a href="20260813_0359.html">20260813_0359</a>
+<a href="20260812_0404.html">20260812_0404</a>
+<a href="20260812_0358.html">20260812_0358</a>
+<a href="20260811_0357.html">20260811_0357</a>
+<a href="20260811_0352.html">20260811_0352</a>
+<a href="20260810_0341.html">20260810_0341</a>
+<a href="20260810_0329.html">20260810_0329</a>
+<a href="20260809_0338.html">20260809_0338</a>
+<a href="20260809_0325.html">20260809_0325</a>
+<a href="20260808_0356.html">20260808_0356</a>
+<a href="20260808_0348.html">20260808_0348</a>
+<a href="20260807_0844.html">20260807_0844</a>
+<a href="20260807_0838.html">20260807_0838</a>
+<a href="20260806_0437.html">20260806_0437</a>
+<a href="20260806_0422.html">20260806_0422</a>
+<a href="20260805_0439.html">20260805_0439</a>
+<a href="20260805_0422.html">20260805_0422</a>
+<a href="20260804_0437.html">20260804_0437</a>
+<a href="20260804_0423.html">20260804_0423</a>
+<a href="20260803_0416.html">20260803_0416</a>
+<a href="20260802_0414.html">20260802_0414</a>
+<a href="20260802_0408.html">20260802_0408</a>
+<a href="20260801_0426.html">20260801_0426</a>
+<a href="20260801_0416.html">20260801_0416</a>
+<a href="20260731_0421.html">20260731_0421</a>
+<a href="20260731_0413.html">20260731_0413</a>
+<a href="20260730_0416.html">20260730_0416</a>
+<a href="20260730_0410.html">20260730_0410</a>
+<a href="20260729_0413.html">20260729_0413</a>
+<a href="20260728_0417.html">20260728_0417</a>
+<a href="20260727_0416.html">20260727_0416</a>
+<a href="20260727_0411.html">20260727_0411</a>
+<a href="20260726_0414.html">20260726_0414</a>
+<a href="20260726_0409.html">20260726_0409</a>
+<a href="20260725_0432.html">20260725_0432</a>
+<a href="20260725_0415.html">20260725_0415</a>
+<a href="20260724_0419.html">20260724_0419</a>
+<a href="20260724_0410.html">20260724_0410</a>
+<a href="20260723_0418.html">20260723_0418</a>
+<a href="20260723_0415.html">20260723_0415</a>
+<a href="20260722_0423.html">20260722_0423</a>
+<a href="20260722_0418.html">20260722_0418</a>
+<a href="20260721_0427.html">20260721_0427</a>
+<a href="20260721_0418.html">20260721_0418</a>
+<a href="20260720_0411.html">20260720_0411</a>
+<a href="20260720_0406.html">20260720_0406</a>
+<a href="20260719_0407.html">20260719_0407</a>
+<a href="20260719_0403.html">20260719_0403</a>
+<a href="20260718_0413.html">20260718_0413</a>
+<a href="20260718_0403.html">20260718_0403</a>
+<a href="20260717_0408.html">20260717_0408</a>
+<a href="20260717_0359.html">20260717_0359</a>
+<a href="20260716_0417.html">20260716_0417</a>
+<a href="20260716_0405.html">20260716_0405</a>
+<a href="20260715_0420.html">20260715_0420</a>
+<a href="20260715_0407.html">20260715_0407</a>
+<a href="20260714_0421.html">20260714_0421</a>
+<a href="20260714_0409.html">20260714_0409</a>
+<a href="20260713_0409.html">20260713_0409</a>
+<a href="20260713_0405.html">20260713_0405</a>
+<a href="20260712_0409.html">20260712_0409</a>
+<a href="20260712_0402.html">20260712_0402</a>
+<a href="20260711_0439.html">20260711_0439</a>
+<a href="20260711_0418.html">20260711_0418</a>
+<a href="20260710_0454.html">20260710_0454</a>
+<a href="20260710_0444.html">20260710_0444</a>
+<a href="20260709_0426.html">20260709_0426</a>
+<a href="20260709_0419.html">20260709_0419</a>
+<a href="20260708_0455.html">20260708_0455</a>
+<a href="20260708_0448.html">20260708_0448</a>
+<a href="20260707_0456.html">20260707_0456</a>
+<a href="20260707_0451.html">20260707_0451</a>
+<a href="20260706_0421.html">20260706_0421</a>
+<a href="20260706_0410.html">20260706_0410</a>
+<a href="20260705_0415.html">20260705_0415</a>
+<a href="20260705_0407.html">20260705_0407</a>
+<a href="20260704_0421.html">20260704_0421</a>
+<a href="20260704_0413.html">20260704_0413</a>
+<a href="20260703_0425.html">20260703_0425</a>
+<a href="20260703_0417.html">20260703_0417</a>
+<a href="20260702_0452.html">20260702_0452</a>
+<a href="20260702_0447.html">20260702_0447</a>
+<a href="20260701_0502.html">20260701_0502</a>
+<a href="20260701_0455.html">20260701_0455</a>
+<a href="20260630_0454.html">20260630_0454</a>
+<a href="20260630_0452.html">20260630_0452</a>
+<a href="20260629_0420.html">20260629_0420</a>
+<a href="20260629_0410.html">20260629_0410</a>
+<a href="20260628_0423.html">20260628_0423</a>
+<a href="20260627_0450.html">20260627_0450</a>
+<a href="20260627_0430.html">20260627_0430</a>
+<a href="20260626_1438.html">20260626_1438</a>
+<a href="20260626_0502.html">20260626_0502</a>
+<a href="20260625_0455.html">20260625_0455</a>
+<a href="20260624_0505.html">20260624_0505</a>
+<a href="20260623_0535.html">20260623_0535</a>
+<a href="20260622_0445.html">20260622_0445</a>
+<a href="20260621_0422.html">20260621_0422</a>
+<a href="20260620_0442.html">20260620_0442</a>
+<a href="20260619_0531.html">20260619_0531</a>
+<a href="20260618_0519.html">20260618_0519</a>
+<a href="20260617_0545.html">20260617_0545</a>
+<a href="20260616_0549.html">20260616_0549</a>
+<a href="20260615_0423.html">20260615_0423</a>
+<a href="20260614_0423.html">20260614_0423</a>
+<a href="20260613_0505.html">20260613_0505</a>
+<a href="20260612_0528.html">20260612_0528</a>
+<a href="20260611_0528.html">20260611_0528</a>
+<a href="20260610_0504.html">20260610_0504</a>
+<a href="20260609_0514.html">20260609_0514</a>
+<a href="20260608_0421.html">20260608_0421</a>
+<a href="20260607_0418.html">20260607_0418</a>
+<a href="20260606_0451.html">20260606_0451</a>
+<a href="20260604_0557.html">20260604_0557</a>
+<a href="20260603_0556.html">20260603_0556</a>
+<a href="20260602_0615.html">20260602_0615</a>
+<a href="20260601_0419.html">20260601_0419</a>
+<a href="20260531_0414.html">20260531_0414</a>
+<a href="20260530_0512.html">20260530_0512</a>
+<a href="20260529_0515.html">20260529_0515</a>
+<a href="20260527_0459.html">20260527_0459</a>
+<a href="20260526_0426.html">20260526_0426</a>
+<a href="20260525_0417.html">20260525_0417</a>
+<a href="20260524_0411.html">20260524_0411</a>
+<a href="20260523_0445.html">20260523_0445</a>
+<a href="20260522_0454.html">20260522_0454</a>
+<a href="20260521_0508.html">20260521_0508</a>
+<a href="20260520_0449.html">20260520_0449</a>
+<a href="20260519_0442.html">20260519_0442</a>
+<a href="20260518_0409.html">20260518_0409</a>
+<a href="20260517_0425.html">20260517_0425</a>
+<a href="20260516_0436.html">20260516_0436</a>
+<a href="20260515_0457.html">20260515_0457</a>
+<a href="20260514_0507.html">20260514_0507</a>
+<a href="20260513_0503.html">20260513_0503</a>
+<a href="20260512_0505.html">20260512_0505</a>
+<a href="20260511_0418.html">20260511_0418</a>
+<a href="20260510_0414.html">20260510_0414</a>
+<a href="20260509_0426.html">20260509_0426</a>
+<a href="20260508_0435.html">20260508_0435</a>
+<a href="20260507_0454.html">20260507_0454</a>
+<a href="20260506_0427.html">20260506_0427</a>
+<a href="20260505_0436.html">20260505_0436</a>
+<a href="20260504_0410.html">20260504_0410</a>
+<a href="20260503_0414.html">20260503_0414</a>
+<a href="20260502_0426.html">20260502_0426</a>
+<a href="20260501_0429.html">20260501_0429</a>
+<a href="20260430_0430.html">20260430_0430</a>
+<a href="20260429_0437.html">20260429_0437</a>
+<a href="20260428_0429.html">20260428_0429</a>
+<a href="20260427_0405.html">20260427_0405</a>
+<a href="20260426_0404.html">20260426_0404</a>
+<a href="20260425_0410.html">20260425_0410</a>
+<a href="20260424_0430.html">20260424_0430</a>
+<a href="20260423_0426.html">20260423_0426</a>
+<a href="20260422_0424.html">20260422_0424</a>
+<a href="20260421_0418.html">20260421_0418</a>
+<a href="20260420_0359.html">20260420_0359</a>
+<a href="20260419_0358.html">20260419_0358</a>
+<a href="20260418_0415.html">20260418_0415</a>
+<a href="20260417_0421.html">20260417_0421</a>
+<a href="20260416_0425.html">20260416_0425</a>
+<a href="20260415_0426.html">20260415_0426</a>
+<a href="20260414_0423.html">20260414_0423</a>
+<a href="20260413_0352.html">20260413_0352</a>
+<a href="20260412_0347.html">20260412_0347</a>
+<a href="20260411_0356.html">20260411_0356</a>
+<a href="20260410_0412.html">20260410_0412</a>
+<a href="20260409_0411.html">20260409_0411</a>
+<a href="20260407_0404.html">20260407_0404</a>
+<a href="20260406_0347.html">20260406_0347</a>
+<a href="20260405_0344.html">20260405_0344</a>
+<a href="20260404_0350.html">20260404_0350</a>
+<a href="20260403_0400.html">20260403_0400</a>
+<a href="20260401_0408.html">20260401_0408</a>
+<a href="20260331_0407.html">20260331_0407</a>
+<a href="20260329_0347.html">20260329_0347</a>
+<a href="20260328_0350.html">20260328_0350</a>
+<a href="20260326_0357.html">20260326_0357</a>
+<a href="20260325_0405.html">20260325_0405</a>
+<a href="20260324_0400.html">20260324_0400</a>
+<a href="20260323_0342.html">20260323_0342</a>
+<a href="20260322_0340.html">20260322_0340</a>
+<a href="20260321_0347.html">20260321_0347</a>
+<a href="20260320_0356.html">20260320_0356</a>
+<a href="20260319_0358.html">20260319_0358</a>
+<a href="20260318_0405.html">20260318_0405</a>
+<a href="20260317_0401.html">20260317_0401</a>
+<a href="20260316_0343.html">20260316_0343</a>
+<a href="20260315_0341.html">20260315_0341</a>
+<a href="20260314_0344.html">20260314_0344</a>
+<a href="20260313_0352.html">20260313_0352</a>
+<a href="20260312_0352.html">20260312_0352</a>
+<a href="20260311_0347.html">20260311_0347</a>
+<a href="20260310_0350.html">20260310_0350</a>
+<a href="20260309_0338.html">20260309_0338</a>
+<a href="20260308_0337.html">20260308_0337</a>
+<a href="20260307_0347.html">20260307_0347</a>
+<a href="20260306_0402.html">20260306_0402</a>
+<a href="20260305_0348.html">20260305_0348</a>
+<a href="20260304_0348.html">20260304_0348</a>
+<a href="20260303_0348.html">20260303_0348</a>
+<a href="20260302_0336.html">20260302_0336</a>
+<a href="20260301_0339.html">20260301_0339</a>
+<a href="20260228_0348.html">20260228_0348</a>
+<a href="20260227_0354.html">20260227_0354</a>
+<a href="20260226_0402.html">20260226_0402</a>
+<a href="20260225_0404.html">20260225_0404</a>
+<a href="20260224_0406.html">20260224_0406</a>
+<a href="20260223_0338.html">20260223_0338</a>
+<a href="20260222_0339.html">20260222_0339</a>
+<a href="20260221_0345.html">20260221_0345</a>
+<a href="20260220_0348.html">20260220_0348</a>
+<a href="20260219_0358.html">20260219_0358</a>
+<a href="20260218_0358.html">20260218_0358</a>
+<a href="20260217_0343.html">20260217_0343</a>
+<a href="20260216_0339.html">20260216_0339</a>
+<a href="20260215_0338.html">20260215_0338</a>
+<a href="20260213_0401.html">20260213_0401</a>
+<a href="20260212_0404.html">20260212_0404</a>
+<a href="20260210_0409.html">20260210_0409</a>
+<a href="20260208_0339.html">20260208_0339</a>
+<a href="20260207_0349.html">20260207_0349</a>
+<a href="20260206_0347.html">20260206_0347</a>
+<a href="20260205_0346.html">20260205_0346</a>
+<a href="20260204_0354.html">20260204_0354</a>
+<a href="20260202_0337.html">20260202_0337</a>
+<a href="20260201_0333.html">20260201_0333</a>
+<a href="20260131_0345.html">20260131_0345</a>
+<a href="20260130_0341.html">20260130_0341</a>
+<a href="20260129_0344.html">20260129_0344</a>
+<a href="20260128_0341.html">20260128_0341</a>
+<a href="20260127_0338.html">20260127_0338</a>
+<a href="20260126_0330.html">20260126_0330</a>
+<a href="20260125_0329.html">20260125_0329</a>
+<a href="20260124_0337.html">20260124_0337</a>
+<a href="20260123_0337.html">20260123_0337</a>
+<a href="20260122_0343.html">20260122_0343</a>
+<a href="20260121_0424.html">20260121_0424</a>
+<a href="20260119_0329.html">20260119_0329</a>
+<a href="20260118_0327.html">20260118_0327</a>
+<a href="20260117_0332.html">20260117_0332</a>
+<a href="20260116_0339.html">20260116_0339</a>
+<a href="20260115_0334.html">20260115_0334</a>
+<a href="20260114_0333.html">20260114_0333</a>
+<a href="20260113_0334.html">20260113_0334</a>
+<a href="20260112_0331.html">20260112_0331</a>
+<a href="20260111_0329.html">20260111_0329</a>
+<a href="20260110_0333.html">20260110_0333</a>
+<a href="20260109_0334.html">20260109_0334</a>
+<a href="20260108_0335.html">20260108_0335</a>
+<a href="20260107_0330.html">20260107_0330</a>
+<a href="20260106_0336.html">20260106_0336</a>
+<a href="20260105_0328.html">20260105_0328</a>
+<a href="20260104_0328.html">20260104_0328</a>
+<a href="20260103_0325.html">20260103_0325</a>
+<a href="20260102_0339.html">20260102_0339</a>
+<a href="20260101_0329.html">20260101_0329</a>
+<a href="20251231_0333.html">20251231_0333</a>
+<a href="20251230_0332.html">20251230_0332</a>
+<a href="20251229_0329.html">20251229_0329</a>
+<a href="20251228_0332.html">20251228_0332</a>
+<a href="20251227_0329.html">20251227_0329</a>
+<a href="20251226_0330.html">20251226_0330</a>
+<a href="20251225_0329.html">20251225_0329</a>
+<a href="20251224_0331.html">20251224_0331</a>
+<a href="20251223_0332.html">20251223_0332</a>
+<a href="20251222_0328.html">20251222_0328</a>
+<a href="20251221_0329.html">20251221_0329</a>
+<a href="20251220_0330.html">20251220_0330</a>
+<a href="20251219_0330.html">20251219_0330</a>
+<a href="20251218_0345.html">20251218_0345</a>
+<a href="20251217_0332.html">20251217_0332</a>
+<a href="20251216_0333.html">20251216_0333</a>
+<a href="20251215_0333.html">20251215_0333</a>
+<a href="20251214_0327.html">20251214_0327</a>
+<a href="20251212_0333.html">20251212_0333</a>
+<a href="20251211_0331.html">20251211_0331</a>
+<a href="20251210_0332.html">20251210_0332</a>
+<a href="20251209_0331.html">20251209_0331</a>
+<a href="20251208_0328.html">20251208_0328</a>
+<a href="20251207_0327.html">20251207_0327</a>
+<a href="20251206_0330.html">20251206_0330</a>
+<a href="20251205_0331.html">20251205_0331</a>
+<a href="20251204_0331.html">20251204_0331</a>
+<a href="20251203_0333.html">20251203_0333</a>
+<a href="20251202_0335.html">20251202_0335</a>
+<a href="20251201_0328.html">20251201_0328</a>
+<a href="20251130_0327.html">20251130_0327</a>
+<a href="20251129_0328.html">20251129_0328</a>
+<a href="20251128_0327.html">20251128_0327</a>
+<a href="20251127_0327.html">20251127_0327</a>
+<a href="20251126_0329.html">20251126_0329</a>
+<a href="20251125_0327.html">20251125_0327</a>
+<a href="20251124_0327.html">20251124_0327</a>
+<a href="20251123_0326.html">20251123_0326</a>
+<a href="20251122_0328.html">20251122_0328</a>
+<a href="20251121_0328.html">20251121_0328</a>
+<a href="20251120_0329.html">20251120_0329</a>
+<a href="20251119_0328.html">20251119_0328</a>
+<a href="20251118_0328.html">20251118_0328</a>
+<a href="20251117_0326.html">20251117_0326</a>
+<a href="20251116_0325.html">20251116_0325</a>
+<a href="20251115_0327.html">20251115_0327</a>
+<a href="20251114_0328.html">20251114_0328</a>
+<a href="20251113_0330.html">20251113_0330</a>
+<a href="20251112_0329.html">20251112_0329</a>
+<a href="20251111_0328.html">20251111_0328</a>
+<a href="20251110_0325.html">20251110_0325</a>
+<a href="20251109_0326.html">20251109_0326</a>
+<a href="20251108_0328.html">20251108_0328</a>
+<a href="20251107_0328.html">20251107_0328</a>
+<a href="20251106_0329.html">20251106_0329</a>
+<a href="20251105_0326.html">20251105_0326</a>
+<a href="20251104_0327.html">20251104_0327</a>
+<a href="20251103_0324.html">20251103_0324</a>
+<a href="20251102_0326.html">20251102_0326</a>
+<a href="20251101_0324.html">20251101_0324</a>
+<a href="20251031_0328.html">20251031_0328</a>
+<a href="20251030_0330.html">20251030_0330</a>
+<a href="20251029_0329.html">20251029_0329</a>
+<a href="20251028_0329.html">20251028_0329</a>
+<a href="20251027_0322.html">20251027_0322</a>
+<a href="20251026_0327.html">20251026_0327</a>
+<a href="20251025_0331.html">20251025_0331</a>
+<a href="20251024_0329.html">20251024_0329</a>
+<a href="20251023_0329.html">20251023_0329</a>
+<a href="20251022_0330.html">20251022_0330</a>
+<a href="20251021_0331.html">20251021_0331</a>
+<a href="20251020_0328.html">20251020_0328</a>
+<a href="20251019_0321.html">20251019_0321</a>
+<a href="20251018_0327.html">20251018_0327</a>
+<a href="20251017_0320.html">20251017_0320</a>
+<a href="20251016_0328.html">20251016_0328</a>
+<a href="20251015_0328.html">20251015_0328</a>
+<a href="20251014_0323.html">20251014_0323</a>
+<a href="20251011_0328.html">20251011_0328</a>
+<a href="20251010_0330.html">20251010_0330</a>
+<a href="20251009_0321.html">20251009_0321</a>
+<a href="20251008_0343.html">20251008_0343</a>
+<a href="20251007_0353.html">20251007_0353</a>
+<a href="20251006_0325.html">20251006_0325</a>
+<a href="20251005_0350.html">20251005_0350</a>
+<a href="20251004_0352.html">20251004_0352</a>
+<a href="20251003_0352.html">20251003_0352</a>
+<a href="20251002_0356.html">20251002_0356</a>
+<a href="20251001_0321.html">20251001_0321</a>
+<a href="20250925_0335.html">20250925_0335</a>
+<a href="20250924_0350.html">20250924_0350</a>
+<a href="20250923_0348.html">20250923_0348</a>
+<a href="20250922_0346.html">20250922_0346</a>
+<a href="20250921_0345.html">20250921_0345</a>
+<a href="20250920_0342.html">20250920_0342</a>
+<a href="20250919_0346.html">20250919_0346</a>
+<a href="20250918_0342.html">20250918_0342</a>
+<a href="20250917_0336.html">20250917_0336</a>
+<a href="20250916_0333.html">20250916_0333</a>
+<a href="20250915_0333.html">20250915_0333</a>
+<a href="20250914_0328.html">20250914_0328</a>
+<a href="20250913_0322.html">20250913_0322</a>
+<a href="20250912_0335.html">20250912_0335</a>
+<a href="20250911_0337.html">20250911_0337</a>
+<a href="20250910_0338.html">20250910_0338</a>
+<a href="20250909_0341.html">20250909_0341</a>
+<a href="20250908_0342.html">20250908_0342</a>
+<a href="20250907_0333.html">20250907_0333</a>
+<a href="20250906_0350.html">20250906_0350</a>
+<a href="20250905_0319.html">20250905_0319</a>
+<a href="20250904_0323.html">20250904_0323</a>
+<a href="20250903_0355.html">20250903_0355</a>
+<a href="20250902_0325.html">20250902_0325</a>
+<a href="20250901_0355.html">20250901_0355</a>
+<a href="20250831_0355.html">20250831_0355</a>
+<a href="20250830_0356.html">20250830_0356</a>
+<a href="20250829_0355.html">20250829_0355</a>
+<a href="20250828_0333.html">20250828_0333</a>
+<a href="20250827_1654.html">20250827_1654</a>
+<a href="20250827_1602.html">20250827_1602</a>
+<a href="20250827_1557.html">20250827_1557</a>
+<a href="20250827_0320.html">20250827_0320</a>
+<a href="20250826_0320.html">20250826_0320</a>
+<a href="20250825_1752.html">20250825_1752</a>
+<a href="20250825_1709.html">20250825_1709</a>
+<a href="20250825_1652.html">20250825_1652</a>
+<a href="20250825_1647.html">20250825_1647</a>
+<a href="20250825_1645.html">20250825_1645</a>
+<a href="20250825_1631.html">20250825_1631</a>
+<a href="20250825_1606.html">20250825_1606</a>
+<a href="20250825_1559.html">20250825_1559</a>
+<a href="20250825_1558.html">20250825_1558</a>
+<a href="20250825_1556.html">20250825_1556</a>
+<a href="20250825_1531.html">20250825_1531</a>
+<a href="20250825_1525.html">20250825_1525</a>
+<a href="20250825_1516.html">20250825_1516</a>
+<a href="20250825_1450.html">20250825_1450</a>
+<a href="20250825_1444.html">20250825_1444</a>
+<a href="20250825_1438.html">20250825_1438</a>
+<a href="20250825_1414.html">20250825_1414</a>
+<a href="20250825_1413.html">20250825_1413</a>
+<a href="20250825_1410.html">20250825_1410</a>
+<a href="20250825_1408.html">20250825_1408</a>
+<a href="20250825_1405.html">20250825_1405</a>
+<a href="20250825_1401.html">20250825_1401</a>
+<a href="20250825_1355.html">20250825_1355</a>
+<a href="20250825_1347.html">20250825_1347</a>
+<a href="20250825_1345.html">20250825_1345</a>
+<a href="20250825_1344.html">20250825_1344</a>
+<a href="20250825_1343.html">20250825_1343</a>
+<a href="20250825_1340.html">20250825_1340</a>
+<a href="20250825_1339.html">20250825_1339</a>
+<a href="20250825_1333.html">20250825_1333</a>
+<a href="20250825_1323.html">20250825_1323</a>
+<a href="20250825_1317.html">20250825_1317</a>
+<a href="20250825_1243.html">20250825_1243</a>
+<a href="20250824_0342.html">20250824_0342</a>
+<a href="20250823_0343.html">20250823_0343</a>
+<a href="20250823_0142.html">20250823_0142</a>
+<a href="20250822_2331.html">20250822_2331</a>
+<a href="20250822_2308.html">20250822_2308</a>
+<a href="20250822_2258.html">20250822_2258</a>
+<a href="20250822_2241.html">20250822_2241</a>
+<a href="20250822_2228.html">20250822_2228</a>
+<a href="20250822_2206.html">20250822_2206</a>
+<a href="20250822_2147.html">20250822_2147</a>
+<a href="20250822_2111.html">20250822_2111</a>
+<a href="20250822_1259.html">20250822_1259</a>
+<a href="20250822_1233.html">20250822_1233</a>
+<a href="20250822_1229.html">20250822_1229</a>
+<a href="20250822_1223.html">20250822_1223</a>
+<a href="20250822_1210.html">20250822_1210</a>
+<a href="20250822_1201.html">20250822_1201</a>
+<a href="20250822_1111.html">20250822_1111</a>
+<a href="20250822_1058.html">20250822_1058</a>
+<a href="20250822_1052.html">20250822_1052</a>
+<a href="20250822_1045.html">20250822_1045</a>
+<a href="20250822_0657.html">20250822_0657</a>
+<a href="20250822_0553.html">20250822_0553</a></div></details>
+    <div class="footer">Generated by arxiv-tracker</div>
+  </div>
+</body></html>
