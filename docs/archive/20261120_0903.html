@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>arXiv 论文速递</title><style>
+:root {
+  --bg:#f6f7f9; --card:#ffffff; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --row:#f8fafc; --acc:#2563eb;
+}
+:root[data-theme="dark"] {
+  --bg:#0b0f17; --card:#111827; --text:#e5e7eb; --muted:#94a3b8; --border:#1f2937; --row:#0f1623; --acc:#2563eb;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:13.5px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+.container{width:96vw;max-width:1680px;margin:0 auto;padding:14px 0 24px}
+.header{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+h1{font-size:20px;margin:0}
+.btn{border:1px solid var(--border);background:var(--card);color:var(--text);padding:5px 10px;border-radius:8px;cursor:pointer;font:inherit}
+.btn:hover{border-color:var(--acc)}
+.stats{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.stat strong{font-size:15px;margin-right:3px}
+.stat-group{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.stat-label{color:var(--muted);font-size:12px}
+.chip{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:0 8px;font-size:12px;line-height:20px;white-space:nowrap;background:var(--card);color:var(--text)}
+button.chip{cursor:pointer;font-family:inherit} button.chip:hover,button.chip.on{border-color:var(--acc);color:var(--acc)}
+.chip b{margin-left:3px}
+.t-预训练{background:rgba(59,130,246,.12)} .t-继续预训练{background:rgba(14,165,233,.12)} .t-SFT{background:rgba(16,185,129,.14)}
+.t-RL{background:rgba(245,158,11,.16)} .t-RLVR{background:rgba(249,115,22,.16)} .t-偏好优化{background:rgba(236,72,153,.13)}
+.t-蒸馏{background:rgba(139,92,246,.14)} .t-免训练{background:rgba(100,116,139,.14)} .t-评测基准{background:rgba(234,179,8,.16)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.filters input[type=search]{flex:1;min-width:240px;border:1px solid var(--border);border-radius:8px;padding:7px 10px;background:var(--card);color:var(--text);font:inherit}
+.filters select{border:1px solid var(--border);border-radius:8px;padding:6px 8px;background:var(--card);color:var(--text);font:inherit}
+.filters label{display:flex;gap:5px;align-items:center;white-space:nowrap}
+.visible-count{color:var(--muted);margin-left:auto}
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:auto}
+table.papers{width:100%;border-collapse:collapse;table-layout:fixed}
+.papers th{position:sticky;top:0;z-index:1;background:var(--card);text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:8px;border-bottom:1px solid var(--border)}
+.papers td{padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere}
+.papers tr[hidden]{display:none!important}
+.paper-row{cursor:pointer} .paper-row:hover td{background:var(--row)}
+.paper-row.open td{background:var(--row);border-bottom-color:transparent}
+.pid a{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.pid .date{display:block;color:var(--muted);font-size:11px}
+.ptitle{font-weight:600} .ptitle a{color:var(--text)} .ptitle a:hover{color:var(--acc)}
+.caret{display:inline-block;width:12px;color:var(--muted);transition:transform .15s} .open .caret{transform:rotate(90deg)}
+.authors{color:var(--muted);font-size:12px;font-weight:400}
+.muted{color:var(--muted)}
+.code a{display:inline-block;background:var(--acc);color:#fff;border-radius:6px;padding:0 7px;font-size:12px;font-weight:600;margin:0 4px 3px 0}
+.detail-row td{background:var(--row);padding:4px 12px 14px 32px}
+.title-zh{font-size:14px;font-weight:600;margin:2px 0 8px}
+.facts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.fact{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 9px}
+.fact span{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:2px}
+.meta{color:var(--muted);font-size:12px;margin-top:8px}
+.meta a{margin-right:10px}
+details.abs{margin-top:6px} details.abs summary{cursor:pointer;color:var(--acc);font-size:12px}
+details.abs div{margin-top:4px;white-space:pre-wrap;font-size:12.5px}
+.empty td{text-align:center;color:var(--muted);padding:24px}
+.history{margin-top:14px} .history summary{cursor:pointer;color:var(--acc)}
+.history-list{columns:6 140px;margin-top:6px} .history-list a{display:block;font-size:12px}
+.footer{color:var(--muted);font-size:12px;margin-top:12px}
+@media (max-width:1100px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+  .container{width:auto;padding:10px}
+  table.papers,.papers tbody,.papers tr,.papers td{display:block;width:100%}
+  .papers thead,.papers colgroup{display:none}
+  .paper-row{border-bottom:1px solid var(--border);padding:8px 0}
+  .papers td{border:0;padding:2px 10px}
+  .papers td[data-label]::before{content:attr(data-label) "：";color:var(--muted);font-size:12px}
+  .detail-row td{padding:4px 10px 12px}
+  .facts{grid-template-columns:1fr}
+}
+</style>
+<script>
+(function() {
+  const root = document.documentElement;
+  function apply(t) {
+    const dark = t === 'dark' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
+  }
+  let theme = localStorage.getItem('theme') || 'light';
+  if (!['light', 'dark', 'auto'].includes(theme)) theme = 'light';
+  apply(theme);
+  window.__toggleTheme = function() {
+    theme = theme === 'light' ? 'dark' : theme === 'dark' ? 'auto' : 'light';
+    localStorage.setItem('theme', theme);
+    apply(theme);
+    const el = document.getElementById('theme-label');
+    if (el) el.textContent = theme.toUpperCase();
+  };
+  function setOpen(row, open) {
+    const detail = row.nextElementSibling;
+    row.classList.toggle('open', open);
+    if (detail && detail.classList.contains('detail-row')) detail.hidden = !open;
+  }
+  window.__toggleRow = function(event, row) {
+    if (event.target.closest('a')) return;
+    setOpen(row, !row.classList.contains('open'));
+  };
+  window.__expandAll = function(open) {
+    document.querySelectorAll('.paper-row').forEach(row => { if (!row.hidden) setOpen(row, open); });
+  };
+  window.__pick = function(kind, value) {
+    const select = document.getElementById(kind + '-filter');
+    select.value = select.value === value ? '' : value;
+    window.__filter();
+  };
+  window.__filter = function() {
+    const query = (document.getElementById('paper-search').value || '').trim().toLocaleLowerCase();
+    const group = document.getElementById('group-filter').value;
+    const training = document.getElementById('training-filter').value;
+    const onlyCode = document.getElementById('code-only').checked;
+    let visible = 0;
+    document.querySelectorAll('.paper-row').forEach(row => {
+      const match = (!query || row.dataset.search.includes(query)) &&
+        (!group || row.dataset.groups.split('|').includes(group)) &&
+        (!training || row.dataset.training.split('|').includes(training)) &&
+        (!onlyCode || row.dataset.hasCode === 'true');
+      row.hidden = !match;
+      const detail = row.nextElementSibling;
+      if (detail && detail.classList.contains('detail-row')) detail.hidden = !match || !row.classList.contains('open');
+      if (match) visible += 1;
+    });
+    document.getElementById('visible-count').textContent = visible;
+    document.querySelectorAll('button.chip[data-kind]').forEach(chip => {
+      const value = document.getElementById(chip.dataset.kind + '-filter').value;
+      chip.classList.toggle('on', chip.dataset.value === value);
+    });
+  };
+  document.addEventListener('DOMContentLoaded', () => {
+    const label = document.getElementById('theme-label');
+    if (label) label.textContent = theme.toUpperCase();
+    window.__filter();
+  });
+})();
+</script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>arXiv 论文速递</h1>
+      <div><button class="btn" onclick="__toggleTheme()">Theme: <span id="theme-label">AUTO</span></button>
+      <span class="muted" style="margin-left:8px">更新于 2026-11-20 09:03</span></div>
+    </div>
+    <div class="stats"><span class="stat"><strong>2026-11-20</strong></span><span class="stat"><strong>18</strong>篇</span><span class="stat"><strong>3</strong>篇有代码</span><span class="stat-group"><span class="stat-label">方向</span><button class="chip" data-kind="group" data-value="代码预训练" onclick="__pick('group', this.dataset.value)">代码预训练<b>1</b></button><button class="chip" data-kind="group" data-value="代码后训练" onclick="__pick('group', this.dataset.value)">代码后训练<b>0</b></button><button class="chip" data-kind="group" data-value="代码Agent" onclick="__pick('group', this.dataset.value)">代码Agent<b>15</b></button><button class="chip" data-kind="group" data-value="Agentic RL" onclick="__pick('group', this.dataset.value)">Agentic RL<b>2</b></button></span><span class="stat-group"><span class="stat-label">训练方法</span><button class="chip t-预训练" data-kind="training" data-value="预训练" onclick="__pick('training', this.dataset.value)">预训练<b>1</b></button><button class="chip t-继续预训练" data-kind="training" data-value="继续预训练" onclick="__pick('training', this.dataset.value)">继续预训练<b>1</b></button><button class="chip t-SFT" data-kind="training" data-value="SFT" onclick="__pick('training', this.dataset.value)">SFT<b>3</b></button><button class="chip t-RL" data-kind="training" data-value="RL" onclick="__pick('training', this.dataset.value)">RL<b>4</b></button><button class="chip t-蒸馏" data-kind="training" data-value="蒸馏" onclick="__pick('training', this.dataset.value)">蒸馏<b>1</b></button><button class="chip t-免训练" data-kind="training" data-value="免训练" onclick="__pick('training', this.dataset.value)">免训练<b>10</b></button><button class="chip t-评测基准" data-kind="training" data-value="评测基准" onclick="__pick('training', this.dataset.value)">评测基准<b>5</b></button></span></div><div class="filters"><input id="paper-search" type="search" placeholder="搜索编号、标题、作者、架构、场景、摘要…" aria-label="搜索论文" oninput="__filter()"><select id="group-filter" aria-label="方向" onchange="__filter()"><option value="">全部方向</option><option value="代码预训练">代码预训练</option><option value="代码后训练">代码后训练</option><option value="代码Agent">代码Agent</option><option value="Agentic RL">Agentic RL</option></select><select id="training-filter" aria-label="训练方法" onchange="__filter()"><option value="">全部训练方法</option><option value="预训练">预训练</option><option value="继续预训练">继续预训练</option><option value="SFT">SFT</option><option value="RL">RL</option><option value="蒸馏">蒸馏</option><option value="免训练">免训练</option><option value="评测基准">评测基准</option></select><label><input id="code-only" type="checkbox" onchange="__filter()"> 只看有代码</label><button class="btn" onclick="__expandAll(true)">全部展开</button><button class="btn" onclick="__expandAll(false)">全部收起</button><span class="visible-count">显示 <b id="visible-count">18</b> / 18</span></div><div class="table-wrap"><table class="papers"><colgroup><col style="width:92px"><col style="width:24%"><col style="width:108px"><col style="width:150px"><col style="width:118px"><col style="width:140px"><col><col style="width:76px"></colgroup><thead><tr><th>论文编号</th><th>Title</th><th>方向</th><th>模型架构</th><th>训练方法</th><th>应用场景</th><th>核心创新</th><th>Code</th></tr></thead><tbody><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.24489 mitigating fix reversal: counterfactual constraints for function-level vulnerability detection 缓解修复反转：面向函数级漏洞检测的反事实约束 yun bian shihao li haiquan wang yi chen zhao yang zhe cui function-level vulnerability detectors often exhibit fix reversal, assigning a higher vulnerability probability to a fixed version than to its vulnerable counterpart. fixes usually lengthen functions, and larger length increases are associated with more severe reversal. code-transformation experiments indicate that fix reversal mainly stems from a length shortcut: vulnerability probability increases with function length when content is fixed. we propose cfvul to address this problem. sliding-window encoding covers complete functions, retaining fix information beyond the truncation boundary. during training, a content constraint encourages the vulnerable version to receive a higher vulnerability probability under a common length input. during inference, a length constraint averages vulnerability probabilities over fixed reference lengths, reducing the influence of actual length changes. on primevul, cfvul achieves a fix-pair ranking metric, pairrank, of 59.4\%, exceeding the existing methods compared. for fixes that increase function length by more than 15\%, pairrank rises from codebert&#x27;s 25.8\% to 48.4\%. pairrank also improves in experiments with four additional models and three additional datasets. by weakening the length shortcut, cfvul reduces cases in which fixed versions receive higher vulnerability probabilities than vulnerable versions. it requires only existing fix pairs and applies to multiple pretrained code models, facilitating adoption in existing detectors. 代码预训练 sft code model + dual constraints 函数级漏洞检测 用滑窗编码加内容与长度双约束，削弱长度捷径导致的修复反转 函数级漏洞检测器常给修复后版本更高的漏洞概率，即修复反转，修复使函数变长时更严重 模型依赖函数长度捷径，截断丢失修复信息，长度增加导致误判修复版本更脆弱 滑窗编码覆盖完整函数；训练时在共同长度输入下约束脆弱版概率更高；推理时在固定参考长度上平均概率 primevul 上 pairrank 59.4%；长度增加&gt;15%的修复从25.8%升至48.4%，另4模型3数据集提升 " data-groups="代码预训练" data-training="SFT" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.24489v1" target="_blank" rel="noreferrer">2611.24489</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.24489v1" target="_blank" rel="noreferrer">Mitigating fix reversal: Counterfactual constraints for function-level vulnerability detection</a><div class="authors">Yun Bian, Shihao Li, Haiquan Wang et al.</div></td><td data-label="方向"><span class=chip>代码预训练</span></td><td data-label="模型架构">Code model + dual constraints</td><td data-label="训练方法"><span class="chip t-SFT">SFT</span></td><td data-label="应用场景">函数级漏洞检测</td><td data-label="核心创新">用滑窗编码加内容与长度双约束，削弱长度捷径导致的修复反转</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">缓解修复反转：面向函数级漏洞检测的反事实约束</div><div class="facts"><div class="fact"><span>核心问题</span>函数级漏洞检测器常给修复后版本更高的漏洞概率，即修复反转，修复使函数变长时更严重</div><div class="fact"><span>关键困难</span>模型依赖函数长度捷径，截断丢失修复信息，长度增加导致误判修复版本更脆弱</div><div class="fact"><span>解决方案</span>滑窗编码覆盖完整函数；训练时在共同长度输入下约束脆弱版概率更高；推理时在固定参考长度上平均概率</div><div class="fact"><span>主要结果</span>PrimeVul 上 PairRank 59.4%；长度增加&gt;15%的修复从25.8%升至48.4%，另4模型3数据集提升</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.24489v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.24489v1" target="_blank" rel="noreferrer">PDF</a>Yun Bian, Shihao Li, Haiquan Wang, Yi Chen, Zhao Yang, Zhe Cui · 21 pages, 9 figures · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>Function-level vulnerability detectors often exhibit fix reversal, assigning a higher vulnerability probability to a fixed version than to its vulnerable counterpart. Fixes usually lengthen functions, and larger length increases are associated with more severe reversal. Code-transformation experiments indicate that fix reversal mainly stems from a length shortcut: vulnerability probability increases with function length when content is fixed. We propose CFVul to address this problem. Sliding-window encoding covers complete functions, retaining fix information beyond the truncation boundary. During training, a content constraint encourages the vulnerable version to receive a higher vulnerability probability under a common length input. During inference, a length constraint averages vulnerability probabilities over fixed reference lengths, reducing the influence of actual length changes. On PrimeVul, CFVul achieves a fix-pair ranking metric, PairRank, of 59.4\%, exceeding the existing methods compared. For fixes that increase function length by more than 15\%, PairRank rises from CodeBERT&#x27;s 25.8\% to 48.4\%. PairRank also improves in experiments with four additional models and three additional datasets. By weakening the length shortcut, CFVul reduces cases in which fixed versions receive higher vulnerability probabilities than vulnerable versions. It requires only existing fix pairs and applies to multiple pretrained code models, facilitating adoption in existing detectors.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.24636 clover-35b-a3b-preview technical report clover-35b-a3b-preview 技术报告 diffuspace technical team we introduce clover-35b-a3b-preview (clover), a mixture-of-experts diffusion language model with 35 billion total parameters and 3 billion activated parameters, supporting thinking-mode generation. clover adapts gated delta networks to block diffusion by combining recurrent memory of previously generated context with bidirectional softmax attention inside the current block. historical memory readout competes with current-block tokens in a shared softmax, with learnable block-size calibration and a separate, zero-initialized right-context convolution branch. clover leads the seven evaluated agent metrics, including 73.6 on swe-bench verified and 51.7 on terminal-bench 2.1. on internal agent workloads, it reaches a reported generation speed of 680 tokens/s using one nvidia gb300 gpu at bf16 precision and batch size one. we organize the evaluation around model quality, drafting and verification costs, and deployment under constrained memory. we also describe a decision-model variant that generates answers to related questions in one denoising pass. on an internal set of 500 groups, joint prediction raises question accuracy from 90.37% to 93.88% and all-correct group accuracy from 65.4% to 77.0%. 代码agent 继续预训练 sft moe diffusion lm 智能体编码与终端任务 将 gated delta 循环记忆与块内双向注意力并入同一 softmax，配可学习块大小校准。 扩散语言模型在智能体编码任务上如何兼顾生成质量、推理速度与显存受限部署。 块扩散缺乏跨块历史记忆，双向注意力仅限块内，长上下文一致性与效率难兼顾。 采用 35b 总参 3b 激活的 moe 扩散架构，把已生成上下文的循环记忆读出与当前块 token 放入共享 softmax，加零初始化右上下文卷积分支。 swe-bench verified 73.6、terminal-bench 2.1 51.7，七项智能体指标居首；单张 gb300 上 bf16、batch=1 达 680 tokens/s。 " data-groups="代码Agent" data-training="继续预训练|SFT" data-has-code="true"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.24636v1" target="_blank" rel="noreferrer">2611.24636</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.24636v1" target="_blank" rel="noreferrer">Clover-35B-A3B-Preview Technical Report</a><div class="authors">DiffuSpace Technical Team</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">MoE diffusion LM</td><td data-label="训练方法"><span class="chip t-继续预训练">继续预训练</span> <span class="chip t-SFT">SFT</span></td><td data-label="应用场景">智能体编码与终端任务</td><td data-label="核心创新">将 Gated Delta 循环记忆与块内双向注意力并入同一 softmax，配可学习块大小校准。</td><td class="code" data-label="Code"><a href="https://github.com/DiffuSpace/Clover-35B-A3B-Preview" target="_blank" rel="noreferrer">Code1</a><a href="https://huggingface.co/Diffuspace/Clover-35B-A3B-Preview" target="_blank" rel="noreferrer">Code2</a></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">Clover-35B-A3B-Preview 技术报告</div><div class="facts"><div class="fact"><span>核心问题</span>扩散语言模型在智能体编码任务上如何兼顾生成质量、推理速度与显存受限部署。</div><div class="fact"><span>关键困难</span>块扩散缺乏跨块历史记忆，双向注意力仅限块内，长上下文一致性与效率难兼顾。</div><div class="fact"><span>解决方案</span>采用 35B 总参 3B 激活的 MoE 扩散架构，把已生成上下文的循环记忆读出与当前块 token 放入共享 softmax，加零初始化右上下文卷积分支。</div><div class="fact"><span>主要结果</span>SWE-bench Verified 73.6、Terminal-Bench 2.1 51.7，七项智能体指标居首；单张 GB300 上 BF16、batch=1 达 680 tokens/s。</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.24636v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.24636v1" target="_blank" rel="noreferrer">PDF</a>DiffuSpace Technical Team · Technical Report. Code: https://github.com/DiffuSpace/Clover-35B-A3B-Preview; Weights: https://huggingface.co/Diffuspace/Clover-35B-A3B-Preview · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>We introduce Clover-35B-A3B-Preview (Clover), a mixture-of-experts diffusion language model with 35 billion total parameters and 3 billion activated parameters, supporting thinking-mode generation. Clover adapts Gated Delta Networks to block diffusion by combining recurrent memory of previously generated context with bidirectional softmax attention inside the current block. Historical memory readout competes with current-block tokens in a shared softmax, with learnable block-size calibration and a separate, zero-initialized right-context convolution branch. Clover leads the seven evaluated agent metrics, including 73.6 on SWE-bench Verified and 51.7 on Terminal-Bench 2.1. On internal agent workloads, it reaches a reported generation speed of 680 tokens/s using one NVIDIA GB300 GPU at BF16 precision and batch size one. We organize the evaluation around model quality, drafting and verification costs, and deployment under constrained memory. We also describe a decision-model variant that generates answers to related questions in one denoising pass. On an internal set of 500 groups, joint prediction raises question accuracy from 90.37% to 93.88% and all-correct group accuracy from 65.4% to 77.0%.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.24517 absclaw: from invented worlds to reality-grounded social simulation absclaw：从虚构世界到基于现实的社会模拟 shaobin he yan gao quan zheng zhenyang lin zhen liu jiyan he shuxin zheng llm-based artificial societies exhibit rich behavior but often lack scientific grounding: personas and environments are assumed, interaction networks are synthetic, and simulators are generated as free-form code, making results difficult to tie to real populations and sensitive to the backbone model. we argue that simulated worlds should be sampled from observed data, while simulation logic should be implemented by composing operations from a shared, task-independent vocabulary. in this paper, we introduce absclaw, a zero-code agent that compiles natural-language requests into executable, reality-grounded social simulations. absclaw grounds who acts, where they act, and with whom they interact in survey and census data, geospatial sources, and real networks. it expresses state transitions through 26 atomic operations. to support an open and extensible ecosystem, absclaw further allows capabilities to be added as lifecycle-scoped skills without modifying its core. furthermore, we propose absbench, a benchmark of 193 real-world social-simulation tasks. on absbench, absclaw achieves the best overall performance among the evaluated social simulators. three real-world case studies show that grounding personas, environments, and interaction networks each improves agreement with observed outcomes. with one runtime skill, absclaw executes 13 population-scale simulations, collectively involving 25 million agents. together, these results demonstrate absclaw&#x27;s real-world fidelity, extensibility, and scalability. 代码agent 免训练 评测基准 zero-code llm agent simulator 现实数据社会模拟 把自然语言请求编译为基于调查、普查、地理与真实网络的26个原子操作模拟 llm 人工社会中 persona、环境与交互网络均为虚构，模拟逻辑由自由生成代码实现，结果难与真实人群对应 人物与环境靠假设、网络为合成、模拟器为自由生成代码，导致结果无法绑定真实人口且对骨干模型敏感 从调查与普查数据、地理空间源和真实网络采样行动者、环境与交互关系；用26个原子操作组合表达状态转移；能力以生命周期作用域技能扩展而不改核心 absbench（193个真实任务）上综合表现最佳；案例显示接地 persona、环境、网络分别提升与观测结果一致性；单个运行时技能完成13个群体级模拟、共2500万 agent " data-groups="代码Agent" data-training="免训练|评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.24517v1" target="_blank" rel="noreferrer">2611.24517</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.24517v1" target="_blank" rel="noreferrer">ABSClaw: From Invented Worlds to Reality-Grounded Social Simulation</a><div class="authors">Shaobin He, Yan Gao, Quan Zheng et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Zero-code LLM agent simulator</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span> <span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">现实数据社会模拟</td><td data-label="核心创新">把自然语言请求编译为基于调查、普查、地理与真实网络的26个原子操作模拟</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">ABSClaw：从虚构世界到基于现实的社会模拟</div><div class="facts"><div class="fact"><span>核心问题</span>LLM 人工社会中 persona、环境与交互网络均为虚构，模拟逻辑由自由生成代码实现，结果难与真实人群对应</div><div class="fact"><span>关键困难</span>人物与环境靠假设、网络为合成、模拟器为自由生成代码，导致结果无法绑定真实人口且对骨干模型敏感</div><div class="fact"><span>解决方案</span>从调查与普查数据、地理空间源和真实网络采样行动者、环境与交互关系；用26个原子操作组合表达状态转移；能力以生命周期作用域技能扩展而不改核心</div><div class="fact"><span>主要结果</span>ABSBench（193个真实任务）上综合表现最佳；案例显示接地 persona、环境、网络分别提升与观测结果一致性；单个运行时技能完成13个群体级模拟、共2500万 agent</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.24517v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.24517v1" target="_blank" rel="noreferrer">PDF</a>Shaobin He, Yan Gao, Quan Zheng, Zhenyang Lin, Zhen Liu, Jiyan He, Shuxin Zheng · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>LLM-based artificial societies exhibit rich behavior but often lack scientific grounding: personas and environments are assumed, interaction networks are synthetic, and simulators are generated as free-form code, making results difficult to tie to real populations and sensitive to the backbone model. We argue that simulated worlds should be sampled from observed data, while simulation logic should be implemented by composing operations from a shared, task-independent vocabulary. In this paper, we introduce ABSClaw, a zero-code agent that compiles natural-language requests into executable, reality-grounded social simulations. ABSClaw grounds who acts, where they act, and with whom they interact in survey and census data, geospatial sources, and real networks. It expresses state transitions through 26 atomic operations. To support an open and extensible ecosystem, ABSClaw further allows capabilities to be added as lifecycle-scoped skills without modifying its core. Furthermore, we propose ABSBench, a benchmark of 193 real-world social-simulation tasks. On ABSBench, ABSClaw achieves the best overall performance among the evaluated social simulators. Three real-world case studies show that grounding personas, environments, and interaction networks each improves agreement with observed outcomes. With one runtime skill, ABSClaw executes 13 population-scale simulations, collectively involving 25 million agents. Together, these results demonstrate ABSClaw&#x27;s real-world fidelity, extensibility, and scalability.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.24491 probing agent overeagerness in realistic settings with continuation audits 在现实环境中用 continuation audits 探查智能体的过度积极行为 sean lim clement neo frontier coding agents increasingly exhibit overeagerness, taking surprising, sometimes reckless actions beyond a user&#x27;s mandate --- reported in recent system cards from frontier model developers. these cases are surfaced through internal deployment monitoring, which requires private traffic and is out of reach for open-weight models and independent evaluators. automated alignment audits are the natural alternative, but capable models increasingly recognise the synthetic setup and adjust their behaviour. we introduce continuation audits, a pipeline that grounds the auditor on a prefix drawn from a real coding-agent transcript and directs it to continue the trajectory toward a seeded behaviour. because the prefix is drawn from a real session, the auditor only needs to maintain a realistic setting rather than manufacturing it. we validate the method on swe-chat prefixes: on a paired subset of 90 audits a judge cannot reliably distinguish continuations from their source sessions (realism win rate 0.42 vs.\ 0.43), and across all 900 audits verbalized eval-awareness does not exceed the rate observed in the unaudited real sessions. applying the pipeline to three recent models across three seeds, we find each model leads a different seed --- deepseek~v4~pro on colleague-credentials misuse, gpt-5.6~terra on file-permission bypasses, and kimi~k3 on treating diagnostic questions as instructions. kimi~k3 additionally continues to bypass file-permission protections after an explicit claude.md prohibition while the other two stop entirely, corroborating moonshot&#x27;s own report of excessive proactiveness. 代码agent 免训练 评测基准 llm agent audit pipeline 编码智能体行为审计 用真实会话前缀约束审计续写，降低合成痕迹与 eval-awareness 前沿编码智能体常超出授权行动，内部部署监控依赖私有流量，开放权重模型与独立评估者无法使用 自动对齐审计的合成环境易被强模型识破并调整行为，真实部署监控又不可得 以真实编码代理会话前缀为起点，令审计器续写轨迹至预设行为，只需维持而非伪造真实场景；在 swe-chat 前缀上验证 90 对审计真实/续写判别胜率 0.42 vs 0.43；900 次审计 eval-awareness 未升高；三模型各主导不同风险种子 " data-groups="代码Agent" data-training="免训练|评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.24491v1" target="_blank" rel="noreferrer">2611.24491</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.24491v1" target="_blank" rel="noreferrer">Probing agent overeagerness in realistic settings with continuation audits</a><div class="authors">Sean Lim, Clement Neo</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent audit pipeline</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span> <span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">编码智能体行为审计</td><td data-label="核心创新">用真实会话前缀约束审计续写，降低合成痕迹与 eval-awareness</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">在现实环境中用 Continuation Audits 探查智能体的过度积极行为</div><div class="facts"><div class="fact"><span>核心问题</span>前沿编码智能体常超出授权行动，内部部署监控依赖私有流量，开放权重模型与独立评估者无法使用</div><div class="fact"><span>关键困难</span>自动对齐审计的合成环境易被强模型识破并调整行为，真实部署监控又不可得</div><div class="fact"><span>解决方案</span>以真实编码代理会话前缀为起点，令审计器续写轨迹至预设行为，只需维持而非伪造真实场景；在 SWE-Chat 前缀上验证</div><div class="fact"><span>主要结果</span>90 对审计真实/续写判别胜率 0.42 vs 0.43；900 次审计 eval-awareness 未升高；三模型各主导不同风险种子</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.24491v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.24491v1" target="_blank" rel="noreferrer">PDF</a>Sean Lim, Clement Neo · NeurIPS · Presented at NeurIPS Workshops: (1) Third Workshop on Agents in the Wild: Safety, Security, and Beyond, and (2) The 1st Workshop on Interpreting Agent Behavior (IAB) at NeurIPS 2026 · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>Frontier coding agents increasingly exhibit overeagerness, taking surprising, sometimes reckless actions beyond a user&#x27;s mandate --- reported in recent system cards from frontier model developers. These cases are surfaced through internal deployment monitoring, which requires private traffic and is out of reach for open-weight models and independent evaluators. Automated alignment audits are the natural alternative, but capable models increasingly recognise the synthetic setup and adjust their behaviour. We introduce Continuation Audits, a pipeline that grounds the auditor on a prefix drawn from a real coding-agent transcript and directs it to continue the trajectory toward a seeded behaviour. Because the prefix is drawn from a real session, the auditor only needs to maintain a realistic setting rather than manufacturing it. We validate the method on SWE-Chat prefixes: on a paired subset of 90 audits a judge cannot reliably distinguish continuations from their source sessions (realism win rate 0.42 vs.\ 0.43), and across all 900 audits verbalized eval-awareness does not exceed the rate observed in the unaudited real sessions. Applying the pipeline to three recent models across three seeds, we find each model leads a different seed --- DeepSeek~V4~Pro on colleague-credentials misuse, GPT-5.6~Terra on file-permission bypasses, and Kimi~K3 on treating diagnostic questions as instructions. Kimi~K3 additionally continues to bypass file-permission protections after an explicit CLAUDE.md prohibition while the other two stop entirely, corroborating Moonshot&#x27;s own report of excessive proactiveness.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.22897 born for the task: rethinking quantum chemistry with foresighted agentic computing 为任务而生：用前瞻式智能体计算重新思考量子化学 haozhi han junjie yang ruge zhang zihe huang pengyi xu bo zhang xianyi zhang yunquan zhang ting cao yunxin liu yifeng chen kun li quantum chemistry relies on general-purpose software, whose generality leaves many large-scale calculations beyond practical resource budgets. coding agents make task-specific programs cheap to write, but not efficient ones easy to find: whether a computational strategy is accurate and fast enough becomes clear only after it actually runs at the target scale. we introduce makoborn, a foresighted agentic computing framework that synthesizes high performance quantum chemistry programs on demand. makoborn anticipates the behavior of each strategy before execution, extrapolating its error from representative small systems and predicting its runtime from the target-scale workload and measured hardware throughputs. building on these predictions, makoborn unfolds the preset schemes of existing packages into independently configurable algorithmic components, selects the fastest strategy within the error tolerance from the predicted accuracy-runtime pareto frontier, and guides coding agents to compile it with component-level performance predictions. for a hartree-fock calculation with 50,024 basis functions, makoborn finishes in 1.41 h on a single cpu node, 77$\times$ faster than the estimated runtime of a general-purpose baseline and still 9.8$\times$ faster with development time included. on a single gpu, makoborn completes the ubiquitin calculation in 2.1 h, the same order of runtime as the gpu-accelerated package mako on 64 gpus, and shortens the b-dna duplex calculation from an estimated two months to 8.1 h (173$\times$). 代码agent 免训练 coding agent + runtime predictor 量子化学程序自动合成 执行前用小体系外推误差、按目标规模预测运行时间，在精度-时间帕累托前沿选最快策略并指导生成代码 通用量子化学软件导致大规模计算超出资源预算，而按需编写的专用程序在运行前无法判断精度与速度是否达标 策略的精度和速度只有真正在目标规模上跑过才清楚，缺少执行前的误差与运行时间预测，难以快速找到达标程序 把现有软件预设方案拆为可独立配置的算法组件；用小体系外推误差、按目标规模负载与实测硬件吞吐预测运行时间；在精度-运行时间帕累托前沿选最快策略，并指导编码智能体生成程序 50,024基函数hartree-fock单cpu节点1.41h，快于通用基线估计77×(含开发时间9.8×)；单gpu泛素2.1h≈mako 64 gpu；b-dna由约两月降至8.1h(173×) " data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.22897v2" target="_blank" rel="noreferrer">2611.22897</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.22897v2" target="_blank" rel="noreferrer">Born for the Task: Rethinking Quantum Chemistry with Foresighted Agentic Computing</a><div class="authors">Haozhi Han, Junjie Yang, Ruge Zhang et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Coding agent + runtime predictor</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">量子化学程序自动合成</td><td data-label="核心创新">执行前用小体系外推误差、按目标规模预测运行时间，在精度-时间帕累托前沿选最快策略并指导生成代码</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">为任务而生：用前瞻式智能体计算重新思考量子化学</div><div class="facts"><div class="fact"><span>核心问题</span>通用量子化学软件导致大规模计算超出资源预算，而按需编写的专用程序在运行前无法判断精度与速度是否达标</div><div class="fact"><span>关键困难</span>策略的精度和速度只有真正在目标规模上跑过才清楚，缺少执行前的误差与运行时间预测，难以快速找到达标程序</div><div class="fact"><span>解决方案</span>把现有软件预设方案拆为可独立配置的算法组件；用小体系外推误差、按目标规模负载与实测硬件吞吐预测运行时间；在精度-运行时间帕累托前沿选最快策略，并指导编码智能体生成程序</div><div class="fact"><span>主要结果</span>50,024基函数Hartree-Fock单CPU节点1.41h，快于通用基线估计77×(含开发时间9.8×)；单GPU泛素2.1h≈Mako 64 GPU；B-DNA由约两月降至8.1h(173×)</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.22897v2" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.22897v2" target="_blank" rel="noreferrer">PDF</a>Haozhi Han, Junjie Yang, Ruge Zhang, Zihe Huang, Pengyi Xu, Bo Zhang, Xianyi Zhang, Yunquan Zhang, Ting Cao, Yunxin Liu, Yifeng Chen, Kun Li · First 2026-11-17 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>Quantum chemistry relies on general-purpose software, whose generality leaves many large-scale calculations beyond practical resource budgets. Coding agents make task-specific programs cheap to write, but not efficient ones easy to find: whether a computational strategy is accurate and fast enough becomes clear only after it actually runs at the target scale. We introduce MakoBORN, a foresighted agentic computing framework that synthesizes high performance quantum chemistry programs on demand. MakoBORN anticipates the behavior of each strategy before execution, extrapolating its error from representative small systems and predicting its runtime from the target-scale workload and measured hardware throughputs. Building on these predictions, MakoBORN unfolds the preset schemes of existing packages into independently configurable algorithmic components, selects the fastest strategy within the error tolerance from the predicted accuracy-runtime Pareto frontier, and guides coding agents to compile it with component-level performance predictions. For a Hartree-Fock calculation with 50,024 basis functions, MakoBORN finishes in 1.41 h on a single CPU node, 77$\times$ faster than the estimated runtime of a general-purpose baseline and still 9.8$\times$ faster with development time included. On a single GPU, MakoBORN completes the ubiquitin calculation in 2.1 h, the same order of runtime as the GPU-accelerated package Mako on 64 GPUs, and shortens the B-DNA duplex calculation from an estimated two months to 8.1 h (173$\times$).</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.24357 semantic context handoff with on-demand evidence for long-horizon agents 长程 agent 的语义上下文交接与按需证据 guolong zheng chen hou xu yang jianshan zhang tao huang traditional long-horizon llm agents often hand off context through full-history prompting, retaining all previous action--observation interactions. as execution proceeds, this history keeps growing, increasing inference cost and potentially degrading accuracy. existing methods control this growth by preserving compact conclusions while removing earlier observations, but doing so can discard evidence that later becomes relevant. we introduce semantic context handoff (sch), whose central abstraction is state--evidence separation: a compact semantic state carries the agent&#x27;s current interpretation, while supporting action--observation evidence remains separately addressable and can re-enter context when later execution makes it relevant, without separate summarization or retrieval-model calls.
+  empirically, sch improves long-horizon agent performance while substantially reducing context cost. in a controlled 150-task swe-bench study, sch&#x27;s evidence recovery improves pass@1 from $80.0\%$ to $86.9\%$ at essentially unchanged token use and execution time. in the complete-system comparison, sch achieves 86.9% pass@1 while using 43% fewer tokens and 41% less wall-clock time than the strongest baseline by task performance. across models and benchmarks, sch consistently reduces token use relative to full-history prompting while remaining competitive with or improving upon the evaluated baselines. trajectory analysis confirms that sch recovers evidence from substantially earlier parts of the interaction history rather than merely preserving a recent context window. 代码agent 免训练 llm agent + evidence memory 长程软件工程任务 将语义状态与动作-观测证据分离，证据可按需重新进入上下文 全历史提示使长程 agent 上下文持续增长、推理成本上升且准确率下降；压缩结论又会丢失后续有用证据。 现有方法保留紧凑结论而删除早期观测，后续需要时无法恢复证据，单独摘要或检索调用又增加开销。 用紧凑语义状态承载当前解释，动作-观测证据独立可寻址；后续执行相关时按需回填上下文，无需额外摘要或检索模型调用。 swe-bench 150 任务：pass@1 80.0%→86.9%，token/时间基本不变；完整系统 86.9%，较最强基线省 43% token、41% 时间。 " data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.24357v1" target="_blank" rel="noreferrer">2611.24357</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.24357v1" target="_blank" rel="noreferrer">Semantic Context Handoff with On-Demand Evidence for Long-Horizon Agents</a><div class="authors">Guolong Zheng, Chen Hou, Xu Yang et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + evidence memory</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">长程软件工程任务</td><td data-label="核心创新">将语义状态与动作-观测证据分离，证据可按需重新进入上下文</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">长程 Agent 的语义上下文交接与按需证据</div><div class="facts"><div class="fact"><span>核心问题</span>全历史提示使长程 Agent 上下文持续增长、推理成本上升且准确率下降；压缩结论又会丢失后续有用证据。</div><div class="fact"><span>关键困难</span>现有方法保留紧凑结论而删除早期观测，后续需要时无法恢复证据，单独摘要或检索调用又增加开销。</div><div class="fact"><span>解决方案</span>用紧凑语义状态承载当前解释，动作-观测证据独立可寻址；后续执行相关时按需回填上下文，无需额外摘要或检索模型调用。</div><div class="fact"><span>主要结果</span>SWE-bench 150 任务：Pass@1 80.0%→86.9%，token/时间基本不变；完整系统 86.9%，较最强基线省 43% token、41% 时间。</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.24357v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.24357v1" target="_blank" rel="noreferrer">PDF</a>Guolong Zheng, Chen Hou, Xu Yang, Jianshan Zhang, Tao Huang · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>Traditional long-horizon LLM agents often hand off context through full-history prompting, retaining all previous action--observation interactions. As execution proceeds, this history keeps growing, increasing inference cost and potentially degrading accuracy. Existing methods control this growth by preserving compact conclusions while removing earlier observations, but doing so can discard evidence that later becomes relevant. We introduce Semantic Context Handoff (SCH), whose central abstraction is state--evidence separation: a compact semantic state carries the agent&#x27;s current interpretation, while supporting action--observation evidence remains separately addressable and can re-enter context when later execution makes it relevant, without separate summarization or retrieval-model calls.
+  Empirically, SCH improves long-horizon agent performance while substantially reducing context cost. In a controlled 150-task SWE-bench study, SCH&#x27;s evidence recovery improves Pass@1 from $80.0\%$ to $86.9\%$ at essentially unchanged token use and execution time. In the complete-system comparison, SCH achieves 86.9% Pass@1 while using 43% fewer tokens and 41% less wall-clock time than the strongest baseline by task performance. Across models and benchmarks, SCH consistently reduces token use relative to full-history prompting while remaining competitive with or improving upon the evaluated baselines. Trajectory analysis confirms that SCH recovers evidence from substantially earlier parts of the interaction history rather than merely preserving a recent context window.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.24347 automodel: a skill for agentic model discovery automodel：面向智能体模型发现的技能 marco virgolin harry desmond ester bergantin giorgio morales john w. sheppard luigi romano alessandro lucantonio the search for better models, whether expressed as analytical equations or neural architectures, has increasingly shifted from manual design toward data-driven automation. while a multitude of algorithms exist, ranging from exhaustive search to alphaevolve, recent advances in general-purpose coding agents such as claude code and openai codex raise the question: could providing such systems with a &quot;model discovery recipe&quot; be enough to discover or improve models? we present automodel, an agent skill for general model discovery. with case studies in astrophysics, cardiovascular dynamics, precision agriculture, traffic flow, and vehicle tire dynamics, we show how commercial agents equipped with automodel can successfully identify novel and scientifically-relevant models. our findings suggest that encoding model-discovery methodology as a portable agent skill can provide a simple, interactive, powerful and broadly applicable alternative to domain-specific automated discovery pipelines. the skill is available at: https://github.com/unlayer-ai/automodel. 代码agent 免训练 llm agent + skill 科学模型自动发现 将模型发现方法论封装为可移植 agent skill，供通用编码智能体直接调用 通用编码智能体能否仅凭模型发现方法论技能，自动发现或改进科学与工程模型 现有自动发现流程多为领域专用、需手工构建，难以跨学科迁移且交互性差 把模型发现方法论编码为可移植 agent skill，商业编码智能体加载后在多领域迭代搜索、评估并改进方程或架构 在天体物理、心血管动力学、精准农业、交通流、轮胎动力学案例中，配备 automodel 的商业智能体成功识别新颖且具科学相关性的模型 " data-groups="代码Agent" data-training="免训练" data-has-code="true"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.24347v1" target="_blank" rel="noreferrer">2611.24347</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.24347v1" target="_blank" rel="noreferrer">automodel: A Skill for Agentic Model Discovery</a><div class="authors">Marco Virgolin, Harry Desmond, Ester Bergantin et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + skill</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">科学模型自动发现</td><td data-label="核心创新">将模型发现方法论封装为可移植 agent skill，供通用编码智能体直接调用</td><td class="code" data-label="Code"><a href="https://github.com/unlayer-ai/automodel" target="_blank" rel="noreferrer">Code</a></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">automodel：面向智能体模型发现的技能</div><div class="facts"><div class="fact"><span>核心问题</span>通用编码智能体能否仅凭模型发现方法论技能，自动发现或改进科学与工程模型</div><div class="fact"><span>关键困难</span>现有自动发现流程多为领域专用、需手工构建，难以跨学科迁移且交互性差</div><div class="fact"><span>解决方案</span>把模型发现方法论编码为可移植 agent skill，商业编码智能体加载后在多领域迭代搜索、评估并改进方程或架构</div><div class="fact"><span>主要结果</span>在天体物理、心血管动力学、精准农业、交通流、轮胎动力学案例中，配备 automodel 的商业智能体成功识别新颖且具科学相关性的模型</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.24347v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.24347v1" target="_blank" rel="noreferrer">PDF</a>Marco Virgolin, Harry Desmond, Ester Bergantin, Giorgio Morales, John W. Sheppard, Luigi Romano, Alessandro Lucantonio · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>The search for better models, whether expressed as analytical equations or neural architectures, has increasingly shifted from manual design toward data-driven automation. While a multitude of algorithms exist, ranging from exhaustive search to AlphaEvolve, recent advances in general-purpose coding agents such as Claude Code and OpenAI Codex raise the question: could providing such systems with a &quot;model discovery recipe&quot; be enough to discover or improve models? We present automodel, an agent skill for general model discovery. With case studies in astrophysics, cardiovascular dynamics, precision agriculture, traffic flow, and vehicle tire dynamics, we show how commercial agents equipped with automodel can successfully identify novel and scientifically-relevant models. Our findings suggest that encoding model-discovery methodology as a portable agent skill can provide a simple, interactive, powerful and broadly applicable alternative to domain-specific automated discovery pipelines. The skill is available at: https://github.com/unlayer-ai/automodel.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.24324 reducing inference cost of coding agents with timeout cascades 用超时级联降低编码智能体的推理成本 boxi zhou german sviridov dmitrii ustiugov haris javaid ai coding agents have become one of the most popular applications of large language models. yet, agentic ai comes at the cost of a tremendous amount of gpu compute resources, which limits its profitability and its viability at scale. in this paper, we investigate whether smaller, cheaper models can cut this cost without sacrificing accuracy.
+  we evaluate 36 popular large and small open-weight models released since 2024 on a software engineering benchmark, and find that recent small models are closing the accuracy gap compared to their large counterparts. we investigate the structure of this gap and find that the gap is highly concentrated around hard tasks that small language models fail to solve while achieving remarkably good accuracy for easy and medium complexity tasks. following this observation, we show that by utilizing a hybrid inference strategy that tries a small model first and escalates to a large one only when needed, we can achieve up to 33% reduction in total gpu-hour costs and 16.4% on all tasks from swe-bench verified, without sacrificing accuracy. strikingly, this simple cascade nearly matches an oracle-style task router, highlighting a practical path for deploying cost-aware coding agents in production without complex learned task routers and with minimal engineering complexity. 代码agent 免训练 评测基准 llm cascade agent system 编码智能体推理降本 小模型先跑，超时或失败才升级大模型的无训练级联策略 编码智能体消耗大量 gpu 算力，需验证更小更便宜的模型能否在不牺牲准确率的情况下降低成本 小模型在难题上准确率不足，直接替换会掉点；学习型任务路由器工程复杂 评测 36 个 2024 年后开源大/小模型，发现准确率差距集中于难题；采用混合推理：小模型先尝试，仅在超时或失败时升级大模型，并与 oracle 路由器对比 swe-bench verified 上总 gpu 小时成本最多降 33%、全任务降 16.4%，准确率不降，接近 oracle 路由器 " data-groups="代码Agent" data-training="免训练|评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.24324v1" target="_blank" rel="noreferrer">2611.24324</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.24324v1" target="_blank" rel="noreferrer">Reducing Inference Cost of Coding Agents with Timeout Cascades</a><div class="authors">Boxi Zhou, German Sviridov, Dmitrii Ustiugov et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM cascade agent system</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span> <span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">编码智能体推理降本</td><td data-label="核心创新">小模型先跑，超时或失败才升级大模型的无训练级联策略</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">用超时级联降低编码智能体的推理成本</div><div class="facts"><div class="fact"><span>核心问题</span>编码智能体消耗大量 GPU 算力，需验证更小更便宜的模型能否在不牺牲准确率的情况下降低成本</div><div class="fact"><span>关键困难</span>小模型在难题上准确率不足，直接替换会掉点；学习型任务路由器工程复杂</div><div class="fact"><span>解决方案</span>评测 36 个 2024 年后开源大/小模型，发现准确率差距集中于难题；采用混合推理：小模型先尝试，仅在超时或失败时升级大模型，并与 oracle 路由器对比</div><div class="fact"><span>主要结果</span>SWE-bench Verified 上总 GPU 小时成本最多降 33%、全任务降 16.4%，准确率不降，接近 oracle 路由器</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.24324v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.24324v1" target="_blank" rel="noreferrer">PDF</a>Boxi Zhou, German Sviridov, Dmitrii Ustiugov, Haris Javaid · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>AI coding agents have become one of the most popular applications of large language models. Yet, agentic AI comes at the cost of a tremendous amount of GPU compute resources, which limits its profitability and its viability at scale. In this paper, we investigate whether smaller, cheaper models can cut this cost without sacrificing accuracy.
+  We evaluate 36 popular large and small open-weight models released since 2024 on a software engineering benchmark, and find that recent small models are closing the accuracy gap compared to their large counterparts. We investigate the structure of this gap and find that the gap is highly concentrated around hard tasks that small language models fail to solve while achieving remarkably good accuracy for easy and medium complexity tasks. Following this observation, we show that by utilizing a hybrid inference strategy that tries a small model first and escalates to a large one only when needed, we can achieve up to 33% reduction in total GPU-hour costs and 16.4% on all tasks from SWE-bench Verified, without sacrificing accuracy. Strikingly, this simple cascade nearly matches an oracle-style task router, highlighting a practical path for deploying cost-aware coding agents in production without complex learned task routers and with minimal engineering complexity.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.24165 memosync: co-managing developer-agent metamemory across contexts memosync：跨上下文协同管理开发者与 agent 的元记忆 baiqiao zhang junze li chunyang luo yuying tang wenshuo zhang shiyuan piao dingdong liu shuai ma xiaojuan ma ai coding agents increasingly manage what context carries across sessions and projects, but developers have limited visibility into what these agents store, retrieve, and apply. this opacity creates a metamemory problem: the developer&#x27;s meta-level judgments about what should be remembered are separated from the agent&#x27;s object-level memory operations, disrupting the monitoring and control that keep the two levels aligned. we conducted a formative study with 12 developers and identified what they want to monitor and control across four dimensions of agent memory use. based on these findings, we designed memosync, a co-management system that treats agent memory as a shared, operable representation: the agent proposes memory candidates and reports which items it uses, and the developer reviews, edits, and scopes them. in a between-subjects study (n=132) against two baselines, memosync participants achieved significantly higher task performance and the highest mean developer-agent memory alignment. in an exploratory mediation analysis, the alignment advantage was primarily driven by improved monitoring accuracy. despite performing substantially more monitoring and control actions, participants reported no increase in perceived workload. a week-long deployment with nine developers showed that memory monitoring and control fit into everyday development work. memosync is open-sourced at https://github.com/sleepybq/memosync. 代码agent 免训练 llm agent + memory co-management ui 代码智能体记忆管理 把 agent 记忆做成开发者可审阅、编辑、限定范围的可操作共享表示 开发者看不清 ai 编码 agent 跨会话、跨项目存了什么、取了什么、用了什么，元记忆判断与对象级记忆操作脱节 记忆不透明使开发者无法监控与控制 agent 的记忆行为，元层判断与对象层操作难以对齐 agent 提出记忆候选并报告实际使用项，开发者审阅、编辑并限定作用域；依据 12 人形成性研究得到的四维监控与控制需求设计 组间实验 n=132 任务表现显著更高、记忆对齐度最高，并由监控准确性中介；操作更多但负荷未增；9 人一周部署可行 " data-groups="代码Agent" data-training="免训练" data-has-code="true"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.24165v1" target="_blank" rel="noreferrer">2611.24165</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.24165v1" target="_blank" rel="noreferrer">MemoSync: Co-Managing Developer-Agent Metamemory Across Contexts</a><div class="authors">Baiqiao Zhang, Junze Li, Chunyang Luo et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + memory co-management UI</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">代码智能体记忆管理</td><td data-label="核心创新">把 agent 记忆做成开发者可审阅、编辑、限定范围的可操作共享表示</td><td class="code" data-label="Code"><a href="https://github.com/SLEEPYBQ/MemoSync" target="_blank" rel="noreferrer">Code</a></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">MemoSync：跨上下文协同管理开发者与 Agent 的元记忆</div><div class="facts"><div class="fact"><span>核心问题</span>开发者看不清 AI 编码 agent 跨会话、跨项目存了什么、取了什么、用了什么，元记忆判断与对象级记忆操作脱节</div><div class="fact"><span>关键困难</span>记忆不透明使开发者无法监控与控制 agent 的记忆行为，元层判断与对象层操作难以对齐</div><div class="fact"><span>解决方案</span>agent 提出记忆候选并报告实际使用项，开发者审阅、编辑并限定作用域；依据 12 人形成性研究得到的四维监控与控制需求设计</div><div class="fact"><span>主要结果</span>组间实验 N=132 任务表现显著更高、记忆对齐度最高，并由监控准确性中介；操作更多但负荷未增；9 人一周部署可行</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.24165v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.24165v1" target="_blank" rel="noreferrer">PDF</a>Baiqiao Zhang, Junze Li, Chunyang Luo, Yuying Tang, Wenshuo Zhang, Shiyuan Piao, Dingdong Liu, Shuai Ma, Xiaojuan Ma · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>AI coding agents increasingly manage what context carries across sessions and projects, but developers have limited visibility into what these agents store, retrieve, and apply. This opacity creates a metamemory problem: the developer&#x27;s meta-level judgments about what should be remembered are separated from the agent&#x27;s object-level memory operations, disrupting the monitoring and control that keep the two levels aligned. We conducted a formative study with 12 developers and identified what they want to monitor and control across four dimensions of agent memory use. Based on these findings, we designed MemoSync, a co-management system that treats agent memory as a shared, operable representation: the agent proposes memory candidates and reports which items it uses, and the developer reviews, edits, and scopes them. In a between-subjects study (N=132) against two baselines, MemoSync participants achieved significantly higher task performance and the highest mean developer-agent memory alignment. In an exploratory mediation analysis, the alignment advantage was primarily driven by improved monitoring accuracy. Despite performing substantially more monitoring and control actions, participants reported no increase in perceived workload. A week-long deployment with nine developers showed that memory monitoring and control fit into everyday development work. MemoSync is open-sourced at https://github.com/SLEEPYBQ/MemoSync.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.24073 3d gamedev arena: benchmarking coding agents that plan, build, and playtest extreme long-horizon browser games 3d gamedev arena：基准测试规划、构建和试玩极端长时程浏览器游戏的编程智能体 bizhe bai jiliang jian yuqing yan tao chen ying wen coding agents now resolve repository issues and generate compact playable games, but whether they can build a large 3d game from scratch remains open. such games tightly couple mechanics, scenes, assets, and interaction logic, and their quality rests on player enjoyment, which existing benchmarks rarely assess. thus, we introduce 3d gamedev arena, a first extreme long-horizon benchmark of 108 from-scratch game-development tasks across 14 genres. given only a text specification and ui/ux reference images, a fully automated plan--implement--test--repair pipeline builds each task into a self-contained browser game. runs average $\sim$1,000 llm calls ; the longest uses 14,407 calls, 2.13b tokens, and 608 assets. evaluation spans (1) objective code-level functional acceptance against the game specification, (2) agent-based qa and playtesting of 3d presentation and playability, and (3) blind pairwise bradley-terry human preference in a public arena. the preliminary findings indicate that long-horizon 3d game development remains far from solved, and code-level correctness alone does not dictate player preference. the public arena is hosted online. 代码agent 评测基准 plan-implement-test-repair coding-agent… 浏览器3d游戏开发 108个从零游戏任务，联合代码验收、智能体试玩与人类偏好盲评 编程智能体能否从零构建大型3d游戏尚不明确，现有基准很少评估玩家体验 3d游戏紧耦合机制、场景、资源与交互逻辑，质量依赖玩家乐趣，长时程评估困难 仅给文本规格与ui/ux参考图，自动执行规划—实现—测试—修复，生成自包含浏览器游戏；用代码验收、智能体qa试玩和盲评对比评估 108任务覆盖14类；长时程3d游戏开发远未解决，代码正确性不等同玩家偏好；最长14407次llm调用、2.13b tokens " data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.24073v1" target="_blank" rel="noreferrer">2611.24073</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.24073v1" target="_blank" rel="noreferrer">3D GameDev Arena: Benchmarking Coding Agents That Plan, Build, and Playtest extreme Long-Horizon Browser Games</a><div class="authors">Bizhe Bai, Jiliang Jian, Yuqing Yan et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Plan-implement-test-repair coding-agent…</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">浏览器3D游戏开发</td><td data-label="核心创新">108个从零游戏任务，联合代码验收、智能体试玩与人类偏好盲评</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">3D GameDev Arena：基准测试规划、构建和试玩极端长时程浏览器游戏的编程智能体</div><div class="facts"><div class="fact"><span>核心问题</span>编程智能体能否从零构建大型3D游戏尚不明确，现有基准很少评估玩家体验</div><div class="fact"><span>关键困难</span>3D游戏紧耦合机制、场景、资源与交互逻辑，质量依赖玩家乐趣，长时程评估困难</div><div class="fact"><span>解决方案</span>仅给文本规格与UI/UX参考图，自动执行规划—实现—测试—修复，生成自包含浏览器游戏；用代码验收、智能体QA试玩和盲评对比评估</div><div class="fact"><span>主要结果</span>108任务覆盖14类；长时程3D游戏开发远未解决，代码正确性不等同玩家偏好；最长14407次LLM调用、2.13B tokens</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.24073v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.24073v1" target="_blank" rel="noreferrer">PDF</a>Bizhe Bai, Jiliang Jian, Yuqing Yan, Tao Chen, Ying Wen · 23 Pages · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>Coding agents now resolve repository issues and generate compact playable games, but whether they can build a large 3D game from scratch remains open. Such games tightly couple mechanics, scenes, assets, and interaction logic, and their quality rests on player enjoyment, which existing benchmarks rarely assess. Thus, we introduce 3D GameDev Arena, a first extreme long-horizon benchmark of 108 from-scratch game-development tasks across 14 genres. Given only a text specification and UI/UX reference images, a fully automated plan--implement--test--repair pipeline builds each task into a self-contained browser game. Runs average $\sim$1,000 LLM calls ; the longest uses 14,407 calls, 2.13B tokens, and 608 assets. Evaluation spans (1) objective code-level functional acceptance against the game specification, (2) agent-based QA and playtesting of 3D presentation and playability, and (3) blind pairwise Bradley-Terry human preference in a public arena. The preliminary findings indicate that long-horizon 3D game development remains far from solved, and code-level correctness alone does not dictate player preference. The public arena is hosted online.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.23876 swe-growth: teacher-guided adaptive self-play for software engineering agents swe-growth：教师引导的软件工程智能体自适应自博弈 songshi liang zixuan huang mingxuan song haoyu tang shusheng xu tongkai yang zihe wang rui yan self-play offers a scalable way to train software engineering agents by generating repository-level repair tasks. however, with binary repair rewards and finite rollout budgets, all-fail groups provide no reward-based group-relative advantage. such tasks may still offer learning opportunities when a teacher can provide verified repairs absent from the student&#x27;s own attempts. we introduce swe-growth, a teacher-guided adaptive self-play framework that uses verified teacher outcomes to identify learning opportunities for the current student. tasks with all students failure but reliable teacher success provide demonstrations for supervised fine-tuning (sft), and post-sft student rollouts identify mixed-outcome tasks with a positive teacher--student gap for reinforcement learning. task eligibility also guides injector updates, connecting student training with subsequent task generation. starting from 101 seed issues, \textsc{swe-growth} improves qwen3-coder-30b-a3b-instruct from 27.7% to 31.7% on swe-bench pro and from 11.0% to 17.2% on held-out terminalbench 2.1 by round~2. it exceeds student-only self-play by 2.6 and 4.1 percentage points, respectively, and teacher-augmented self-play by 1.8 and 2.5 points under approximately matched budgets. these results support adapting both supervision and task selection to the student&#x27;s evolving repair capability. 代码agent sft rl teacher-student self-play llm agents 仓库级缺陷修复 用教师验证成功的任务标记学生全部失败组中可供学习的任务，并按师生能力差距分配 sft 与 rl，同时驱动任务生成器更新 自博弈生成仓库级修复任务时，二值修复奖励与有限采样预算使全部失败组没有组内相对优势信号，任务被浪费 全部失败组奖励恒为零，无法提供组相对优势；纯学生自博弈缺少可学习的成功轨迹，教师增强自博弈则未按学生能力选任务 教师验证结果决定任务资格：学生全部失败但教师可靠成功的任务用于 sft 示范；sft 后学生 rollout 中出现混合结果且师生差距为正的任务用于 rl；资格信号同时用来更新 injector 任务生成 swe-bench pro 27.7%→31.7%，held-out terminalbench 2.1 11.0%→17.2%（round 2）；超纯学生自博弈 2.6/4.1 点 " data-groups="代码Agent" data-training="SFT|RL" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.23876v1" target="_blank" rel="noreferrer">2611.23876</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.23876v1" target="_blank" rel="noreferrer">SWE-growth: Teacher-Guided Adaptive Self-Play for Software Engineering Agents</a><div class="authors">Songshi Liang, Zixuan Huang, Mingxuan Song et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Teacher-student self-play LLM agents</td><td data-label="训练方法"><span class="chip t-SFT">SFT</span> <span class="chip t-RL">RL</span></td><td data-label="应用场景">仓库级缺陷修复</td><td data-label="核心创新">用教师验证成功的任务标记学生全部失败组中可供学习的任务，并按师生能力差距分配 SFT 与 RL，同时驱动任务生成器更新</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">SWE-Growth：教师引导的软件工程智能体自适应自博弈</div><div class="facts"><div class="fact"><span>核心问题</span>自博弈生成仓库级修复任务时，二值修复奖励与有限采样预算使全部失败组没有组内相对优势信号，任务被浪费</div><div class="fact"><span>关键困难</span>全部失败组奖励恒为零，无法提供组相对优势；纯学生自博弈缺少可学习的成功轨迹，教师增强自博弈则未按学生能力选任务</div><div class="fact"><span>解决方案</span>教师验证结果决定任务资格：学生全部失败但教师可靠成功的任务用于 SFT 示范；SFT 后学生 rollout 中出现混合结果且师生差距为正的任务用于 RL；资格信号同时用来更新 Injector 任务生成</div><div class="fact"><span>主要结果</span>SWE-bench Pro 27.7%→31.7%，held-out TerminalBench 2.1 11.0%→17.2%（Round 2）；超纯学生自博弈 2.6/4.1 点</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.23876v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.23876v1" target="_blank" rel="noreferrer">PDF</a>Songshi Liang, Zixuan Huang, Mingxuan Song, Haoyu Tang, Shusheng Xu, Tongkai Yang, Zihe Wang, Rui Yan · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>Self-play offers a scalable way to train software engineering agents by generating repository-level repair tasks. However, with binary repair rewards and finite rollout budgets, all-fail groups provide no reward-based group-relative advantage. Such tasks may still offer learning opportunities when a Teacher can provide verified repairs absent from the Student&#x27;s own attempts. We introduce SWE-Growth, a teacher-guided adaptive self-play framework that uses verified Teacher outcomes to identify learning opportunities for the current Student. Tasks with all students failure but reliable Teacher success provide demonstrations for supervised fine-tuning (SFT), and post-SFT Student rollouts identify mixed-outcome tasks with a positive Teacher--Student gap for reinforcement learning. Task eligibility also guides Injector updates, connecting Student training with subsequent task generation. Starting from 101 seed issues, \textsc{SWE-Growth} improves Qwen3-Coder-30B-A3B-Instruct from 27.7% to 31.7% on SWE-bench Pro and from 11.0% to 17.2% on held-out TerminalBench 2.1 by Round~2. It exceeds Student-only self-play by 2.6 and 4.1 percentage points, respectively, and Teacher-augmented self-play by 1.8 and 2.5 points under approximately matched budgets. These results support adapting both supervision and task selection to the Student&#x27;s evolving repair capability.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.23875 in situ training of optical neural networks by coding agents 由编码智能体进行光学神经网络原位训练 ilker oguz colin christian christophe moser demetri psaltis gordon wetzstein optical neural networks promise fast, energy-efficient computing, but every device departs from its design and must be trained with the hardware. in situ training relies on an expert-built calibrated digital model of each device or on gradient-free trial and error. coding agents, large language models that write and run programs, have shown an emergent ability to understand and edit the weights of digital neural networks. here we introduce optics as code, a method in which a coding agent trains an optical neural network from measurements alone, through a harness that returns camera images of its probes and requires a hypothesis per request. we discovered that the agent forms a physical understanding of the optics and reparametrizes the network with interpretable optical elements tuned on the hardware. it outperforms gradient-free methods in classification and image encoding, approaching backpropagation through a calibrated model at a fraction of the cost. needing neither per-device calibration nor gradients through the hardware, and improving with more capable models, optics as code offers a practical route to large, scalable optical neural networks and a general tool for calibrating and optimizing optical experiments. 代码agent 免训练 coding agent + optical nn 光学神经网络训练 编码智能体仅凭相机测量训练光学网络，并用硬件调优的可解释光学元件重参数化 光学神经网络每台器件偏离设计，需在硬件上训练，现有方法依赖专家校准模型或无梯度试错 逐器件校准成本高，且无法通过硬件反向传播梯度，无梯度方法效率低 提出 optics as code：编码智能体通过返回探针相机图像的 harness 每次要求假设，形成物理理解并用可解释光学元件重参数化网络 分类和图像编码上优于无梯度方法，接近校准模型反向传播，成本仅一小部分；无需逐器件校准 " data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.23875v1" target="_blank" rel="noreferrer">2611.23875</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.23875v1" target="_blank" rel="noreferrer">In Situ Training of Optical Neural Networks by Coding Agents</a><div class="authors">Ilker Oguz, Colin Christian, Christophe Moser et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Coding agent + optical NN</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">光学神经网络训练</td><td data-label="核心创新">编码智能体仅凭相机测量训练光学网络，并用硬件调优的可解释光学元件重参数化</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">由编码智能体进行光学神经网络原位训练</div><div class="facts"><div class="fact"><span>核心问题</span>光学神经网络每台器件偏离设计，需在硬件上训练，现有方法依赖专家校准模型或无梯度试错</div><div class="fact"><span>关键困难</span>逐器件校准成本高，且无法通过硬件反向传播梯度，无梯度方法效率低</div><div class="fact"><span>解决方案</span>提出 optics as code：编码智能体通过返回探针相机图像的 harness 每次要求假设，形成物理理解并用可解释光学元件重参数化网络</div><div class="fact"><span>主要结果</span>分类和图像编码上优于无梯度方法，接近校准模型反向传播，成本仅一小部分；无需逐器件校准</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.23875v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.23875v1" target="_blank" rel="noreferrer">PDF</a><a href="https://ioguz.github.io/optics-as-code/" target="_blank" rel="noreferrer">Project1</a>Ilker Oguz, Colin Christian, Christophe Moser, Demetri Psaltis, Gordon Wetzstein · 14 pages, 4 figures. Our project website is at https://ioguz.github.io/optics-as-code/ · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>Optical neural networks promise fast, energy-efficient computing, but every device departs from its design and must be trained with the hardware. In situ training relies on an expert-built calibrated digital model of each device or on gradient-free trial and error. Coding agents, large language models that write and run programs, have shown an emergent ability to understand and edit the weights of digital neural networks. Here we introduce optics as code, a method in which a coding agent trains an optical neural network from measurements alone, through a harness that returns camera images of its probes and requires a hypothesis per request. We discovered that the agent forms a physical understanding of the optics and reparametrizes the network with interpretable optical elements tuned on the hardware. It outperforms gradient-free methods in classification and image encoding, approaching backpropagation through a calibrated model at a fraction of the cost. Needing neither per-device calibration nor gradients through the hardware, and improving with more capable models, optics as code offers a practical route to large, scalable optical neural networks and a general tool for calibrating and optimizing optical experiments.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.23855 robobuilder: agentic robot co-design with real-world video feedback in the loop robobuilder：真实世界视频反馈闭环下的智能体机器人协同设计 ghadi nehme dahyun nam akshay govind srinivasan faez ahmed can ai agents design robots that work in the real world? we introduce robobuilder, a benchmark in which coding agents co-design a robot&#x27;s hardware and program from standard parts, motors and a custom 3d-printed part, and every design that passes in simulation is built and tested on a physical course. simulation alone is not enough: under public part data, none of 15 initial passing designs crossed the real course, so an agent learns the simulator from measurements it requests and videos of real runs. across four frontier coding agents, ten obstacles at three difficulty levels, 16,427 simulations of 12,774 distinct robots and 135 physical robots built in an estimated 240 hours, agents solve nearly all easy obstacles and invent mechanisms our search baselines do not reach, but falter at harder levels, when one robot must cross every obstacle, and in the real world, where 66% of simulated passes hold across all levels. closing the loop helps: shown a video of its real failure, an agent redesigns the robot, sometimes correcting its simulator, and removes 72% of level-1 and level-2 failures. robobuilder measures progress toward agents that engineer real machines. project page: https://ghadinehme.com/robobuilder.github.io/ 代码agent 评测基准 coding agent + sim-to-real loop 机器人软硬件协同设计 把仿真通过的设计实际制造并在真实赛道测试，用失败视频反哺智能体改进仿真与设计 ai智能体能否设计出在真实世界工作的机器人 仅靠仿真不够：公开零件数据下15个初始仿真通过设计无一通过真实赛道，存在仿真-现实差距 编码智能体用标准件、电机和3d打印件联合设计硬件与程序，按需测量学习仿真器，并用真实运行失败视频闭环修正仿真和重新设计 4个前沿编码智能体、10障碍3难度、16427次仿真、135台实物；易障碍近全解，66%仿真通过跨级成立，视频反馈消除72%一二级失败 更难障碍、单机器人跨越全部障碍及真实世界迁移仍表现不足" data-groups="代码Agent" data-training="评测基准" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.23855v1" target="_blank" rel="noreferrer">2611.23855</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.23855v1" target="_blank" rel="noreferrer">RoboBuilder: Agentic Robot Co-Design with Real-world Video Feedback in the Loop</a><div class="authors">Ghadi Nehme, Dahyun Nam, Akshay Govind Srinivasan et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">Coding agent + sim-to-real loop</td><td data-label="训练方法"><span class="chip t-评测基准">评测基准</span></td><td data-label="应用场景">机器人软硬件协同设计</td><td data-label="核心创新">把仿真通过的设计实际制造并在真实赛道测试，用失败视频反哺智能体改进仿真与设计</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">RoboBuilder：真实世界视频反馈闭环下的智能体机器人协同设计</div><div class="facts"><div class="fact"><span>核心问题</span>AI智能体能否设计出在真实世界工作的机器人</div><div class="fact"><span>关键困难</span>仅靠仿真不够：公开零件数据下15个初始仿真通过设计无一通过真实赛道，存在仿真-现实差距</div><div class="fact"><span>解决方案</span>编码智能体用标准件、电机和3D打印件联合设计硬件与程序，按需测量学习仿真器，并用真实运行失败视频闭环修正仿真和重新设计</div><div class="fact"><span>主要结果</span>4个前沿编码智能体、10障碍3难度、16427次仿真、135台实物；易障碍近全解，66%仿真通过跨级成立，视频反馈消除72%一二级失败</div><div class="fact"><span>未来方向</span>更难障碍、单机器人跨越全部障碍及真实世界迁移仍表现不足</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.23855v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.23855v1" target="_blank" rel="noreferrer">PDF</a>Ghadi Nehme, Dahyun Nam, Akshay Govind Srinivasan, Faez Ahmed · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>Can AI agents design robots that work in the real world? We introduce RoboBuilder, a benchmark in which coding agents co-design a robot&#x27;s hardware and program from standard parts, motors and a custom 3D-printed part, and every design that passes in simulation is built and tested on a physical course. Simulation alone is not enough: under public part data, none of 15 initial passing designs crossed the real course, so an agent learns the simulator from measurements it requests and videos of real runs. Across four frontier coding agents, ten obstacles at three difficulty levels, 16,427 simulations of 12,774 distinct robots and 135 physical robots built in an estimated 240 hours, agents solve nearly all easy obstacles and invent mechanisms our search baselines do not reach, but falter at harder levels, when one robot must cross every obstacle, and in the real world, where 66% of simulated passes hold across all levels. Closing the loop helps: shown a video of its real failure, an agent redesigns the robot, sometimes correcting its simulator, and removes 72% of level-1 and level-2 failures. RoboBuilder measures progress toward agents that engineer real machines. Project Page: https://ghadinehme.com/robobuilder.github.io/</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.23817 metrics-in-the-loop: complexity feedback reshapes agent-written code metrics-in-the-loop：复杂度反馈重塑 agent 编写的代码 nicolas chapados jean-françois gagné nouha dziri coding agents now write whole codebases in long autonomous runs, guided mainly by whether their tests pass. yet passing tests alone does not reveal accumulating complexity or gaps in test coverage, which then persist as agents extend their own code. we introduce metrics-in-the-loop, an inference-time intervention that gives agents in-flight feedback: cheap, automatically computed code metrics injected into the agent&#x27;s context during the trajectory. after each code-changing agent turn, we insert short feedback messages naming changed functions whose cyclomatic complexity exceeds a limit (complexity feedback) or changed lines that are skipped by tests (coverage feedback), giving the agent the opportunity to refactor code or strengthen tests before continuing. we run extensive experiments and ablations comparing several interventions across three long-horizon coding benchmarks and four strong models. we find that complexity feedback significantly reduces erosion, a measure of complexity concentration of code, without affecting held-out correctness of the code. broadly, our experiments investigate a practical form of agent &quot;re-railing&quot;, where timely, actionable measurements redirect agents before weaknesses become the foundation they keep building on. as agents scale to codebases with millions of lines, such interventions become critical to sustaining effective development and long-term code maintainability. 代码agent 免训练 llm coding agent + metric feedback 长周期代码生成 将圈复杂度与测试覆盖指标注入 agent 上下文，作为在线反馈 编码 agent 仅凭测试通过与否长程写代码，复杂度累积和测试覆盖缺口难以及时发现并持续恶化 测试通过不反映复杂度集中和未覆盖代码，这些问题会随 agent 继续扩展自身代码而固化 每次改代码后，将超过复杂度阈值的函数和未被测试覆盖的改动行作为短消息插入上下文，让 agent 先重构或补测再继续 在三个长周期编码基准和四个模型上，复杂度反馈显著降低代码复杂度集中度（erosion），且不影响留出集正确性 " data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.23817v1" target="_blank" rel="noreferrer">2611.23817</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.23817v1" target="_blank" rel="noreferrer">Metrics-in-the-Loop: Complexity Feedback Reshapes Agent-Written Code</a><div class="authors">Nicolas Chapados, Jean-François Gagné, Nouha Dziri</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM coding agent + metric feedback</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">长周期代码生成</td><td data-label="核心创新">将圈复杂度与测试覆盖指标注入 agent 上下文，作为在线反馈</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">Metrics-in-the-Loop：复杂度反馈重塑 Agent 编写的代码</div><div class="facts"><div class="fact"><span>核心问题</span>编码 agent 仅凭测试通过与否长程写代码，复杂度累积和测试覆盖缺口难以及时发现并持续恶化</div><div class="fact"><span>关键困难</span>测试通过不反映复杂度集中和未覆盖代码，这些问题会随 agent 继续扩展自身代码而固化</div><div class="fact"><span>解决方案</span>每次改代码后，将超过复杂度阈值的函数和未被测试覆盖的改动行作为短消息插入上下文，让 agent 先重构或补测再继续</div><div class="fact"><span>主要结果</span>在三个长周期编码基准和四个模型上，复杂度反馈显著降低代码复杂度集中度（erosion），且不影响留出集正确性</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.23817v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.23817v1" target="_blank" rel="noreferrer">PDF</a>Nicolas Chapados, Jean-François Gagné, Nouha Dziri · Agent Evaluation Science Symposium, Fall 2026, New York City · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>Coding agents now write whole codebases in long autonomous runs, guided mainly by whether their tests pass. Yet passing tests alone does not reveal accumulating complexity or gaps in test coverage, which then persist as agents extend their own code. We introduce metrics-in-the-loop, an inference-time intervention that gives agents in-flight feedback: cheap, automatically computed code metrics injected into the agent&#x27;s context during the trajectory. After each code-changing agent turn, we insert short feedback messages naming changed functions whose cyclomatic complexity exceeds a limit (complexity feedback) or changed lines that are skipped by tests (coverage feedback), giving the agent the opportunity to refactor code or strengthen tests before continuing. We run extensive experiments and ablations comparing several interventions across three long-horizon coding benchmarks and four strong models. We find that complexity feedback significantly reduces erosion, a measure of complexity concentration of code, without affecting held-out correctness of the code. Broadly, our experiments investigate a practical form of agent &quot;re-railing&quot;, where timely, actionable measurements redirect agents before weaknesses become the foundation they keep building on. As agents scale to codebases with millions of lines, such interventions become critical to sustaining effective development and long-term code maintainability.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.23673 communicative on-policy distillation: distilling black-box teacher capabilities through communication for long-horizon tasks 通信式在线策略蒸馏：通过通信蒸馏黑盒教师能力以完成长程任务 lirui luo kelong mao xinwei yang rongqing li luyu chen kieran wong yudong guo xinrui wang jiayin zhu gu simiu sulong xu cong fang on-policy distillation (opd) is a powerful paradigm for improving language-model agents on long-horizon tasks, yet its conventional formulation relies on teacher logits that text-only black- box models do not expose. to address this limitation, we introduce communicative on-policy distillation (copd), which uses natural-language communication as a medium for distilling a stronger model&#x27;s capabilities into a smaller student. during task execution, the student au- tonomously decides when to consult a black-box teacher and formulates open-ended natural- language requests without predefined question templates or intervention schedules. successful student-teacher interactions are retained as privileged references to supervise fresh adviser-free student rollouts through on-policy self-distillation, jointly with task-reward reinforcement learning. on camg-ii, copd achieves 2.46 times the gain of the strongest black-box opd baseline. the capabilities it learns through communication generalize to terminal-bench 2.1 and swe-bench pro v2, improving task success without adviser access. 代码agent 蒸馏 rl llm agent + black-box teacher 长程任务智能体 学生自主发起自然语言咨询黑盒教师，成功交互作特权参考做在线自蒸馏 黑盒教师不暴露logits，传统在线策略蒸馏难以用于长程语言智能体任务。 仅文本黑盒模型无法提供logits，且人工预设提问模板与干预计划泛化差。 以自然语言通信为蒸馏媒介；学生执行中自主决定何时向教师提问并生成开放式请求，将成功师生交互保留为特权参考，结合任务奖励rl对无顾问学生rollout做在线自蒸馏。 camg-ii增益达最强黑盒opd基线2.46倍；无顾问时在terminal-bench 2.1与swe-bench pro v2提升成功率。 " data-groups="代码Agent" data-training="蒸馏|RL" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.23673v1" target="_blank" rel="noreferrer">2611.23673</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.23673v1" target="_blank" rel="noreferrer">Communicative On-Policy Distillation: Distilling Black-Box Teacher Capabilities through Communication for Long-Horizon Tasks</a><div class="authors">Lirui Luo, Kelong Mao, Xinwei Yang et al.</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">LLM agent + black-box teacher</td><td data-label="训练方法"><span class="chip t-蒸馏">蒸馏</span> <span class="chip t-RL">RL</span></td><td data-label="应用场景">长程任务智能体</td><td data-label="核心创新">学生自主发起自然语言咨询黑盒教师，成功交互作特权参考做在线自蒸馏</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">通信式在线策略蒸馏：通过通信蒸馏黑盒教师能力以完成长程任务</div><div class="facts"><div class="fact"><span>核心问题</span>黑盒教师不暴露logits，传统在线策略蒸馏难以用于长程语言智能体任务。</div><div class="fact"><span>关键困难</span>仅文本黑盒模型无法提供logits，且人工预设提问模板与干预计划泛化差。</div><div class="fact"><span>解决方案</span>以自然语言通信为蒸馏媒介；学生执行中自主决定何时向教师提问并生成开放式请求，将成功师生交互保留为特权参考，结合任务奖励RL对无顾问学生rollout做在线自蒸馏。</div><div class="fact"><span>主要结果</span>CAMG-II增益达最强黑盒OPD基线2.46倍；无顾问时在Terminal-Bench 2.1与SWE-Bench Pro V2提升成功率。</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.23673v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.23673v1" target="_blank" rel="noreferrer">PDF</a><a href="https://liruiluo.github.io/communicative-opsd/" target="_blank" rel="noreferrer">Project1</a>Lirui Luo, Kelong Mao, Xinwei Yang, Rongqing Li, Luyu Chen, Kieran Wong, Yudong Guo, Xinrui Wang, Jiayin Zhu, Gu Simiu, Sulong Xu, Cong Fang · 13 pages, 8 figures, 2 tables. Project page: https://liruiluo.github.io/communicative-opsd/ · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>On-policy distillation (OPD) is a powerful paradigm for improving language-model agents on long-horizon tasks, yet its conventional formulation relies on teacher logits that text-only black- box models do not expose. To address this limitation, we introduce Communicative On-Policy Distillation (COPD), which uses natural-language communication as a medium for distilling a stronger model&#x27;s capabilities into a smaller student. During task execution, the student au- tonomously decides when to consult a black-box teacher and formulates open-ended natural- language requests without predefined question templates or intervention schedules. Successful student-teacher interactions are retained as privileged references to supervise fresh adviser-free student rollouts through on-policy self-distillation, jointly with task-reward reinforcement learning. On CAMG-II, COPD achieves 2.46 times the gain of the strongest black-box OPD baseline. The capabilities it learns through communication generalize to Terminal-Bench 2.1 and SWE-Bench Pro V2, improving task success without adviser access.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.23615 weight space programming for vision language model repair 面向视觉语言模型修复的权重空间编程 avinash goutham aluguvelly in weight-space programming, a language model edits a network&#x27;s weights directly, without gradients. we ask what a successful repair of this kind relies on. we plant faults in the weights of two vision-language models, smolvlm-256m and lfm2-vl-450m, and check each edit made by a coding agent against the original weights. without being told where to look, the agent finds rescaled rows in the projector and noise in the vision encoder of both models, infers the unknown scale factors, restores most or all of the rescaled weights to their exact original values, and returns accuracy to near its original level; programs that it writes from such weights repair unseen checkpoints of the same model without feedback. these repairs depend on a trace of how the faults were computed. the original weights have 16-bit precision, and faults computed in 32-bit arithmetic leave low bits that only the damaged weights carry. rounding those bits away leaves each model&#x27;s answers to our test questions unchanged, and the agent, unaided, then restores no weight exactly: on smolvlm it no longer finds the damage, and in a single session on lfm2-vl its only gain comes from rescaling answer-token embeddings, which changes how often the model answers yes. marking the damaged weights again in their low bits brings the edits back to them. rounded weights still hold statistical evidence of the rescaling, in the distribution of stored values and in row norms, and one sentence in the prompt that names such a statistic directs the agent&#x27;s edits to the damaged rows on both models. swapped rows or columns, which leave the set of stored values unchanged, are not found unaided on either model within our session budgets. we recommend that studies of weight repair report the number format of the weights and include a rounded control. 代码agent 免训练 vlm + coding agent vlm 权重故障修复 编码智能体无梯度直接改写权重定位植入故障，并揭示修复依赖32位算术残留的低位痕迹 权重空间编程（不经梯度直接编辑网络权重）要成功修复视觉语言模型的故障，究竟依赖哪些条件 低位被舍入后，智能体在 smolvlm 上找不到损坏权重，在 lfm2-vl 上仅靠重缩放答案 token 嵌入获益；交换行列类置换故障在会话预算内无法发现 在 smolvlm-256m 与 lfm2-vl-450m 权重中植入缩放行与视觉编码器噪声故障，让编码智能体对照原始权重逐次校验编辑，并结合精度痕迹与提示中给出的存储值分布、行范数等统计量定位损坏行 未舍入时智能体自行推断缩放因子，把大部分权重精确还原，精度回到接近原始水平，且程序可迁移到同一模型未见检查点；16 位舍入后无权重被精确还原 建议权重修复研究报告权重数值格式并设舍入对照组；行列置换类故障仍无法免辅助定位" data-groups="代码Agent" data-training="免训练" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.23615v1" target="_blank" rel="noreferrer">2611.23615</a><span class="date">2026-11-17</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.23615v1" target="_blank" rel="noreferrer">Weight Space Programming for Vision Language Model Repair</a><div class="authors">Avinash Goutham Aluguvelly</div></td><td data-label="方向"><span class=chip>代码Agent</span></td><td data-label="模型架构">VLM + coding agent</td><td data-label="训练方法"><span class="chip t-免训练">免训练</span></td><td data-label="应用场景">VLM 权重故障修复</td><td data-label="核心创新">编码智能体无梯度直接改写权重定位植入故障，并揭示修复依赖32位算术残留的低位痕迹</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">面向视觉语言模型修复的权重空间编程</div><div class="facts"><div class="fact"><span>核心问题</span>权重空间编程（不经梯度直接编辑网络权重）要成功修复视觉语言模型的故障，究竟依赖哪些条件</div><div class="fact"><span>关键困难</span>低位被舍入后，智能体在 SmolVLM 上找不到损坏权重，在 LFM2-VL 上仅靠重缩放答案 token 嵌入获益；交换行列类置换故障在会话预算内无法发现</div><div class="fact"><span>解决方案</span>在 SmolVLM-256M 与 LFM2-VL-450M 权重中植入缩放行与视觉编码器噪声故障，让编码智能体对照原始权重逐次校验编辑，并结合精度痕迹与提示中给出的存储值分布、行范数等统计量定位损坏行</div><div class="fact"><span>主要结果</span>未舍入时智能体自行推断缩放因子，把大部分权重精确还原，精度回到接近原始水平，且程序可迁移到同一模型未见检查点；16 位舍入后无权重被精确还原</div><div class="fact"><span>未来方向</span>建议权重修复研究报告权重数值格式并设舍入对照组；行列置换类故障仍无法免辅助定位</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.23615v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.23615v1" target="_blank" rel="noreferrer">PDF</a>Avinash Goutham Aluguvelly · First 2026-11-17 · Latest 2026-11-17</div><details class="abs"><summary>Abstract</summary><div>In weight-space programming, a language model edits a network&#x27;s weights directly, without gradients. We ask what a successful repair of this kind relies on. We plant faults in the weights of two vision-language models, SmolVLM-256M and LFM2-VL-450M, and check each edit made by a coding agent against the original weights. Without being told where to look, the agent finds rescaled rows in the projector and noise in the vision encoder of both models, infers the unknown scale factors, restores most or all of the rescaled weights to their exact original values, and returns accuracy to near its original level; programs that it writes from such weights repair unseen checkpoints of the same model without feedback. These repairs depend on a trace of how the faults were computed. The original weights have 16-bit precision, and faults computed in 32-bit arithmetic leave low bits that only the damaged weights carry. Rounding those bits away leaves each model&#x27;s answers to our test questions unchanged, and the agent, unaided, then restores no weight exactly: on SmolVLM it no longer finds the damage, and in a single session on LFM2-VL its only gain comes from rescaling answer-token embeddings, which changes how often the model answers yes. Marking the damaged weights again in their low bits brings the edits back to them. Rounded weights still hold statistical evidence of the rescaling, in the distribution of stored values and in row norms, and one sentence in the prompt that names such a statistic directs the agent&#x27;s edits to the damaged rows on both models. Swapped rows or columns, which leave the set of stored values unchanged, are not found unaided on either model within our session budgets. We recommend that studies of weight repair report the number format of the weights and include a rounded control.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.24466 cooperative uav and ground station for robust mec of dynamic aquatic iot: a generative ai-enhanced approach 面向动态水上物联网鲁棒 mec 的无人机与地面站协作：生成式 ai 增强方法 jiahao you ziye jia chao dong qihui wu zhu han the increasing aquatic internet of things (aiots) require computational support and coverage in applications such as maritime search and rescue. unmanned aerial vehicles (uavs) can offer low-cost, flexible aerial services, and ground stations (gss) can provide powerful supports, which can cooperate to help the aiots in complex scenarios. however, the collaboration between uavs and gss for aiots faces challenges of task uncertainties, aiots trajectory uncertainties, heterogeneities, and limited computational resources. to address these issues, we propose a cooperative uav and gs based robust multi-access edge computing (mec) framework to assist aiots in completing computational tasks. specifically, we formulate the optimization problem of joint task offloading and uav trajectory to minimize the total execution time, which is in the form of mixed integer nonlinear programming and np-hard to tackle. therefore, we propose the algorithm of generative artificial intelligence-enhanced heterogeneous agent proximal policy optimization (gai-happo). the proposed algorithm integrates gai models to enhance the actor network ability to model complex environments and extract high-level features, thereby allowing the algorithm to predict uncertainties and adapt to dynamic conditions. additionally, gai stabilizes the critic network, addressing the instability of multi-agent reinforcement learning approaches. finally, extensive simulations demonstrate that the proposed algorithm outperforms the existing benchmark methods, thus highlighting the potentials in tackling intricate, cross-domain issues in the considered scenarios. agentic rl rl multi-agent rl + generative ai 水上物联网 mec 用生成式ai增强actor特征建模与不确定性预测，并稳定critic网络 水上物联网mec中无人机与地面站协作面临任务/轨迹不确定、异构与算力受限，需联合卸载与轨迹优化 联合任务卸载与无人机轨迹优化为混合整数非线性规划且np难，多智能体rl训练不稳定 最小化总执行时间的联合卸载与轨迹优化建模为minlp，提出gai-happo：生成式ai增强actor并稳定critic 仿真显示gai-happo优于现有基准方法，验证复杂跨域动态场景下的鲁棒性 " data-groups="Agentic RL" data-training="RL" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.24466v1" target="_blank" rel="noreferrer">2611.24466</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.24466v1" target="_blank" rel="noreferrer">Cooperative UAV and Ground Station for Robust MEC of Dynamic Aquatic IoT: A Generative AI-Enhanced Approach</a><div class="authors">Jiahao You, Ziye Jia, Chao Dong et al.</div></td><td data-label="方向"><span class=chip>Agentic RL</span></td><td data-label="模型架构">Multi-agent RL + generative AI</td><td data-label="训练方法"><span class="chip t-RL">RL</span></td><td data-label="应用场景">水上物联网 MEC</td><td data-label="核心创新">用生成式AI增强actor特征建模与不确定性预测，并稳定critic网络</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">面向动态水上物联网鲁棒 MEC 的无人机与地面站协作：生成式 AI 增强方法</div><div class="facts"><div class="fact"><span>核心问题</span>水上物联网MEC中无人机与地面站协作面临任务/轨迹不确定、异构与算力受限，需联合卸载与轨迹优化</div><div class="fact"><span>关键困难</span>联合任务卸载与无人机轨迹优化为混合整数非线性规划且NP难，多智能体RL训练不稳定</div><div class="fact"><span>解决方案</span>最小化总执行时间的联合卸载与轨迹优化建模为MINLP，提出GAI-HAPPO：生成式AI增强actor并稳定critic</div><div class="fact"><span>主要结果</span>仿真显示GAI-HAPPO优于现有基准方法，验证复杂跨域动态场景下的鲁棒性</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.24466v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.24466v1" target="_blank" rel="noreferrer">PDF</a>Jiahao You, Ziye Jia, Chao Dong, Qihui Wu, Zhu Han · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>The increasing aquatic Internet of Things (AIoTs) require computational support and coverage in applications such as maritime search and rescue. Unmanned aerial vehicles (UAVs) can offer low-cost, flexible aerial services, and ground stations (GSs) can provide powerful supports, which can cooperate to help the AIoTs in complex scenarios. However, the collaboration between UAVs and GSs for AIoTs faces challenges of task uncertainties, AIoTs trajectory uncertainties, heterogeneities, and limited computational resources. To address these issues, we propose a cooperative UAV and GS based robust multi-access edge computing (MEC) framework to assist AIoTs in completing computational tasks. Specifically, we formulate the optimization problem of joint task offloading and UAV trajectory to minimize the total execution time, which is in the form of mixed integer nonlinear programming and NP-hard to tackle. Therefore, we propose the algorithm of generative artificial intelligence-enhanced heterogeneous agent proximal policy optimization (GAI-HAPPO). The proposed algorithm integrates GAI models to enhance the actor network ability to model complex environments and extract high-level features, thereby allowing the algorithm to predict uncertainties and adapt to dynamic conditions. Additionally, GAI stabilizes the critic network, addressing the instability of multi-agent reinforcement learning approaches. Finally, extensive simulations demonstrate that the proposed algorithm outperforms the existing benchmark methods, thus highlighting the potentials in tackling intricate, cross-domain issues in the considered scenarios.</div></details></td></tr><tr class="paper-row" onclick="__toggleRow(event, this)" data-search="2611.23909 coslice: coordinated multi-agent reinforcement learning for 5g network slicing allocation coslice：面向5g网络切片分配的协同多智能体强化学习 pengxin wang nakjung choi jingdi chen radio access network (ran) slicing is a shared resource allocation problem: each slice seeks to satisfy its service level agreement (sla) with minimal radio-resource consumption, while all slices compete for a limited resource budget. this creates both an intra-slice trade-off between sla assurance and resource efficiency and an inter-slice conflict over shared resources, calling for specialized yet coordinated control. in this work, we present coslice, a coordinated multi-agent reinforcement learning framework for inter-slice physical resource block allocation in open radio access network (o-ran). coslice uses preference-conditioned slice agents for fast resource allocation and an llm-based coordinator to adapt their objectives using global network observations at a slower timescale. we formulate the problem as a multi-objective partially observable stochastic game (mo-posg), establish the existence of a preference correlated equilibrium, and derive a sublinear regret bound for the learning procedure. we implement the algorithm by using a two-stage training procedure that consists of multi-objective pretraining and joint optimization. we build a network slicing evaluation environment using oranslice and its radio-frequency simulator (rfsim), supporting realistic protocol-stack execution and application traffic across multiple slices. experimental results show that coslice reduces both average and tail sla violations compared with other centralized and multi-agent baselines under diverse slice workloads. agentic rl 预训练 rl marl + llm coordinator 5g网络切片资源分配 偏好条件切片智能体快速分配资源，llm协调器在慢时间尺度用全局观测调整各智能体目标 o-ran中多切片的物理资源块分配需同时兼顾各切片sla保障与资源效率，并在有限资源预算下协调切片间竞争 切片内sla与资源效率存在权衡、切片间争夺共享资源，集中式与现有多智能体方法难以兼顾专门化控制与全局协调 建模为多目标部分可观测随机博弈，证明偏好相关均衡与次线性遗憾界；用多目标预训练加联合优化两阶段训练偏好条件智能体与llm协调器 在基于oranslice与rfsim的多切片负载场景下，平均与尾部sla违约数均低于集中式和多智能体基线 " data-groups="Agentic RL" data-training="预训练|RL" data-has-code="false"><td class="pid" data-label="论文编号"><a href="https://arxiv.org/abs/2611.23909v1" target="_blank" rel="noreferrer">2611.23909</a><span class="date">2026-11-18</span></td><td class="ptitle"><span class="caret">▸</span><a href="https://arxiv.org/abs/2611.23909v1" target="_blank" rel="noreferrer">CoSlice: Coordinated Multi-Agent Reinforcement Learning for 5G Network Slicing Allocation</a><div class="authors">Pengxin Wang, Nakjung Choi, Jingdi Chen</div></td><td data-label="方向"><span class=chip>Agentic RL</span></td><td data-label="模型架构">MARL + LLM coordinator</td><td data-label="训练方法"><span class="chip t-预训练">预训练</span> <span class="chip t-RL">RL</span></td><td data-label="应用场景">5G网络切片资源分配</td><td data-label="核心创新">偏好条件切片智能体快速分配资源，LLM协调器在慢时间尺度用全局观测调整各智能体目标</td><td class="code" data-label="Code"><span class="muted">—</span></td></tr><tr class="detail-row" hidden><td colspan="8"><div class="title-zh">CoSlice：面向5G网络切片分配的协同多智能体强化学习</div><div class="facts"><div class="fact"><span>核心问题</span>O-RAN中多切片的物理资源块分配需同时兼顾各切片SLA保障与资源效率，并在有限资源预算下协调切片间竞争</div><div class="fact"><span>关键困难</span>切片内SLA与资源效率存在权衡、切片间争夺共享资源，集中式与现有多智能体方法难以兼顾专门化控制与全局协调</div><div class="fact"><span>解决方案</span>建模为多目标部分可观测随机博弈，证明偏好相关均衡与次线性遗憾界；用多目标预训练加联合优化两阶段训练偏好条件智能体与LLM协调器</div><div class="fact"><span>主要结果</span>在基于ORANSlice与RFsim的多切片负载场景下，平均与尾部SLA违约数均低于集中式和多智能体基线</div></div><div class="meta"><a href="https://arxiv.org/abs/2611.23909v1" target="_blank" rel="noreferrer">Abs</a><a href="https://arxiv.org/pdf/2611.23909v1" target="_blank" rel="noreferrer">PDF</a>Pengxin Wang, Nakjung Choi, Jingdi Chen · First 2026-11-18 · Latest 2026-11-18</div><details class="abs"><summary>Abstract</summary><div>Radio Access Network (RAN) slicing is a shared resource allocation problem: each slice seeks to satisfy its Service Level Agreement (SLA) with minimal radio-resource consumption, while all slices compete for a limited resource budget. This creates both an intra-slice trade-off between SLA assurance and resource efficiency and an inter-slice conflict over shared resources, calling for specialized yet coordinated control. In this work, we present CoSlice, a coordinated multi-agent reinforcement learning framework for inter-slice physical resource block allocation in Open Radio Access Network (O-RAN). CoSlice uses preference-conditioned slice agents for fast resource allocation and an LLM-based coordinator to adapt their objectives using global network observations at a slower timescale. We formulate the problem as a multi-objective partially observable stochastic game (mo-POSG), establish the existence of a Preference Correlated Equilibrium, and derive a sublinear regret bound for the learning procedure. We implement the algorithm by using a two-stage training procedure that consists of multi-objective pretraining and joint optimization. We build a network slicing evaluation environment using ORANSlice and its radio-frequency simulator (RFsim), supporting realistic protocol-stack execution and application traffic across multiple slices. Experimental results show that CoSlice reduces both average and tail SLA violations compared with other centralized and multi-agent baselines under diverse slice workloads.</div></details></td></tr></tbody></table></div>
+    <details class="history"><summary>History</summary><div class="history-list"><a href="20261119_0856.html">20261119_0856</a>
+<a href="20261118_0931.html">20261118_0931</a>
+<a href="20261117_1034.html">20261117_1034</a>
+<a href="20261106_0759.html">20261106_0759</a>
+<a href="20261105_1720.html">20261105_1720</a>
+<a href="20261102_0632.html">20261102_0632</a>
+<a href="20261101_0606.html">20261101_0606</a>
+<a href="20261031_0645.html">20261031_0645</a>
+<a href="20261030_2201.html">20261030_2201</a>
+<a href="20261030_2151.html">20261030_2151</a>
+<a href="20261030_2130.html">20261030_2130</a>
+<a href="20261030_0704.html">20261030_0704</a>
+<a href="20261029_0656.html">20261029_0656</a>
+<a href="20261028_0648.html">20261028_0648</a>
+<a href="20261027_0659.html">20261027_0659</a>
+<a href="20261026_0525.html">20261026_0525</a>
+<a href="20261025_0522.html">20261025_0522</a>
+<a href="20261024_0547.html">20261024_0547</a>
+<a href="20261023_0606.html">20261023_0606</a>
+<a href="20261022_0603.html">20261022_0603</a>
+<a href="20261021_0601.html">20261021_0601</a>
+<a href="20261020_0643.html">20261020_0643</a>
+<a href="20261019_0512.html">20261019_0512</a>
+<a href="20261018_0511.html">20261018_0511</a>
+<a href="20261017_0552.html">20261017_0552</a>
+<a href="20261016_0554.html">20261016_0554</a>
+<a href="20261015_0600.html">20261015_0600</a>
+<a href="20261014_0711.html">20261014_0711</a>
+<a href="20261013_0912.html">20261013_0912</a>
+<a href="20261012_0637.html">20261012_0637</a>
+<a href="20261011_0608.html">20261011_0608</a>
+<a href="20261010_0700.html">20261010_0700</a>
+<a href="20261009_0737.html">20261009_0737</a>
+<a href="20261008_0725.html">20261008_0725</a>
+<a href="20261007_0651.html">20261007_0651</a>
+<a href="20261006_0832.html">20261006_0832</a>
+<a href="20261005_0608.html">20261005_0608</a>
+<a href="20261004_0557.html">20261004_0557</a>
+<a href="20261003_0656.html">20261003_0656</a>
+<a href="20261002_0658.html">20261002_0658</a>
+<a href="20261001_0646.html">20261001_0646</a>
+<a href="20260930_1209.html">20260930_1209</a>
+<a href="20260930_1005.html">20260930_1005</a>
+<a href="20260930_0656.html">20260930_0656</a>
+<a href="20260929_0737.html">20260929_0737</a>
+<a href="20260928_0546.html">20260928_0546</a>
+<a href="20260927_0552.html">20260927_0552</a>
+<a href="20260926_0604.html">20260926_0604</a>
+<a href="20260925_0600.html">20260925_0600</a>
+<a href="20260924_1505.html">20260924_1505</a>
+<a href="20260924_1308.html">20260924_1308</a>
+<a href="20260924_1112.html">20260924_1112</a>
+<a href="20260924_0601.html">20260924_0601</a>
+<a href="20260923_1530.html">20260923_1530</a>
+<a href="20260923_1508.html">20260923_1508</a>
+<a href="20260923_0559.html">20260923_0559</a>
+<a href="20260923_0546.html">20260923_0546</a>
+<a href="20260922_0634.html">20260922_0634</a>
+<a href="20260922_0624.html">20260922_0624</a>
+<a href="20260921_0526.html">20260921_0526</a>
+<a href="20260921_0509.html">20260921_0509</a>
+<a href="20260920_0525.html">20260920_0525</a>
+<a href="20260920_0514.html">20260920_0514</a>
+<a href="20260919_0536.html">20260919_0536</a>
+<a href="20260919_0523.html">20260919_0523</a>
+<a href="20260918_0605.html">20260918_0605</a>
+<a href="20260918_0553.html">20260918_0553</a>
+<a href="20260917_0604.html">20260917_0604</a>
+<a href="20260916_0606.html">20260916_0606</a>
+<a href="20260916_0554.html">20260916_0554</a>
+<a href="20260915_0627.html">20260915_0627</a>
+<a href="20260915_0618.html">20260915_0618</a>
+<a href="20260913_0522.html">20260913_0522</a>
+<a href="20260913_0510.html">20260913_0510</a>
+<a href="20260912_0541.html">20260912_0541</a>
+<a href="20260912_0530.html">20260912_0530</a>
+<a href="20260911_0534.html">20260911_0534</a>
+<a href="20260911_0521.html">20260911_0521</a>
+<a href="20260910_0539.html">20260910_0539</a>
+<a href="20260910_0528.html">20260910_0528</a>
+<a href="20260909_0547.html">20260909_0547</a>
+<a href="20260909_0533.html">20260909_0533</a>
+<a href="20260908_0559.html">20260908_0559</a>
+<a href="20260908_0553.html">20260908_0553</a>
+<a href="20260907_0513.html">20260907_0513</a>
+<a href="20260907_0500.html">20260907_0500</a>
+<a href="20260906_0507.html">20260906_0507</a>
+<a href="20260906_0453.html">20260906_0453</a>
+<a href="20260905_0523.html">20260905_0523</a>
+<a href="20260905_0512.html">20260905_0512</a>
+<a href="20260904_0540.html">20260904_0540</a>
+<a href="20260904_0533.html">20260904_0533</a>
+<a href="20260903_0545.html">20260903_0545</a>
+<a href="20260903_0530.html">20260903_0530</a>
+<a href="20260902_0544.html">20260902_0544</a>
+<a href="20260902_0533.html">20260902_0533</a>
+<a href="20260901_0712.html">20260901_0712</a>
+<a href="20260901_0706.html">20260901_0706</a>
+<a href="20260831_0555.html">20260831_0555</a>
+<a href="20260831_0548.html">20260831_0548</a>
+<a href="20260830_0540.html">20260830_0540</a>
+<a href="20260830_0528.html">20260830_0528</a>
+<a href="20260829_1004.html">20260829_1004</a>
+<a href="20260829_0959.html">20260829_0959</a>
+<a href="20260828_1134.html">20260828_1134</a>
+<a href="20260828_1025.html">20260828_1025</a>
+<a href="20260827_0547.html">20260827_0547</a>
+<a href="20260827_0533.html">20260827_0533</a>
+<a href="20260826_0339.html">20260826_0339</a>
+<a href="20260826_0326.html">20260826_0326</a>
+<a href="20260825_0337.html">20260825_0337</a>
+<a href="20260825_0324.html">20260825_0324</a>
+<a href="20260824_0329.html">20260824_0329</a>
+<a href="20260824_0318.html">20260824_0318</a>
+<a href="20260823_0330.html">20260823_0330</a>
+<a href="20260823_0319.html">20260823_0319</a>
+<a href="20260822_0332.html">20260822_0332</a>
+<a href="20260822_0322.html">20260822_0322</a>
+<a href="20260821_0338.html">20260821_0338</a>
+<a href="20260821_0326.html">20260821_0326</a>
+<a href="20260820_0343.html">20260820_0343</a>
+<a href="20260820_0335.html">20260820_0335</a>
+<a href="20260819_0338.html">20260819_0338</a>
+<a href="20260819_0324.html">20260819_0324</a>
+<a href="20260818_0335.html">20260818_0335</a>
+<a href="20260818_0323.html">20260818_0323</a>
+<a href="20260817_0328.html">20260817_0328</a>
+<a href="20260816_0328.html">20260816_0328</a>
+<a href="20260816_0318.html">20260816_0318</a>
+<a href="20260815_0352.html">20260815_0352</a>
+<a href="20260815_0344.html">20260815_0344</a>
+<a href="20260814_0359.html">20260814_0359</a>
+<a href="20260814_0354.html">20260814_0354</a>
+<a href="20260813_0403.html">20260813_0403</a>
+<a href="20260813_0359.html">20260813_0359</a>
+<a href="20260812_0404.html">20260812_0404</a>
+<a href="20260812_0358.html">20260812_0358</a>
+<a href="20260811_0357.html">20260811_0357</a>
+<a href="20260811_0352.html">20260811_0352</a>
+<a href="20260810_0341.html">20260810_0341</a>
+<a href="20260810_0329.html">20260810_0329</a>
+<a href="20260809_0338.html">20260809_0338</a>
+<a href="20260809_0325.html">20260809_0325</a>
+<a href="20260808_0356.html">20260808_0356</a>
+<a href="20260808_0348.html">20260808_0348</a>
+<a href="20260807_0844.html">20260807_0844</a>
+<a href="20260807_0838.html">20260807_0838</a>
+<a href="20260806_0437.html">20260806_0437</a>
+<a href="20260806_0422.html">20260806_0422</a>
+<a href="20260805_0439.html">20260805_0439</a>
+<a href="20260805_0422.html">20260805_0422</a>
+<a href="20260804_0437.html">20260804_0437</a>
+<a href="20260804_0423.html">20260804_0423</a>
+<a href="20260803_0416.html">20260803_0416</a>
+<a href="20260802_0414.html">20260802_0414</a>
+<a href="20260802_0408.html">20260802_0408</a>
+<a href="20260801_0426.html">20260801_0426</a>
+<a href="20260801_0416.html">20260801_0416</a>
+<a href="20260731_0421.html">20260731_0421</a>
+<a href="20260731_0413.html">20260731_0413</a>
+<a href="20260730_0416.html">20260730_0416</a>
+<a href="20260730_0410.html">20260730_0410</a>
+<a href="20260729_0413.html">20260729_0413</a>
+<a href="20260728_0417.html">20260728_0417</a>
+<a href="20260727_0416.html">20260727_0416</a>
+<a href="20260727_0411.html">20260727_0411</a>
+<a href="20260726_0414.html">20260726_0414</a>
+<a href="20260726_0409.html">20260726_0409</a>
+<a href="20260725_0432.html">20260725_0432</a>
+<a href="20260725_0415.html">20260725_0415</a>
+<a href="20260724_0419.html">20260724_0419</a>
+<a href="20260724_0410.html">20260724_0410</a>
+<a href="20260723_0418.html">20260723_0418</a>
+<a href="20260723_0415.html">20260723_0415</a>
+<a href="20260722_0423.html">20260722_0423</a>
+<a href="20260722_0418.html">20260722_0418</a>
+<a href="20260721_0427.html">20260721_0427</a>
+<a href="20260721_0418.html">20260721_0418</a>
+<a href="20260720_0411.html">20260720_0411</a>
+<a href="20260720_0406.html">20260720_0406</a>
+<a href="20260719_0407.html">20260719_0407</a>
+<a href="20260719_0403.html">20260719_0403</a>
+<a href="20260718_0413.html">20260718_0413</a>
+<a href="20260718_0403.html">20260718_0403</a>
+<a href="20260717_0408.html">20260717_0408</a>
+<a href="20260717_0359.html">20260717_0359</a>
+<a href="20260716_0417.html">20260716_0417</a>
+<a href="20260716_0405.html">20260716_0405</a>
+<a href="20260715_0420.html">20260715_0420</a>
+<a href="20260715_0407.html">20260715_0407</a>
+<a href="20260714_0421.html">20260714_0421</a>
+<a href="20260714_0409.html">20260714_0409</a>
+<a href="20260713_0409.html">20260713_0409</a>
+<a href="20260713_0405.html">20260713_0405</a>
+<a href="20260712_0409.html">20260712_0409</a>
+<a href="20260712_0402.html">20260712_0402</a>
+<a href="20260711_0439.html">20260711_0439</a>
+<a href="20260711_0418.html">20260711_0418</a>
+<a href="20260710_0454.html">20260710_0454</a>
+<a href="20260710_0444.html">20260710_0444</a>
+<a href="20260709_0426.html">20260709_0426</a>
+<a href="20260709_0419.html">20260709_0419</a>
+<a href="20260708_0455.html">20260708_0455</a>
+<a href="20260708_0448.html">20260708_0448</a>
+<a href="20260707_0456.html">20260707_0456</a>
+<a href="20260707_0451.html">20260707_0451</a>
+<a href="20260706_0421.html">20260706_0421</a>
+<a href="20260706_0410.html">20260706_0410</a>
+<a href="20260705_0415.html">20260705_0415</a>
+<a href="20260705_0407.html">20260705_0407</a>
+<a href="20260704_0421.html">20260704_0421</a>
+<a href="20260704_0413.html">20260704_0413</a>
+<a href="20260703_0425.html">20260703_0425</a>
+<a href="20260703_0417.html">20260703_0417</a>
+<a href="20260702_0452.html">20260702_0452</a>
+<a href="20260702_0447.html">20260702_0447</a>
+<a href="20260701_0502.html">20260701_0502</a>
+<a href="20260701_0455.html">20260701_0455</a>
+<a href="20260630_0454.html">20260630_0454</a>
+<a href="20260630_0452.html">20260630_0452</a>
+<a href="20260629_0420.html">20260629_0420</a>
+<a href="20260629_0410.html">20260629_0410</a>
+<a href="20260628_0423.html">20260628_0423</a>
+<a href="20260627_0450.html">20260627_0450</a>
+<a href="20260627_0430.html">20260627_0430</a>
+<a href="20260626_1438.html">20260626_1438</a>
+<a href="20260626_0502.html">20260626_0502</a>
+<a href="20260625_0455.html">20260625_0455</a>
+<a href="20260624_0505.html">20260624_0505</a>
+<a href="20260623_0535.html">20260623_0535</a>
+<a href="20260622_0445.html">20260622_0445</a>
+<a href="20260621_0422.html">20260621_0422</a>
+<a href="20260620_0442.html">20260620_0442</a>
+<a href="20260619_0531.html">20260619_0531</a>
+<a href="20260618_0519.html">20260618_0519</a>
+<a href="20260617_0545.html">20260617_0545</a>
+<a href="20260616_0549.html">20260616_0549</a>
+<a href="20260615_0423.html">20260615_0423</a>
+<a href="20260614_0423.html">20260614_0423</a>
+<a href="20260613_0505.html">20260613_0505</a>
+<a href="20260612_0528.html">20260612_0528</a>
+<a href="20260611_0528.html">20260611_0528</a>
+<a href="20260610_0504.html">20260610_0504</a>
+<a href="20260609_0514.html">20260609_0514</a>
+<a href="20260608_0421.html">20260608_0421</a>
+<a href="20260607_0418.html">20260607_0418</a>
+<a href="20260606_0451.html">20260606_0451</a>
+<a href="20260604_0557.html">20260604_0557</a>
+<a href="20260603_0556.html">20260603_0556</a>
+<a href="20260602_0615.html">20260602_0615</a>
+<a href="20260601_0419.html">20260601_0419</a>
+<a href="20260531_0414.html">20260531_0414</a>
+<a href="20260530_0512.html">20260530_0512</a>
+<a href="20260529_0515.html">20260529_0515</a>
+<a href="20260527_0459.html">20260527_0459</a>
+<a href="20260526_0426.html">20260526_0426</a>
+<a href="20260525_0417.html">20260525_0417</a>
+<a href="20260524_0411.html">20260524_0411</a>
+<a href="20260523_0445.html">20260523_0445</a>
+<a href="20260522_0454.html">20260522_0454</a>
+<a href="20260521_0508.html">20260521_0508</a>
+<a href="20260520_0449.html">20260520_0449</a>
+<a href="20260519_0442.html">20260519_0442</a>
+<a href="20260518_0409.html">20260518_0409</a>
+<a href="20260517_0425.html">20260517_0425</a>
+<a href="20260516_0436.html">20260516_0436</a>
+<a href="20260515_0457.html">20260515_0457</a>
+<a href="20260514_0507.html">20260514_0507</a>
+<a href="20260513_0503.html">20260513_0503</a>
+<a href="20260512_0505.html">20260512_0505</a>
+<a href="20260511_0418.html">20260511_0418</a>
+<a href="20260510_0414.html">20260510_0414</a>
+<a href="20260509_0426.html">20260509_0426</a>
+<a href="20260508_0435.html">20260508_0435</a>
+<a href="20260507_0454.html">20260507_0454</a>
+<a href="20260506_0427.html">20260506_0427</a>
+<a href="20260505_0436.html">20260505_0436</a>
+<a href="20260504_0410.html">20260504_0410</a>
+<a href="20260503_0414.html">20260503_0414</a>
+<a href="20260502_0426.html">20260502_0426</a>
+<a href="20260501_0429.html">20260501_0429</a>
+<a href="20260430_0430.html">20260430_0430</a>
+<a href="20260429_0437.html">20260429_0437</a>
+<a href="20260428_0429.html">20260428_0429</a>
+<a href="20260427_0405.html">20260427_0405</a>
+<a href="20260426_0404.html">20260426_0404</a>
+<a href="20260425_0410.html">20260425_0410</a>
+<a href="20260424_0430.html">20260424_0430</a>
+<a href="20260423_0426.html">20260423_0426</a>
+<a href="20260422_0424.html">20260422_0424</a>
+<a href="20260421_0418.html">20260421_0418</a>
+<a href="20260420_0359.html">20260420_0359</a>
+<a href="20260419_0358.html">20260419_0358</a>
+<a href="20260418_0415.html">20260418_0415</a>
+<a href="20260417_0421.html">20260417_0421</a>
+<a href="20260416_0425.html">20260416_0425</a>
+<a href="20260415_0426.html">20260415_0426</a>
+<a href="20260414_0423.html">20260414_0423</a>
+<a href="20260413_0352.html">20260413_0352</a>
+<a href="20260412_0347.html">20260412_0347</a>
+<a href="20260411_0356.html">20260411_0356</a>
+<a href="20260410_0412.html">20260410_0412</a>
+<a href="20260409_0411.html">20260409_0411</a>
+<a href="20260407_0404.html">20260407_0404</a>
+<a href="20260406_0347.html">20260406_0347</a>
+<a href="20260405_0344.html">20260405_0344</a>
+<a href="20260404_0350.html">20260404_0350</a>
+<a href="20260403_0400.html">20260403_0400</a>
+<a href="20260401_0408.html">20260401_0408</a>
+<a href="20260331_0407.html">20260331_0407</a>
+<a href="20260329_0347.html">20260329_0347</a>
+<a href="20260328_0350.html">20260328_0350</a>
+<a href="20260326_0357.html">20260326_0357</a>
+<a href="20260325_0405.html">20260325_0405</a>
+<a href="20260324_0400.html">20260324_0400</a>
+<a href="20260323_0342.html">20260323_0342</a>
+<a href="20260322_0340.html">20260322_0340</a>
+<a href="20260321_0347.html">20260321_0347</a>
+<a href="20260320_0356.html">20260320_0356</a>
+<a href="20260319_0358.html">20260319_0358</a>
+<a href="20260318_0405.html">20260318_0405</a>
+<a href="20260317_0401.html">20260317_0401</a>
+<a href="20260316_0343.html">20260316_0343</a>
+<a href="20260315_0341.html">20260315_0341</a>
+<a href="20260314_0344.html">20260314_0344</a>
+<a href="20260313_0352.html">20260313_0352</a>
+<a href="20260312_0352.html">20260312_0352</a>
+<a href="20260311_0347.html">20260311_0347</a>
+<a href="20260310_0350.html">20260310_0350</a>
+<a href="20260309_0338.html">20260309_0338</a>
+<a href="20260308_0337.html">20260308_0337</a>
+<a href="20260307_0347.html">20260307_0347</a>
+<a href="20260306_0402.html">20260306_0402</a>
+<a href="20260305_0348.html">20260305_0348</a>
+<a href="20260304_0348.html">20260304_0348</a>
+<a href="20260303_0348.html">20260303_0348</a>
+<a href="20260302_0336.html">20260302_0336</a>
+<a href="20260301_0339.html">20260301_0339</a>
+<a href="20260228_0348.html">20260228_0348</a>
+<a href="20260227_0354.html">20260227_0354</a>
+<a href="20260226_0402.html">20260226_0402</a>
+<a href="20260225_0404.html">20260225_0404</a>
+<a href="20260224_0406.html">20260224_0406</a>
+<a href="20260223_0338.html">20260223_0338</a>
+<a href="20260222_0339.html">20260222_0339</a>
+<a href="20260221_0345.html">20260221_0345</a>
+<a href="20260220_0348.html">20260220_0348</a>
+<a href="20260219_0358.html">20260219_0358</a>
+<a href="20260218_0358.html">20260218_0358</a>
+<a href="20260217_0343.html">20260217_0343</a>
+<a href="20260216_0339.html">20260216_0339</a>
+<a href="20260215_0338.html">20260215_0338</a>
+<a href="20260213_0401.html">20260213_0401</a>
+<a href="20260212_0404.html">20260212_0404</a>
+<a href="20260210_0409.html">20260210_0409</a>
+<a href="20260208_0339.html">20260208_0339</a>
+<a href="20260207_0349.html">20260207_0349</a>
+<a href="20260206_0347.html">20260206_0347</a>
+<a href="20260205_0346.html">20260205_0346</a>
+<a href="20260204_0354.html">20260204_0354</a>
+<a href="20260202_0337.html">20260202_0337</a>
+<a href="20260201_0333.html">20260201_0333</a>
+<a href="20260131_0345.html">20260131_0345</a>
+<a href="20260130_0341.html">20260130_0341</a>
+<a href="20260129_0344.html">20260129_0344</a>
+<a href="20260128_0341.html">20260128_0341</a>
+<a href="20260127_0338.html">20260127_0338</a>
+<a href="20260126_0330.html">20260126_0330</a>
+<a href="20260125_0329.html">20260125_0329</a>
+<a href="20260124_0337.html">20260124_0337</a>
+<a href="20260123_0337.html">20260123_0337</a>
+<a href="20260122_0343.html">20260122_0343</a>
+<a href="20260121_0424.html">20260121_0424</a>
+<a href="20260119_0329.html">20260119_0329</a>
+<a href="20260118_0327.html">20260118_0327</a>
+<a href="20260117_0332.html">20260117_0332</a>
+<a href="20260116_0339.html">20260116_0339</a>
+<a href="20260115_0334.html">20260115_0334</a>
+<a href="20260114_0333.html">20260114_0333</a>
+<a href="20260113_0334.html">20260113_0334</a>
+<a href="20260112_0331.html">20260112_0331</a>
+<a href="20260111_0329.html">20260111_0329</a>
+<a href="20260110_0333.html">20260110_0333</a>
+<a href="20260109_0334.html">20260109_0334</a>
+<a href="20260108_0335.html">20260108_0335</a>
+<a href="20260107_0330.html">20260107_0330</a>
+<a href="20260106_0336.html">20260106_0336</a>
+<a href="20260105_0328.html">20260105_0328</a>
+<a href="20260104_0328.html">20260104_0328</a>
+<a href="20260103_0325.html">20260103_0325</a>
+<a href="20260102_0339.html">20260102_0339</a>
+<a href="20260101_0329.html">20260101_0329</a>
+<a href="20251231_0333.html">20251231_0333</a>
+<a href="20251230_0332.html">20251230_0332</a>
+<a href="20251229_0329.html">20251229_0329</a>
+<a href="20251228_0332.html">20251228_0332</a>
+<a href="20251227_0329.html">20251227_0329</a>
+<a href="20251226_0330.html">20251226_0330</a>
+<a href="20251225_0329.html">20251225_0329</a>
+<a href="20251224_0331.html">20251224_0331</a>
+<a href="20251223_0332.html">20251223_0332</a>
+<a href="20251222_0328.html">20251222_0328</a>
+<a href="20251221_0329.html">20251221_0329</a>
+<a href="20251220_0330.html">20251220_0330</a>
+<a href="20251219_0330.html">20251219_0330</a>
+<a href="20251218_0345.html">20251218_0345</a>
+<a href="20251217_0332.html">20251217_0332</a>
+<a href="20251216_0333.html">20251216_0333</a>
+<a href="20251215_0333.html">20251215_0333</a>
+<a href="20251214_0327.html">20251214_0327</a>
+<a href="20251212_0333.html">20251212_0333</a>
+<a href="20251211_0331.html">20251211_0331</a>
+<a href="20251210_0332.html">20251210_0332</a>
+<a href="20251209_0331.html">20251209_0331</a>
+<a href="20251208_0328.html">20251208_0328</a>
+<a href="20251207_0327.html">20251207_0327</a>
+<a href="20251206_0330.html">20251206_0330</a>
+<a href="20251205_0331.html">20251205_0331</a>
+<a href="20251204_0331.html">20251204_0331</a>
+<a href="20251203_0333.html">20251203_0333</a>
+<a href="20251202_0335.html">20251202_0335</a>
+<a href="20251201_0328.html">20251201_0328</a>
+<a href="20251130_0327.html">20251130_0327</a>
+<a href="20251129_0328.html">20251129_0328</a>
+<a href="20251128_0327.html">20251128_0327</a>
+<a href="20251127_0327.html">20251127_0327</a>
+<a href="20251126_0329.html">20251126_0329</a>
+<a href="20251125_0327.html">20251125_0327</a>
+<a href="20251124_0327.html">20251124_0327</a>
+<a href="20251123_0326.html">20251123_0326</a>
+<a href="20251122_0328.html">20251122_0328</a>
+<a href="20251121_0328.html">20251121_0328</a>
+<a href="20251120_0329.html">20251120_0329</a>
+<a href="20251119_0328.html">20251119_0328</a>
+<a href="20251118_0328.html">20251118_0328</a>
+<a href="20251117_0326.html">20251117_0326</a>
+<a href="20251116_0325.html">20251116_0325</a>
+<a href="20251115_0327.html">20251115_0327</a>
+<a href="20251114_0328.html">20251114_0328</a>
+<a href="20251113_0330.html">20251113_0330</a>
+<a href="20251112_0329.html">20251112_0329</a>
+<a href="20251111_0328.html">20251111_0328</a>
+<a href="20251110_0325.html">20251110_0325</a>
+<a href="20251109_0326.html">20251109_0326</a>
+<a href="20251108_0328.html">20251108_0328</a>
+<a href="20251107_0328.html">20251107_0328</a>
+<a href="20251106_0329.html">20251106_0329</a>
+<a href="20251105_0326.html">20251105_0326</a>
+<a href="20251104_0327.html">20251104_0327</a>
+<a href="20251103_0324.html">20251103_0324</a>
+<a href="20251102_0326.html">20251102_0326</a>
+<a href="20251101_0324.html">20251101_0324</a>
+<a href="20251031_0328.html">20251031_0328</a>
+<a href="20251030_0330.html">20251030_0330</a>
+<a href="20251029_0329.html">20251029_0329</a>
+<a href="20251028_0329.html">20251028_0329</a>
+<a href="20251027_0322.html">20251027_0322</a>
+<a href="20251026_0327.html">20251026_0327</a>
+<a href="20251025_0331.html">20251025_0331</a>
+<a href="20251024_0329.html">20251024_0329</a>
+<a href="20251023_0329.html">20251023_0329</a>
+<a href="20251022_0330.html">20251022_0330</a>
+<a href="20251021_0331.html">20251021_0331</a>
+<a href="20251020_0328.html">20251020_0328</a>
+<a href="20251019_0321.html">20251019_0321</a>
+<a href="20251018_0327.html">20251018_0327</a>
+<a href="20251017_0320.html">20251017_0320</a>
+<a href="20251016_0328.html">20251016_0328</a>
+<a href="20251015_0328.html">20251015_0328</a>
+<a href="20251014_0323.html">20251014_0323</a>
+<a href="20251011_0328.html">20251011_0328</a>
+<a href="20251010_0330.html">20251010_0330</a>
+<a href="20251009_0321.html">20251009_0321</a>
+<a href="20251008_0343.html">20251008_0343</a>
+<a href="20251007_0353.html">20251007_0353</a>
+<a href="20251006_0325.html">20251006_0325</a>
+<a href="20251005_0350.html">20251005_0350</a>
+<a href="20251004_0352.html">20251004_0352</a>
+<a href="20251003_0352.html">20251003_0352</a>
+<a href="20251002_0356.html">20251002_0356</a>
+<a href="20251001_0321.html">20251001_0321</a>
+<a href="20250925_0335.html">20250925_0335</a>
+<a href="20250924_0350.html">20250924_0350</a>
+<a href="20250923_0348.html">20250923_0348</a>
+<a href="20250922_0346.html">20250922_0346</a>
+<a href="20250921_0345.html">20250921_0345</a>
+<a href="20250920_0342.html">20250920_0342</a>
+<a href="20250919_0346.html">20250919_0346</a>
+<a href="20250918_0342.html">20250918_0342</a>
+<a href="20250917_0336.html">20250917_0336</a>
+<a href="20250916_0333.html">20250916_0333</a>
+<a href="20250915_0333.html">20250915_0333</a>
+<a href="20250914_0328.html">20250914_0328</a>
+<a href="20250913_0322.html">20250913_0322</a>
+<a href="20250912_0335.html">20250912_0335</a>
+<a href="20250911_0337.html">20250911_0337</a>
+<a href="20250910_0338.html">20250910_0338</a>
+<a href="20250909_0341.html">20250909_0341</a>
+<a href="20250908_0342.html">20250908_0342</a>
+<a href="20250907_0333.html">20250907_0333</a>
+<a href="20250906_0350.html">20250906_0350</a>
+<a href="20250905_0319.html">20250905_0319</a>
+<a href="20250904_0323.html">20250904_0323</a>
+<a href="20250903_0355.html">20250903_0355</a>
+<a href="20250902_0325.html">20250902_0325</a>
+<a href="20250901_0355.html">20250901_0355</a>
+<a href="20250831_0355.html">20250831_0355</a>
+<a href="20250830_0356.html">20250830_0356</a>
+<a href="20250829_0355.html">20250829_0355</a>
+<a href="20250828_0333.html">20250828_0333</a>
+<a href="20250827_1654.html">20250827_1654</a>
+<a href="20250827_1602.html">20250827_1602</a>
+<a href="20250827_1557.html">20250827_1557</a>
+<a href="20250827_0320.html">20250827_0320</a>
+<a href="20250826_0320.html">20250826_0320</a>
+<a href="20250825_1752.html">20250825_1752</a>
+<a href="20250825_1709.html">20250825_1709</a>
+<a href="20250825_1652.html">20250825_1652</a>
+<a href="20250825_1647.html">20250825_1647</a>
+<a href="20250825_1645.html">20250825_1645</a>
+<a href="20250825_1631.html">20250825_1631</a>
+<a href="20250825_1606.html">20250825_1606</a>
+<a href="20250825_1559.html">20250825_1559</a>
+<a href="20250825_1558.html">20250825_1558</a>
+<a href="20250825_1556.html">20250825_1556</a>
+<a href="20250825_1531.html">20250825_1531</a>
+<a href="20250825_1525.html">20250825_1525</a>
+<a href="20250825_1516.html">20250825_1516</a>
+<a href="20250825_1450.html">20250825_1450</a>
+<a href="20250825_1444.html">20250825_1444</a>
+<a href="20250825_1438.html">20250825_1438</a>
+<a href="20250825_1414.html">20250825_1414</a>
+<a href="20250825_1413.html">20250825_1413</a>
+<a href="20250825_1410.html">20250825_1410</a>
+<a href="20250825_1408.html">20250825_1408</a>
+<a href="20250825_1405.html">20250825_1405</a>
+<a href="20250825_1401.html">20250825_1401</a>
+<a href="20250825_1355.html">20250825_1355</a>
+<a href="20250825_1347.html">20250825_1347</a>
+<a href="20250825_1345.html">20250825_1345</a>
+<a href="20250825_1344.html">20250825_1344</a>
+<a href="20250825_1343.html">20250825_1343</a>
+<a href="20250825_1340.html">20250825_1340</a>
+<a href="20250825_1339.html">20250825_1339</a>
+<a href="20250825_1333.html">20250825_1333</a>
+<a href="20250825_1323.html">20250825_1323</a>
+<a href="20250825_1317.html">20250825_1317</a>
+<a href="20250825_1243.html">20250825_1243</a>
+<a href="20250824_0342.html">20250824_0342</a>
+<a href="20250823_0343.html">20250823_0343</a>
+<a href="20250823_0142.html">20250823_0142</a>
+<a href="20250822_2331.html">20250822_2331</a>
+<a href="20250822_2308.html">20250822_2308</a>
+<a href="20250822_2258.html">20250822_2258</a>
+<a href="20250822_2241.html">20250822_2241</a>
+<a href="20250822_2228.html">20250822_2228</a>
+<a href="20250822_2206.html">20250822_2206</a>
+<a href="20250822_2147.html">20250822_2147</a>
+<a href="20250822_2111.html">20250822_2111</a>
+<a href="20250822_1259.html">20250822_1259</a>
+<a href="20250822_1233.html">20250822_1233</a>
+<a href="20250822_1229.html">20250822_1229</a>
+<a href="20250822_1223.html">20250822_1223</a>
+<a href="20250822_1210.html">20250822_1210</a>
+<a href="20250822_1201.html">20250822_1201</a>
+<a href="20250822_1111.html">20250822_1111</a>
+<a href="20250822_1058.html">20250822_1058</a>
+<a href="20250822_1052.html">20250822_1052</a>
+<a href="20250822_1045.html">20250822_1045</a>
+<a href="20250822_0657.html">20250822_0657</a>
+<a href="20250822_0553.html">20250822_0553</a></div></details>
+    <div class="footer">Generated by arxiv-tracker</div>
+  </div>
+</body></html>

@@ -10675,5 +10675,335 @@
    "title_zh": "得分更高的编码模型并未完成更多工作"
   },
   "saved": "2026-11-19"
+ },
+ "2611.23615@p1": {
+  "data": {
+   "challenge": "低位被舍入后，智能体在 SmolVLM 上找不到损坏权重，在 LFM2-VL 上仅靠重缩放答案 token 嵌入获益；交换行列类置换故障在会话预算内无法发现",
+   "future": "建议权重修复研究报告权重数值格式并设舍入对照组；行列置换类故障仍无法免辅助定位",
+   "problem": "权重空间编程（不经梯度直接编辑网络权重）要成功修复视觉语言模型的故障，究竟依赖哪些条件",
+   "results": "未舍入时智能体自行推断缩放因子，把大部分权重精确还原，精度回到接近原始水平，且程序可迁移到同一模型未见检查点；16 位舍入后无权重被精确还原",
+   "solution": "在 SmolVLM-256M 与 LFM2-VL-450M 权重中植入缩放行与视觉编码器噪声故障，让编码智能体对照原始权重逐次校验编辑，并结合精度痕迹与提示中给出的存储值分布、行范数等统计量定位损坏行",
+   "tags": {
+    "application": "VLM 权重故障修复",
+    "architecture": "VLM + coding agent",
+    "innovation": "编码智能体无梯度直接改写权重定位植入故障，并揭示修复依赖32位算术残留的低位痕迹",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "面向视觉语言模型修复的权重空间编程"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.23673@p1": {
+  "data": {
+   "challenge": "仅文本黑盒模型无法提供logits，且人工预设提问模板与干预计划泛化差。",
+   "future": "",
+   "problem": "黑盒教师不暴露logits，传统在线策略蒸馏难以用于长程语言智能体任务。",
+   "results": "CAMG-II增益达最强黑盒OPD基线2.46倍；无顾问时在Terminal-Bench 2.1与SWE-Bench Pro V2提升成功率。",
+   "solution": "以自然语言通信为蒸馏媒介；学生执行中自主决定何时向教师提问并生成开放式请求，将成功师生交互保留为特权参考，结合任务奖励RL对无顾问学生rollout做在线自蒸馏。",
+   "tags": {
+    "application": "长程任务智能体",
+    "architecture": "LLM agent + black-box teacher",
+    "innovation": "学生自主发起自然语言咨询黑盒教师，成功交互作特权参考做在线自蒸馏",
+    "training": [
+     "蒸馏",
+     "RL"
+    ]
+   },
+   "title_zh": "通信式在线策略蒸馏：通过通信蒸馏黑盒教师能力以完成长程任务"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.23817@p1": {
+  "data": {
+   "challenge": "测试通过不反映复杂度集中和未覆盖代码，这些问题会随 agent 继续扩展自身代码而固化",
+   "future": "",
+   "problem": "编码 agent 仅凭测试通过与否长程写代码，复杂度累积和测试覆盖缺口难以及时发现并持续恶化",
+   "results": "在三个长周期编码基准和四个模型上，复杂度反馈显著降低代码复杂度集中度（erosion），且不影响留出集正确性",
+   "solution": "每次改代码后，将超过复杂度阈值的函数和未被测试覆盖的改动行作为短消息插入上下文，让 agent 先重构或补测再继续",
+   "tags": {
+    "application": "长周期代码生成",
+    "architecture": "LLM coding agent + metric feedback",
+    "innovation": "将圈复杂度与测试覆盖指标注入 agent 上下文，作为在线反馈",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "Metrics-in-the-Loop：复杂度反馈重塑 Agent 编写的代码"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.23855@p1": {
+  "data": {
+   "challenge": "仅靠仿真不够：公开零件数据下15个初始仿真通过设计无一通过真实赛道，存在仿真-现实差距",
+   "future": "更难障碍、单机器人跨越全部障碍及真实世界迁移仍表现不足",
+   "problem": "AI智能体能否设计出在真实世界工作的机器人",
+   "results": "4个前沿编码智能体、10障碍3难度、16427次仿真、135台实物；易障碍近全解，66%仿真通过跨级成立，视频反馈消除72%一二级失败",
+   "solution": "编码智能体用标准件、电机和3D打印件联合设计硬件与程序，按需测量学习仿真器，并用真实运行失败视频闭环修正仿真和重新设计",
+   "tags": {
+    "application": "机器人软硬件协同设计",
+    "architecture": "Coding agent + sim-to-real loop",
+    "innovation": "把仿真通过的设计实际制造并在真实赛道测试，用失败视频反哺智能体改进仿真与设计",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "RoboBuilder：真实世界视频反馈闭环下的智能体机器人协同设计"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.23875@p1": {
+  "data": {
+   "challenge": "逐器件校准成本高，且无法通过硬件反向传播梯度，无梯度方法效率低",
+   "future": "",
+   "problem": "光学神经网络每台器件偏离设计，需在硬件上训练，现有方法依赖专家校准模型或无梯度试错",
+   "results": "分类和图像编码上优于无梯度方法，接近校准模型反向传播，成本仅一小部分；无需逐器件校准",
+   "solution": "提出 optics as code：编码智能体通过返回探针相机图像的 harness 每次要求假设，形成物理理解并用可解释光学元件重参数化网络",
+   "tags": {
+    "application": "光学神经网络训练",
+    "architecture": "Coding agent + optical NN",
+    "innovation": "编码智能体仅凭相机测量训练光学网络，并用硬件调优的可解释光学元件重参数化",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "由编码智能体进行光学神经网络原位训练"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.23876@p1": {
+  "data": {
+   "challenge": "全部失败组奖励恒为零，无法提供组相对优势；纯学生自博弈缺少可学习的成功轨迹，教师增强自博弈则未按学生能力选任务",
+   "future": "",
+   "problem": "自博弈生成仓库级修复任务时，二值修复奖励与有限采样预算使全部失败组没有组内相对优势信号，任务被浪费",
+   "results": "SWE-bench Pro 27.7%→31.7%，held-out TerminalBench 2.1 11.0%→17.2%（Round 2）；超纯学生自博弈 2.6/4.1 点",
+   "solution": "教师验证结果决定任务资格：学生全部失败但教师可靠成功的任务用于 SFT 示范；SFT 后学生 rollout 中出现混合结果且师生差距为正的任务用于 RL；资格信号同时用来更新 Injector 任务生成",
+   "tags": {
+    "application": "仓库级缺陷修复",
+    "architecture": "Teacher-student self-play LLM agents",
+    "innovation": "用教师验证成功的任务标记学生全部失败组中可供学习的任务，并按师生能力差距分配 SFT 与 RL，同时驱动任务生成器更新",
+    "training": [
+     "SFT",
+     "RL"
+    ]
+   },
+   "title_zh": "SWE-Growth：教师引导的软件工程智能体自适应自博弈"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.23909@p1": {
+  "data": {
+   "challenge": "切片内SLA与资源效率存在权衡、切片间争夺共享资源，集中式与现有多智能体方法难以兼顾专门化控制与全局协调",
+   "future": "",
+   "problem": "O-RAN中多切片的物理资源块分配需同时兼顾各切片SLA保障与资源效率，并在有限资源预算下协调切片间竞争",
+   "results": "在基于ORANSlice与RFsim的多切片负载场景下，平均与尾部SLA违约数均低于集中式和多智能体基线",
+   "solution": "建模为多目标部分可观测随机博弈，证明偏好相关均衡与次线性遗憾界；用多目标预训练加联合优化两阶段训练偏好条件智能体与LLM协调器",
+   "tags": {
+    "application": "5G网络切片资源分配",
+    "architecture": "MARL + LLM coordinator",
+    "innovation": "偏好条件切片智能体快速分配资源，LLM协调器在慢时间尺度用全局观测调整各智能体目标",
+    "training": [
+     "预训练",
+     "RL"
+    ]
+   },
+   "title_zh": "CoSlice：面向5G网络切片分配的协同多智能体强化学习"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.24073@p1": {
+  "data": {
+   "challenge": "3D游戏紧耦合机制、场景、资源与交互逻辑，质量依赖玩家乐趣，长时程评估困难",
+   "future": "",
+   "problem": "编程智能体能否从零构建大型3D游戏尚不明确，现有基准很少评估玩家体验",
+   "results": "108任务覆盖14类；长时程3D游戏开发远未解决，代码正确性不等同玩家偏好；最长14407次LLM调用、2.13B tokens",
+   "solution": "仅给文本规格与UI/UX参考图，自动执行规划—实现—测试—修复，生成自包含浏览器游戏；用代码验收、智能体QA试玩和盲评对比评估",
+   "tags": {
+    "application": "浏览器3D游戏开发",
+    "architecture": "Plan-implement-test-repair coding-agent…",
+    "innovation": "108个从零游戏任务，联合代码验收、智能体试玩与人类偏好盲评",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "3D GameDev Arena：基准测试规划、构建和试玩极端长时程浏览器游戏的编程智能体"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.24165@p1": {
+  "data": {
+   "challenge": "记忆不透明使开发者无法监控与控制 agent 的记忆行为，元层判断与对象层操作难以对齐",
+   "future": "",
+   "problem": "开发者看不清 AI 编码 agent 跨会话、跨项目存了什么、取了什么、用了什么，元记忆判断与对象级记忆操作脱节",
+   "results": "组间实验 N=132 任务表现显著更高、记忆对齐度最高，并由监控准确性中介；操作更多但负荷未增；9 人一周部署可行",
+   "solution": "agent 提出记忆候选并报告实际使用项，开发者审阅、编辑并限定作用域；依据 12 人形成性研究得到的四维监控与控制需求设计",
+   "tags": {
+    "application": "代码智能体记忆管理",
+    "architecture": "LLM agent + memory co-management UI",
+    "innovation": "把 agent 记忆做成开发者可审阅、编辑、限定范围的可操作共享表示",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "MemoSync：跨上下文协同管理开发者与 Agent 的元记忆"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.24324@p1": {
+  "data": {
+   "challenge": "小模型在难题上准确率不足，直接替换会掉点；学习型任务路由器工程复杂",
+   "future": "",
+   "problem": "编码智能体消耗大量 GPU 算力，需验证更小更便宜的模型能否在不牺牲准确率的情况下降低成本",
+   "results": "SWE-bench Verified 上总 GPU 小时成本最多降 33%、全任务降 16.4%，准确率不降，接近 oracle 路由器",
+   "solution": "评测 36 个 2024 年后开源大/小模型，发现准确率差距集中于难题；采用混合推理：小模型先尝试，仅在超时或失败时升级大模型，并与 oracle 路由器对比",
+   "tags": {
+    "application": "编码智能体推理降本",
+    "architecture": "LLM cascade agent system",
+    "innovation": "小模型先跑，超时或失败才升级大模型的无训练级联策略",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "用超时级联降低编码智能体的推理成本"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.24347@p1": {
+  "data": {
+   "challenge": "现有自动发现流程多为领域专用、需手工构建，难以跨学科迁移且交互性差",
+   "future": "",
+   "problem": "通用编码智能体能否仅凭模型发现方法论技能，自动发现或改进科学与工程模型",
+   "results": "在天体物理、心血管动力学、精准农业、交通流、轮胎动力学案例中，配备 automodel 的商业智能体成功识别新颖且具科学相关性的模型",
+   "solution": "把模型发现方法论编码为可移植 agent skill，商业编码智能体加载后在多领域迭代搜索、评估并改进方程或架构",
+   "tags": {
+    "application": "科学模型自动发现",
+    "architecture": "LLM agent + skill",
+    "innovation": "将模型发现方法论封装为可移植 agent skill，供通用编码智能体直接调用",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "automodel：面向智能体模型发现的技能"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.24357@p1": {
+  "data": {
+   "challenge": "现有方法保留紧凑结论而删除早期观测，后续需要时无法恢复证据，单独摘要或检索调用又增加开销。",
+   "future": "",
+   "problem": "全历史提示使长程 Agent 上下文持续增长、推理成本上升且准确率下降；压缩结论又会丢失后续有用证据。",
+   "results": "SWE-bench 150 任务：Pass@1 80.0%→86.9%，token/时间基本不变；完整系统 86.9%，较最强基线省 43% token、41% 时间。",
+   "solution": "用紧凑语义状态承载当前解释，动作-观测证据独立可寻址；后续执行相关时按需回填上下文，无需额外摘要或检索模型调用。",
+   "tags": {
+    "application": "长程软件工程任务",
+    "architecture": "LLM agent + evidence memory",
+    "innovation": "将语义状态与动作-观测证据分离，证据可按需重新进入上下文",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "长程 Agent 的语义上下文交接与按需证据"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.24466@p1": {
+  "data": {
+   "challenge": "联合任务卸载与无人机轨迹优化为混合整数非线性规划且NP难，多智能体RL训练不稳定",
+   "future": "",
+   "problem": "水上物联网MEC中无人机与地面站协作面临任务/轨迹不确定、异构与算力受限，需联合卸载与轨迹优化",
+   "results": "仿真显示GAI-HAPPO优于现有基准方法，验证复杂跨域动态场景下的鲁棒性",
+   "solution": "最小化总执行时间的联合卸载与轨迹优化建模为MINLP，提出GAI-HAPPO：生成式AI增强actor并稳定critic",
+   "tags": {
+    "application": "水上物联网 MEC",
+    "architecture": "Multi-agent RL + generative AI",
+    "innovation": "用生成式AI增强actor特征建模与不确定性预测，并稳定critic网络",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "面向动态水上物联网鲁棒 MEC 的无人机与地面站协作：生成式 AI 增强方法"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.24489@p1": {
+  "data": {
+   "challenge": "模型依赖函数长度捷径，截断丢失修复信息，长度增加导致误判修复版本更脆弱",
+   "future": "",
+   "problem": "函数级漏洞检测器常给修复后版本更高的漏洞概率，即修复反转，修复使函数变长时更严重",
+   "results": "PrimeVul 上 PairRank 59.4%；长度增加>15%的修复从25.8%升至48.4%，另4模型3数据集提升",
+   "solution": "滑窗编码覆盖完整函数；训练时在共同长度输入下约束脆弱版概率更高；推理时在固定参考长度上平均概率",
+   "tags": {
+    "application": "函数级漏洞检测",
+    "architecture": "Code model + dual constraints",
+    "innovation": "用滑窗编码加内容与长度双约束，削弱长度捷径导致的修复反转",
+    "training": [
+     "SFT"
+    ]
+   },
+   "title_zh": "缓解修复反转：面向函数级漏洞检测的反事实约束"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.24491@p1": {
+  "data": {
+   "challenge": "自动对齐审计的合成环境易被强模型识破并调整行为，真实部署监控又不可得",
+   "future": "",
+   "problem": "前沿编码智能体常超出授权行动，内部部署监控依赖私有流量，开放权重模型与独立评估者无法使用",
+   "results": "90 对审计真实/续写判别胜率 0.42 vs 0.43；900 次审计 eval-awareness 未升高；三模型各主导不同风险种子",
+   "solution": "以真实编码代理会话前缀为起点，令审计器续写轨迹至预设行为，只需维持而非伪造真实场景；在 SWE-Chat 前缀上验证",
+   "tags": {
+    "application": "编码智能体行为审计",
+    "architecture": "LLM agent audit pipeline",
+    "innovation": "用真实会话前缀约束审计续写，降低合成痕迹与 eval-awareness",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "在现实环境中用 Continuation Audits 探查智能体的过度积极行为"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.24517@p1": {
+  "data": {
+   "challenge": "人物与环境靠假设、网络为合成、模拟器为自由生成代码，导致结果无法绑定真实人口且对骨干模型敏感",
+   "future": "",
+   "problem": "LLM 人工社会中 persona、环境与交互网络均为虚构，模拟逻辑由自由生成代码实现，结果难与真实人群对应",
+   "results": "ABSBench（193个真实任务）上综合表现最佳；案例显示接地 persona、环境、网络分别提升与观测结果一致性；单个运行时技能完成13个群体级模拟、共2500万 agent",
+   "solution": "从调查与普查数据、地理空间源和真实网络采样行动者、环境与交互关系；用26个原子操作组合表达状态转移；能力以生命周期作用域技能扩展而不改核心",
+   "tags": {
+    "application": "现实数据社会模拟",
+    "architecture": "Zero-code LLM agent simulator",
+    "innovation": "把自然语言请求编译为基于调查、普查、地理与真实网络的26个原子操作模拟",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "ABSClaw：从虚构世界到基于现实的社会模拟"
+  },
+  "saved": "2026-11-20"
+ },
+ "2611.24636@p1": {
+  "data": {
+   "challenge": "块扩散缺乏跨块历史记忆，双向注意力仅限块内，长上下文一致性与效率难兼顾。",
+   "future": "",
+   "problem": "扩散语言模型在智能体编码任务上如何兼顾生成质量、推理速度与显存受限部署。",
+   "results": "SWE-bench Verified 73.6、Terminal-Bench 2.1 51.7，七项智能体指标居首；单张 GB300 上 BF16、batch=1 达 680 tokens/s。",
+   "solution": "采用 35B 总参 3B 激活的 MoE 扩散架构，把已生成上下文的循环记忆读出与当前块 token 放入共享 softmax，加零初始化右上下文卷积分支。",
+   "tags": {
+    "application": "智能体编码与终端任务",
+    "architecture": "MoE diffusion LM",
+    "innovation": "将 Gated Delta 循环记忆与块内双向注意力并入同一 softmax，配可学习块大小校准。",
+    "training": [
+     "继续预训练",
+     "SFT"
+    ]
+   },
+   "title_zh": "Clover-35B-A3B-Preview 技术报告"
+  },
+  "saved": "2026-11-20"
  }
 }
