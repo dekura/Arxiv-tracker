@@ -11373,5 +11373,488 @@
    "title_zh": "智能体安全事件复现：审计与调查（ROGUE-AI）"
   },
   "saved": "2026-11-21"
+ },
+ "2611.26998@p1": {
+  "data": {
+   "challenge": "攻击漏含指定 PII 或奖励裁判误判未违规响应，使表观成功不可信",
+   "future": "采用专用决策模型裁判检查指定 PII 并针对目标策略评分",
+   "problem": "对抗 RL 红队中奖励不忠实会制造虚假胜利，需验证指定 PII 是否存在及响应是否违规",
+   "results": "后训练显著提升 Laya 与裁判一致性；作者审核 off-target 集显示 Opus 可给出 false wins",
+   "solution": "TypeSafe Jev 检查 PII；比较 TypeSafe Jev、Laya 预训练/后训练与 CLM-8B 对 Opus 判断的一致性，并用作者审核 off-target 集验证假胜",
+   "tags": {
+    "application": "金融护栏红队测试",
+    "architecture": "Adversarial RL red-teaming loop",
+    "innovation": "检查攻击输入是否含指定 PII，并用专用决策模型按目标策略评分",
+    "training": [
+     "RL",
+     "评测基准"
+    ]
+   },
+   "title_zh": "LLM 护栏红队测试中对抗强化学习的奖励完整性"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.27368@p1": {
+  "data": {
+   "challenge": "CMARL 安全测试关注少，单智能体 RL 测试方法迁移后失败检测效果有限",
+   "future": "",
+   "problem": "协作多智能体强化学习策略可能产生奖励未捕获的不安全行为，且缺乏针对性安全测试方法",
+   "results": "在四个 CMARL 基准环境中，多数配置下 DisQ 的失败检测优于随机测试和遗传算法搜索测试",
+   "solution": "从训练好的 value-based Q-learning agent 计算 Q-value gap；超过校准阈值即标记为潜在失调状态并选中执行，无 gap 状态跳过",
+   "tags": {
+    "application": "协作多智能体策略安全测试",
+    "architecture": "Value-based cooperative MARL",
+    "innovation": "用 Q-value gap 标志智能体回报估计分歧状态，据此选择失败暴露测试用例",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "协作多智能体强化学习中的协调失败测试"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.27570@p1": {
+  "data": {
+   "challenge": "前缀树方法朴素池化会把过时的离策略结果混入 critic 目标；均匀或熵驱动分支把续采样浪费在结果已定的死胡同状态。",
+   "future": "",
+   "problem": "多轮交互仅在轨迹末端给出单一二值奖励，难以区分决定性决策与常规步骤，也无法准确估计中间状态价值。",
+   "results": "四个多跳 QA 基准、ALFWorld、WebShop 上，Qwen2.5-3B/7B-Instruct 的 QA 平均 EM 为 32.18%/37.85%，ALFWorld 成功率 84.83%/87.81%，超 CAPO 1.50–3.74 点，rollout token…",
+   "solution": "维护跨迭代规范化动作前缀树与指数折扣访问计数，训练前缀条件 critic 逼近 minimax 漂移感知收缩目标；用更新前 critic 按 Neyman 分层 B_q∝√(p̂_q(1-p̂_q)) 分配任务预算，并把分支导向高存活余量不确定且价值陡降的分水岭分叉。",
+   "tags": {
+    "application": "多轮智能体决策",
+    "architecture": "Actor-critic multi-turn agent RL",
+    "innovation": "跨迭代动作前缀树+指数折扣访问计数，critic 按节点密度在单轨迹回报与池化均值间收缩",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "WEIR：面向多轮智能体强化学习的分水岭探索与漂移感知前缀收缩"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.27631@p1": {
+  "data": {
+   "challenge": "奖励惩罚类方法仍频繁违规，屏蔽方法依赖通信且难以扩展到多智能体",
+   "future": "",
+   "problem": "如何为多智能体强化学习提供对学习器产生的任意策略都成立的安全保证",
+   "results": "9 个基准上类型化学习器零安全违规，性能与两种多智能体屏蔽方法无显著差异；10 个智能体的类型合成在 1 秒内完成；两个连续基准中拉格朗日学习器每次训练出现数千次违规",
+   "solution": "为每个智能体逐一合成并检查信念状态协议类型，只允许在信念内所有世界都安全的动作，运行时无需通信；用 Rocq 机械化证明类型健全性与团队安全，并证明 shielding 是特例",
+   "tags": {
+    "application": "多智能体安全强化学习",
+    "architecture": "MARL + epistemic typestate system",
+    "innovation": "类型状态记录智能体信念世界，仅允许在所有信念世界中安全的动作",
+    "training": [
+     "RL",
+     "其他"
+    ]
+   },
+   "title_zh": "在类型内学习：面向安全多智能体强化学习的认知类型状态"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.27860@p1": {
+  "data": {
+   "challenge": "评分必须执行智能体代码，而该代码可接管整个测试环境并伪造通过记录，现有基准缺乏任何权限隔离",
+   "future": "未阻断的攻击多暴露原任务测试自身的弱点而非 SplitBench 缺陷，需同步加固任务测试",
+   "problem": "编码智能体可操纵评测基础设施：评分要运行它的代码，代码反过来篡改评测过程，导致基准分数虚高失真",
+   "results": "Terminal-Bench、DeepSWE 等 202 个任务中 180 个成功转换，与原生评分器一致率 98.7%；最坏情况对抗攻击下阻断 75%",
+   "solution": "SplitBench 将任务测试执行与结果判定分离：测试在沙箱内运行，可信评分器独立持有预期答案并判分，现有基准可低成本高保真移植",
+   "tags": {
+    "application": "编码智能体评测",
+    "architecture": "Trusted grader + sandboxed test runner",
+    "innovation": "把运行测试与判分拆成两个权限域，预期答案只保存在可信评分器一侧",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "谁来给智能体打分？编码智能体基准测试中的权限分离"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.27865@p1": {
+  "data": {
+   "challenge": "传统规范引导RL多依赖LTL等目标约束，难以显式表达对其他智能体策略的推理与反制。",
+   "future": "",
+   "problem": "部分可观测对抗环境下，规范引导的强化学习如何不仅满足目标，还能推理并响应其他智能体策略。",
+   "results": "在Predator-Prey、Google Research Football及SMAC-HARD扩展上验证有效性、可扩展性和对多样对抗策略的适应能力。",
+   "solution": "采用Strategy Logic对智能体策略进行显式量化，并用LTL描述目标与约束；将组合规范转化为塑形奖励，驱动多智能体RL学习。",
+   "tags": {
+    "application": "对抗性多智能体决策",
+    "architecture": "Multi-agent RL + Strategy Logic",
+    "innovation": "用Strategy Logic显式量化智能体策略，并将LTL目标/约束转为奖励塑形",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "SLICR：策略逻辑引导的多智能体强化学习"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.27895@p1": {
+  "data": {
+   "challenge": "临床规范分支复杂、涉及多专业转诊与FHIR R4/RNDS导出，常规测试无法暴露语义级错误，缺乏可靠判定标准。",
+   "future": "",
+   "problem": "编码智能体实现的领域规则代码存在静默错误：程序可运行且返回貌似合理的答案，但实际逻辑错误难以发现。",
+   "results": "Gemma 4 12B 单工具任务解决率38.0%、FHIR层为0；31B在层级1-3分别为77.8%、85.2%、78.7%，隐藏用例通过率超99%；12B漏检需转诊病例10.10%，31B仅0.02%。",
+   "solution": "以三个虚构但结构真实的筛查工具、多专业转诊流程和FHIR R4导出规范构建144个任务与6798个隐藏用例，隐藏用例可杀死参考实现全部1955个非等价变异体。",
+   "tags": {
+    "application": "临床规则代码实现",
+    "architecture": "Code agent + benchmark harness",
+    "innovation": "基于巴西TEA筛查流程构建可变参数基准，用杀死全部非等价变异体的隐藏用例检验代码。",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "TEA-Bench-BR：编码智能体能否将分支式临床规范转化为正确代码？"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.28197@p1": {
+  "data": {
+   "challenge": "智能体难以联合几何、视觉与工程推理来推断语义类别和构造关系，也难以验证",
+   "future": "",
+   "problem": "从点云重建符合工程约束的BIM模型需语义解释与一致构造关系，而非仅拟合表面",
+   "results": "领先智能体5cm内覆盖96%，mIoU仅63%；无代理在超38%场景通过全部工程检查；小模型组队三指标均提升",
+   "solution": "共享框架让智能体用Python测量点云、在实时CAD/BIM内核构建带类别组件并迭代改代码；提出并行异步协作，主代理分派版本化任务并整合修订提案",
+   "tags": {
+    "application": "Scan-to-BIM 重建",
+    "architecture": "LLM agent + CAD/BIM kernel",
+    "innovation": "把Scan-to-BIM建模为智能体3D编码任务，提供128场景基准与CAD内核迭代闭环",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "从点云到工程模型：建筑环境中智能体式3D重建的基准测试"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.28348@p1": {
+  "data": {
+   "challenge": "现有方法依赖隐式目标、可能不可靠的历史知识或高计算成本，缺乏对目标异常模式的显式定义",
+   "future": "",
+   "problem": "异构时间序列与异常类型缺少通用检测器，现有自动化目标隐式，只选检测器却未显式定义要检测什么",
+   "results": "在单变量与多变量 TSAD 基准上分别较最强基线提升 11.5% 和 9.6%，token 成本比通用编码智能体低 2-5 倍",
+   "solution": "用可测时序性质定义语义契约（目标模式、期望打分、验证问题），LLM 智能体据此构建检测流水线，契约匹配的合成干预提供无标签证据，迭代自精炼并语义感知集成",
+   "tags": {
+    "application": "时间序列异常检测",
+    "architecture": "LLM multi-agent system",
+    "innovation": "将异常意图写成含目标模式、打分响应、验证问题的自然语言语义契约，约束检测器构建与评估",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "SMAD：语义引导的无监督时间序列异常检测多智能体框架"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.28351@p1": {
+  "data": {
+   "challenge": "设施选址、互依赖网络分析与图多智能体强化学习均未联合处理该耦合博弈，规模变大或耦合不规则时现有方法失效",
+   "future": "",
+   "problem": "需求侧设施图与供给侧网络图由不同运营方控制，各自收益取决于对方决策，缺乏统一形式化与求解方法",
+   "results": "在五个真实城市网络上成功率最高；小规模时多数方法相当，规模增大或耦合不规则时 CGA-PMD 唯一保持可靠，own-only、无掩码注意力与 PPO 变体分别退化；理论上 KL 正则更新有迭代一致累积漂移界，裁剪更新无此界",
+   "solution": "形式化为 Co-Evolving Graph Game；跨图注意力按结构耦合掩码读取伙伴图节点，过滤无关信息；用 KL 正则策略镜像下降替代 PPO 裁剪更新",
+   "tags": {
+    "application": "双图设施选址协同",
+    "architecture": "MARL + cross-graph attention",
+    "innovation": "跨图注意力只读取结构耦合的伙伴图节点，配合 KL 正则策略镜像下降稳定训练",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "面向协同演化图博弈的耦合感知强化学习"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.28408@p1": {
+  "data": {
+   "challenge": "安全提示可能既改善代码又带来依赖膨胀等副作用，缺少控制变量的因果量化",
+   "future": "安全提示会扩大需审计的依赖面，原因是库选择，安全要求本身不是原因",
+   "problem": "给agentic编码工具追加安全提示块，能否减少生成Web应用的安全问题、幅度多大、有何副作用",
+   "results": "每应用发现数降1/3（IRR 0.65，95%CI 0.60-0.71），两种工具一致；依赖面约翻倍，调整后依赖公告率不升，一方源码高危发现近减半",
+   "solution": "100个冻结规格×2工具（Claude Code、Codex CLI）×有/无安全块共400个应用，用同一静态与动态扫描管线，并用计数和logistic混合模型及依赖diff分析",
+   "tags": {
+    "application": "AI生成Web应用安全",
+    "architecture": "Agentic code LLM + scanner",
+    "innovation": "固定OWASP安全提示块做对照实验，量化漏洞数量与依赖面的变化",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "安全提示词对报告发现的影响：基于400个AI生成Web应用的受控实验"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.28418@p1": {
+  "data": {
+   "challenge": "现有基准缺少带失败反馈的序贯多保真评测，难以衡量方法能否稳定产出有效设计",
+   "future": "",
+   "problem": "设计搜索依赖廉价预测筛选候选，但昂贵CFD测试可能失败，尤其优化偏好的异常设计",
+   "results": "含5个基线优化器与3种AI Agent、6629条CFD记录；反馈可提升有效性但DE变体气动质量较低；开放研究Agent 32次查询质量接近最强基线",
+   "solution": "提供学习型气动代理与固定CFD预算，每次返回分数或失败类型，分别评定推荐设计是否有效及质量",
+   "tags": {
+    "application": "跨声速机翼设计搜索",
+    "architecture": "LLM agents + CFD simulator",
+    "innovation": "把代理模型预测、序贯CFD预算与失败类型反馈统一进设计搜索评测",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "WingBench：评测 AI Agent 如何搜索更优设计"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.28477@p1": {
+  "data": {
+   "challenge": "参考补丁与文本模式检查器等局部代理证据可能给出错误的正确性判断，物理正确性难以验证",
+   "future": "v5上完整专家验证、代理性能对比与全模型执行尚未测量",
+   "problem": "AI编码代理修改地球系统模型（ESM）代码时须同时保住软件接口与代码中编码的物理假设，缺少可评估该能力的基准",
+   "results": "5个存档补丁diff均无法应用到给定起始文件，但3个文本模式检查器仍返回通过；ParFlow表达式重放与参考斜率不符，MOM6模式检查漏检省略的更新，VIC参考赋值覆盖植被特定反照率",
+   "solution": "从Noah-MP、CLM5、SUMMA、ParFlow、MOM6、VIC六个仓库采集60个开发者提交任务，覆盖物理缺陷修复、过程表示修改、参数化方案选择与参数优化，配八项补丁评审规则与诊断工具",
+   "tags": {
+    "application": "地球系统模型代码修复",
+    "architecture": "Code agent benchmark",
+    "innovation": "基于6个ESM仓库构建60个提交任务，含科学目标、参考diff与三种提示变体，并审计产物与检查器",
+    "training": [
+     "评测基准"
+    ]
+   },
+   "title_zh": "ESM-Bench：评估 AI 智能体是否理解地球系统模型物理与代码的基准"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.28558@p1": {
+  "data": {
+   "challenge": "调用条件奖励工程会扭曲任务目标并引发退化调用，且无法区分缺失视觉证据造成的失败与纯推理失败。",
+   "future": "",
+   "problem": "MLLM 难以学会何时调用外部视觉工具；现有方法依赖调用相关奖励，导致目标扭曲与退化调用行为。",
+   "results": "在多种视觉感知与多模态推理基准上一致优于竞争性工具使用 MLLM，因果分析进一步验证数据中心视角。",
+   "solution": "反事实探测推理状态以识别观测敏感问题；PADS 周期性从近期策略 rollout 估计类别级观测效应，动态将训练分布重分配到观测信息量大的问题，仅优化最终答案正确性。",
+   "tags": {
+    "application": "多模态视觉工具调用",
+    "architecture": "MLLM + visual tool harness",
+    "innovation": "反事实探测观测敏感问题，按类别观测效应动态重分配训练数据",
+    "training": [
+     "RLVR"
+    ]
+   },
+   "title_zh": "从奖励工程到以数据为中心的强化学习：实现有效的智能体视觉工具使用"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.28704@p1": {
+  "data": {
+   "challenge": "现有验证把求解器与查询翻译放入可信基，且已有健全性缺陷；agent流水线默认信任验证器和求解器",
+   "future": "",
+   "problem": "求解器的“不可满足/最优”答案无法直接检查，且求解器与查询翻译存在健全性缺陷",
+   "results": "3,726条SMT查询全认证，15,662个ASP证明通过双检查器；发现3个检查器与5个求解器的健全性缺陷",
+   "solution": "Agent生成Isabelle/HOL规范、健全性证明与参考检查器，再生成镜像规范的Rust实现并用Verus验证；规范评审后冻结，求解器答案须经经验证检查器接受证书",
+   "tags": {
+    "application": "求解器结果验证",
+    "architecture": "Multi-agent + verified checkers",
+    "innovation": "AI生成Isabelle规范/证明与Verus验证的Rust检查器，仅凭证书接受求解器答案",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "零信任形式化方法：AI agent 为不可信求解器构建经验证的检查器"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.28907@p1": {
+  "data": {
+   "challenge": "扁平技能池无法区分何时需要技能、何时只需全局策略，回合级奖励信号过粗，难以定位局部执行缺口",
+   "future": "",
+   "problem": "技能增强强化学习中，技能以扁平池暴露且仅用回合级粗略结果更新，混淆了全局策略与局部战术两类经验",
+   "results": "ALFWorld 上 Qwen3-4B 平均成功率 92.7%、Qwen3-8B 94.9%；WebShop 上较最强复现技能增强基线提升 4.5 分与 1.9 个百分点成功率",
+   "solution": "所选策略常驻为回合上下文，仅暴露紧凑战术菜单，智能体显式发起检索后才加载完整战术内容；每次检索构成事件级信用单元，既反馈何时检索，也为技能库演化提供证据",
+   "tags": {
+    "application": "智能体任务决策",
+    "architecture": "LLM agent + skill bank",
+    "innovation": "将技能分为常驻策略与按需检索战术，检索事件同时作为过程信用单元与技能演化证据",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "STRIDE：面向智能体强化学习的策略到战术检索引导式技能披露与演化"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.29162@p1": {
+  "data": {
+   "challenge": "智能体常直接删除新增文件来清除缺陷，按“缺陷消失”计分会把功能删除误判为修复成功",
+   "future": "",
+   "problem": "代码本身看不出分层约束、必需测试等规则违规，LLM 编码智能体能否借外部检查反馈更好修复",
+   "results": "修复率 39%→84%；小/中/大模型分别 26→69%、46→90%、45→93%，优于 Copilot 审查；免费工具仅检出 8/31，CA 检出 31/31",
+   "solution": "用 CodeAssure 报告违规位置与修复目标驱动智能体，修复须通过编译并保留功能才算成功，并加入删除文件检查",
+   "tags": {
+    "application": "代码规则违规修复",
+    "architecture": "LLM coding agent + external checker",
+    "innovation": "外部检查器给出违规位置与修复目标，并检测“删除文件”式作弊",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "修复还是删除？外部反馈让更便宜的 AI 编码智能体修复规则违规"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.29180@p1": {
+  "data": {
+   "challenge": "深层前馈解码器反向传播激活内存高、非共享权重需高片外带宽，静态算力无法随图像区域复杂度调整",
+   "future": "",
+   "problem": "稠密视觉预测靠堆叠 6-16 层解码器提升容量，激活内存与权重带宽开销大，且计算量静态固定",
+   "results": "VOC 2012（T=2）达 85.66% mIoU、65.01% bIoU；较 54.06M 的 DINO-Trans6L 参数少 72.5%，bIoU +7.41；60% 遮挡下 +5.83% mIoU",
+   "solution": "冻结 DINOv2-Base 单次前向并缓存 KV；7.96M 权重共享循环 cross-attention 解码器迭代更新 query，用 step-conditioned adaLN、流形正则与残差阻尼稳定循环，中间掩码回馈为空间注意力偏置",
+   "tags": {
+    "application": "语义分割与边界预测",
+    "architecture": "Frozen ViT + looped cross-attention dec…",
+    "innovation": "以权重共享的循环 cross-attention 解码器替代物理层堆叠，并按迭代步数分配计算",
+    "training": [
+     "SFT"
+    ]
+   },
+   "title_zh": "loopxDINO：通过迭代潜空间推理的稠密视觉预测"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.29193@p1": {
+  "data": {
+   "challenge": "现有 RL 多用稀疏终局奖励，中间决策贡献难评估；组相对方法需对每任务重复采样",
+   "future": "",
+   "problem": "AI 编程智能体通过多轮交互生成、修改并验证代码，需评估中间决策对任务结果的影响",
+   "results": "在匹配基座模型与执行框架下，任务解决率高于 GSPO",
+   "solution": "DFPO 从单条轨迹直接训练，利用过程中反馈信号做策略优化，免去同任务多次采样",
+   "tags": {
+    "application": "多轮代码生成与修改",
+    "architecture": "LLM + coding agent harness",
+    "innovation": "单轨迹强化学习，直接利用反馈逐步优化，无需同任务重复采样",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "面向 AI 编程智能体的直接反馈策略优化"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.29238@p1": {
+  "data": {
+   "challenge": "把参考素材转成可玩交互本身很难，精确修改难以保证，且缺少面向玩法质量的评测手段",
+   "future": "提升可玩交互生成与精确修改能力仍是待解问题",
+   "problem": "现有系统与基准只针对显式开发规格，难以适配多模态参考素材，也缺乏对真实可玩体验的评测",
+   "results": "对九种编码 agent 配置的评测显示：能够适配参考内容，但可玩交互与精确修改仍吃力；多模态参考提升内容保真度，迭代精修带来提升，但幅度因 agent 而异",
+   "solution": "开源 agentic 平台：编码 agent 接收多模态灵感，由独立试玩 critic 反馈，结合持久开发状态与经验记忆迭代生成既有游戏的可玩扩展；并构建 GameAnything-Bench 覆盖多种参考模态、创作目标与游戏环境，用探索式试玩评估功能正确性与玩法质量",
+   "tags": {
+    "application": "灵感驱动的游戏扩展开发",
+    "architecture": "Coding agent + playtest critic",
+    "innovation": "编码 agent 与独立试玩 critic 闭环，配合持久开发状态与可复用经验记忆做迭代精修",
+    "training": [
+     "免训练",
+     "评测基准"
+    ]
+   },
+   "title_zh": "GameAnything：从任意灵感生成可玩游戏世界"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.29242@p1": {
+  "data": {
+   "challenge": "现有基准只凭补丁是否通过测试打分，无法检出编辑引发的消费方传播遗漏，缺陷沿既有消费路径潜伏",
+   "future": "建议分别度量任务得分、终态传播状态与恢复；未给出跨基准规模的量化统计",
+   "problem": "编码代理迭代改码时仍复用上下文中过时的依赖判断，导致后续推理出错，消费方缺陷未被原任务评测发现",
+   "results": "盲审终态不匹配事件均有执行支持；同一轨迹可恢复又终态遗漏；依赖复查提示减少终态遗漏；补丁通过原评测但额外检查发现消费路径缺陷",
+   "solution": "在 DeepSWE、SWE-bench Verified、FeatureBench 采集执行轨迹，做盲审与补充执行校验，关联消费方代码呈现、显式依赖判断与同步动作，并测试依赖复查提示",
+   "tags": {
+    "application": "代码代理依赖一致性审计",
+    "architecture": "LLM coding agent",
+    "innovation": "用全语料盲审加执行校验，把消费方代码呈现与显式依赖判断、同步动作关联起来",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "编辑引发的依赖不匹配：编码代理中的传播遗漏、恢复与评测盲点"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.29501@p1": {
+  "data": {
+   "challenge": "去中心化单机策略、扁平集中模型与多机器人VLA难以同时实现时空对齐和角色/本体身份感知",
+   "future": "",
+   "problem": "单智能体世界动作模型无法协调多机器人跨不交叠工作空间、时序耦合与异构本体的协作操作",
+   "results": "MA-Bench七个任务平均联合成功率82.7%，超最强基线30.7个百分点，并在真实异构机器人团队实现实时闭环协作",
+   "solution": "共享权重下用统一因果序列做跨智能体联合自注意力，层级语言、身份编码与本体掩码绑定各流角色、身份和本体，并以编码智能体流水线生成MA-Bench",
+   "tags": {
+    "application": "多机器人协作操作",
+    "architecture": "Multi-agent world action model",
+    "innovation": "智能体轴课程扩展单智能体WAM，联合自注意力对齐多实体想象未来并按角色解码动作",
+    "training": [
+     "继续预训练"
+    ]
+   },
+   "title_zh": "MAWAM：用于协作机器人操作的多智能体世界动作模型联合想象"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.29571@p1": {
+  "data": {
+   "challenge": "量子演化是线性幺正的，而经典Transformer含非幺正矩阵与非线性函数，且量子硬件难以实现梯度反向传播",
+   "future": "",
+   "problem": "Transformer大模型计算与存储成本高，量子实现面临非幺正变换、非线性函数和免反向传播训练难题",
+   "results": "推理时间复杂度对隐藏维度由多项式降至对数，量子硬件执行加速300-1000倍；训练复杂度仅为最优SOTA量子电路训练算法的25%",
+   "solution": "基于SVD分解的量子电路实现非幺正变换，预训练参数化量子电路近似非线性激活，并用多智能体强化学习训练大规模量子电路而无需反向传播",
+   "tags": {
+    "application": "量子序列到序列任务",
+    "architecture": "Fully quantum Transformer LLM",
+    "innovation": "用SVD量子电路实现非幺正变换，预训练参数化量子电路近似非线性激活",
+    "training": [
+     "RL"
+    ]
+   },
+   "title_zh": "非幺正与非线性量子生成大模型设计及无反向传播的快速大规模训练"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.29590@p1": {
+  "data": {
+   "challenge": "新扩展（如SME2矩阵块）引入陌生编程模型，智能体难以可靠迁移与适配",
+   "future": "智能体尚不能可靠适应SME2等需陌生编程模型的新扩展",
+   "problem": "编码智能体能否有效利用不断出现、可能不熟悉的CPU架构扩展来写出高性能内核",
+   "results": "在Neon/SVE等成熟扩展上超越自动向量化编译器2.4-19.8x、超ncnn最多2.74x，但仅为KleidiAI的0.70x；两LLM预填加速1.3-1.6x",
+   "solution": "构建99个来自ncnn、llama.cpp、Arm SIMD Loops、KleidiAI的内核实例，提供目标硬件反馈环境并随库与处理器演进扩充",
+   "tags": {
+    "application": "CPU 内核优化",
+    "architecture": "LLM coding agent + hardware harness",
+    "innovation": "人机协作Pipeline将真实代码仓库转为内核优化基准实例，覆盖逐步新增的Arm扩展",
+    "training": [
+     "评测基准",
+     "免训练"
+    ]
+   },
+   "title_zh": "KernelShift：跨演进硬件的内核优化基准测试"
+  },
+  "saved": "2026-11-24"
+ },
+ "2611.29745@p1": {
+  "data": {
+   "challenge": "现有工具只显示调用缺失，缺少可验证根因、工具位置定位及对新程序的预警。",
+   "future": "",
+   "problem": "静态调用图工具无法健全建模动态语言特性，却很少揭示结果何时、何处、为何不健全。",
+   "results": "1459边界边直接推理10.3%（人工全确认），分组解决84.1%；告警覆盖74%-92%；代理移除64%目标模式。",
+   "solution": "对比静态与动态调用图找运行时缺失边界边；LLM提出未建模模式与工具位置，经运行时插桩、复现测试和告警插入三重证据验证。",
+   "tags": {
+    "application": "静态调用图不健全性诊断",
+    "architecture": "LLM agent + instrumentation",
+    "innovation": "用静态/动态图差异定位边界边，LLM根因提案经插桩、测试、告警三重验证",
+    "training": [
+     "免训练"
+    ]
+   },
+   "title_zh": "静态调用图分析中不健全性的智能体根因推理与定位"
+  },
+  "saved": "2026-11-24"
  }
 }
