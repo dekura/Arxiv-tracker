@@ -1,0 +1,581 @@
+[
+  {
+    "id": "http://arxiv.org/abs/2611.32718v1",
+    "title": "Seeing to Drive on a Single Board: Attention-Free Depth for Onboard Robot Navigation",
+    "authors": [
+      "Itai Mizlish",
+      "Boaz Ben-Moshe"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.RO",
+      "cs.CV",
+      "cs.LG"
+    ],
+    "published": "2026-11-24T14:39:05+00:00",
+    "updated": "2026-11-24T14:39:05+00:00",
+    "comments": "13 pages, 14 figures, 5 tables. Code, models and data: https://github.com/itaim18/DANIEL",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "A small ground robot can carry one camera and a few watts of compute, but the depth foundation models that could turn that camera into a range sensor are vision transformers sized for GPUs. We bring one to a Raspberry Pi 5 with the Hailo-8L, an accelerator that runs every layer in integer arithmetic, attention included. Quantised for it, Depth Anything V2 loses large parts of the scene, and we measure why: at 449 tokens, 91% of softmax weights fall below one int8 step while carrying 17-33% of the attention mass. Our answer is to distil, not quantise. An attention-free ResNet-34 U-Net student of Depth Anything V2-Large (24.5M parameters) runs at 27.1 FPS on the chip, its int8 output matches its float twin (Pearson 0.99993), and on held-out scenes of its simulated yard it is the most accurate depth network on the chip (AbsRel 0.269 against 0.354-0.530). On 1,000 stereo-verified points of a real outdoor drive it is not resolvably different from the vendor's Depth Anything V2-Small build, while running faster (27.1 vs 21.6 FPS). Ranging obstacles by where they meet the floor needs only the camera height, so mapping, hybrid-A* planning and SLAM run on the Pi's own CPU. In real-time hardware-in-the-loop tests in a Gaussian-splat reconstruction of a real yard, the stack reaches the goal without contact in 7.9$\\pm$1.1 of 10 scenes, against 9.2$\\pm$0.4 with exact obstacles, and in 7.7$\\pm$0.7 on its own pose with simulated wheel odometry (ten seeds each; 8.2$\\pm$0.4 with the real Pi and Hailo-8L in the loop, five seeds). The source code, pre-trained models and data are available at https://github.com/itaim18/DANIEL.",
+    "html_url": "https://arxiv.org/abs/2611.32718v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.32718v1",
+    "code_urls": [
+      "https://github.com/itaim18/DANIEL"
+    ],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码预训练"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.33148v1",
+    "title": "CoT-Proxy: Cross-Format Transfer for Distilling Long-Horizon Policies",
+    "authors": [
+      "Dawid J. Kopiczko",
+      "Tijmen Blankevoort",
+      "Yuki M. Asano"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.CL"
+    ],
+    "published": "2026-11-24T18:58:53+00:00",
+    "updated": "2026-11-24T18:58:53+00:00",
+    "comments": "",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "Reasoning models become long-horizon agents through reinforcement learning or, more cheaply, through fine-tuning on a stronger teacher's trajectories, which contain the teacher's chain-of-thought as well as its actions. The standard fine-tuning approach imitates both, yet the strongest teachers are closed models whose chain-of-thought is hidden behind an API. We show that the chain-of-thought can be left out altogether and that the long-horizon policy can be distilled from the teacher's actions alone. The student is trained on these trajectories with its reasoning block left empty, while a KL loss on a replay buffer of its own generations limits drift from its initial model. Surprisingly, the policy learned from these trajectories with an empty reasoning block carries over to inference with thinking enabled, where the student reasons in its own style while acting like the teacher, an effect we call cross-format transfer. Distilling the actions of Qwen3.6-27B raises the task success of Qwen3-4B on AppWorld from 7% to 18% and that of Qwen3-32B from 12% to 25%. We further introduce CoT-proxies, short summaries of the teacher's reasoning placed after the empty reasoning block, which raise Qwen3-4B further, to 35%. Since neither actions nor CoT-proxies need the hidden chain-of-thought, the recipe applies unchanged to closed teachers. Distilling GPT-5.6 Luna from its visible outputs and the reasoning summaries its API returns raises Qwen3-4B from 7% to 48% on AppWorld and from 3% to 28% on SWE-bench Verified.",
+    "html_url": "https://arxiv.org/abs/2611.33148v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.33148v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.33093v1",
+    "title": "AIChipBench: Benchmarking LLM Agents for Automated AI Accelerator Design",
+    "authors": [
+      "Guangyuan Wang",
+      "Chengran Li",
+      "Minchen Luo",
+      "Jichen Feng",
+      "Mengdi Wang",
+      "Yifan Zhang"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.CL",
+      "cs.AI"
+    ],
+    "published": "2026-11-24T18:28:41+00:00",
+    "updated": "2026-11-24T18:28:41+00:00",
+    "comments": "",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "A language-model decoder carries state between decoding steps, and in hardware a wrong state update can leave the current token correct and corrupt the output several tokens later, so a design can pass output tests and still be wrong. AIChipBench asks what LLM coding agents need to build such hardware correctly. Agents implement quantized Qwen3.5, Gemma 3, Gemma 4, and Llama 3.2 decoders in synthesizable register-transfer-level (RTL) code against an executable integer reference that specifies the outputs and the stored state at every decoding step. They debug against public tests under fixed budgets; their frozen designs are graded on held-out token sequences, resets, memory stalls, and synthesis, and a second track asks them to speed up a correct design at nearly fixed area. Across 9,136 attempts by four coding agents, the difficulty lies in stored state. Feedback that points to the first state mismatch raises acceptance over output-only feedback in all 12 agent--task cells of a matched study, by 25.0 to 46.9 percentage points, and halves the agent-hours per accepted design. Regraded on new sequences and conditions, 45 of 69 accepted designs fail within the 32 steps their tests required. More than a third of attempts to speed up a correct design end without one. An overall score ranks Sol 5.6 and Fable 5.1 above Astra 6 and Opus 5.5, and both halves of the instances give this order in all 200 random splits. Hardware agents therefore need debugging feedback that exposes stored state, and their benchmarks need final tests well beyond the development cases.",
+    "html_url": "https://arxiv.org/abs/2611.33093v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.33093v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.32973v1",
+    "title": "SpecEngineeringBench: Evaluating Coding Agents as Autonomous Specification Engineers",
+    "authors": [
+      "Xingjian Wang",
+      "Shijian Wang",
+      "Minghao Liu",
+      "Ji Zou",
+      "Zetao Yang",
+      "Xinping Lei",
+      "Yiming Liang",
+      "Shen Yan",
+      "Enduo Zhao",
+      "Xiaoyang Shen",
+      "Weihao Xuan",
+      "Jiaheng Liu",
+      "Ge Zhang"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.SE"
+    ],
+    "published": "2026-11-24T17:07:54+00:00",
+    "updated": "2026-11-24T17:07:54+00:00",
+    "comments": "31 pages, 3figures",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "Autonomous specification engineering requires coding agents to translate functional requirements into executable tests and use the results to discover and validate defects. However, existing benchmarks evaluate coding agents on explicitly specified test generation tasks, commonly providing an issue description, a designated test entry point, or files to inspect, leaving the ability to determine what to test and where to investigate insufficiently evaluated. Relying on such clues bypasses the challenge of mapping requirements to implementations and proactively uncovering unknown defects. We propose SpecEngineeringBench, comprising 100 instances from 78 open-source Python repositories across 16 application categories, with multiple recorded defects in each instance. Two independent tasks evaluate complementary capabilities: generating test suites and discovering defects through execution analysis. The evaluation combines test validity, defect detection, and coverage with localization precision and recall. Across seven frontier coding agents, results reveal that test validity and coverage decouple from defect exposure: agents achieve a 91.47% Head Pass Rate and 80.48% Change-focused Coverage alongside a 26.36% Fail-to-Pass Rate, while localization recall drops from 78.11% at the file level to 51.29% at the function level. Autonomous test generation improves file, function, and hunk localization recall by 4.99, 2.77, and 2.69 percentage points over relying solely on existing repository test suites.",
+    "html_url": "https://arxiv.org/abs/2611.32973v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.32973v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.32931v1",
+    "title": "Reading Decisions Before Spans: Efficient Generative Verification",
+    "authors": [
+      "Yanbin Gong",
+      "Lei Chen"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.AI"
+    ],
+    "published": "2026-11-24T16:38:25+00:00",
+    "updated": "2026-11-24T16:38:25+00:00",
+    "comments": "36 pages, 4 figures. Includes appendices",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "A developer checking an assistant's report may need only an alarm that a claim is unsupported. A generative verifier, however, can continue decoding to quote and classify the errors. We study how much of that output is needed to recover its decision. In a frozen 2B span verifier, the choice between an empty error list and its first object precedes all localization. Native8 stops generation at this branch. The preceding seven syntax tokens are fixed, so Prefill1 supplies them as input and generates only the unrestricted branch token, using the same native instruction. On 2,015 code-agent TEST responses, Prefill1 reduces eager resident service by 84.84% relative to full generation, with released-reference F1 of 83.43 versus 83.41. It saves 31.98% over Native8 even though their logical token totals are identical. Under default compiled execution, the extra saving is 6.74-26.73% on the complete workload, with small decision changes. Controlled evidence interventions and first-location decoding establish what these shorter readouts retain and what requires further generation.",
+    "html_url": "https://arxiv.org/abs/2611.32931v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.32931v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.32462v1",
+    "title": "MAGPIE: Agentic Multi-Reference Image Generation via Executable Scene Construction",
+    "authors": [
+      "Yifan Dai",
+      "Daili Hua",
+      "Bohan Zeng",
+      "Yuran Wang",
+      "Jialing Liu",
+      "Bozhou Li",
+      "Chengzhuo Tong",
+      "Yang Shi",
+      "Kai Zeng",
+      "Liu Yang",
+      "Xinyu Liu",
+      "Shujie Li",
+      "Yiyan Ji",
+      "Bingyin Mei",
+      "Yushuo Guan",
+      "Yuanxing Zhang",
+      "Fangcheng Fu",
+      "Wentao Zhang"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.CV",
+      "cs.CL"
+    ],
+    "published": "2026-11-24T11:58:12+00:00",
+    "updated": "2026-11-24T11:58:12+00:00",
+    "comments": "20 pages, 11 figures",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "Multi-reference image generation requires a model to preserve the appearance of selected subjects while arranging them according to an instruction. Despite recent progress in reference-based generation and compositional control, reliably organizing selected subjects into the intended scene remains challenging. Although existing methods provide various forms of compositional guidance, the planned relationships are not always explicitly instantiated for inspection and refinement before image synthesis. To address this limitation, we introduce MAGPIE, which represents the intended composition as a simplified 3D scene defined by an executable Blender program. A coding agent links each scene instance to its reference, checks the geometry and rendered view against the instruction, and revises the program to correct discrepancies. The final proxy rendering serves as a visual plan for the image generator. Using MAGPIE-Instruct-3K, we train the generator to follow this plan while drawing each subject's appearance from its reference. MAGPIE improves both Qwen and FLUX on DreamOmni2 and SconeEval. With FLUX, it improves overall success on DreamOmni2 by 28.21 percentage points over the original backbone and achieves the highest overall score among the models evaluated on SconeEval.",
+    "html_url": "https://arxiv.org/abs/2611.32462v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.32462v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.32246v1",
+    "title": "SkillCore: Internalizing Generalizable Skills via Scaffolding-Removed Fine-Tuning",
+    "authors": [
+      "Yi Liu",
+      "Changqing Ai",
+      "Peijie Dong",
+      "Xiankun Lin",
+      "Yongkang Yang",
+      "Zhezheng Hao",
+      "Xilin Xia",
+      "Hande Dong",
+      "Qiang Lin",
+      "Qiang Xu"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.CL"
+    ],
+    "published": "2026-11-24T09:23:45+00:00",
+    "updated": "2026-11-24T09:23:45+00:00",
+    "comments": "10 pages, 4 figures, and 3 tables",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "Runtime skills can improve agents' problem-solving capabilities by providing procedural guidance for tasks such as code review and debugging. However, these benefits reach only a minority of users, as most do not proactively invoke skills in practice. We argue that such generalizable procedures should become part of the model's capabilities rather than remain optional external add-ons, making them directly available without explicit skill loading. To this end, we present SkillCore, a data pipeline and supervised fine-tuning recipe for internalizing generalizable skills. We transform real agent trajectories by removing skill-loading scaffolding while preserving the task context and subsequent agent actions, thereby supervising direct execution without external skill content. To preserve access to task-specific skills that provide genuinely external information, we mix these scaffold-removed trajectories with a small proportion of skill-native trajectories that preserve supervision for skill invocation. On a held-out skill-free evaluation, SkillCore improves task completion quality over the base Qwen3-8B and Qwen2.5-72B models by 54.4% and 24.8%, respectively, while preserving task-specific skill invocation on a separate probe and general coding performance on SWE-bench Verified.",
+    "html_url": "https://arxiv.org/abs/2611.32246v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.32246v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.32195v1",
+    "title": "When Answering Is Administering: Permission Replies That Rewrite Coding-Agent Policy",
+    "authors": [
+      "Zeming Fei",
+      "Hongming Fei",
+      "Jingwen Chen",
+      "Xiaoyang Wang",
+      "Prosanta Gope",
+      "Biplab Sikdar",
+      "Ying Zhang"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.CR",
+      "cs.AI"
+    ],
+    "published": "2026-11-24T08:44:22+00:00",
+    "updated": "2026-11-24T08:44:22+00:00",
+    "comments": "",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "Coding agents let plugins and remote services answer permission prompts, and Claude Code documents that such an answer cannot override the operator's deny rules. However, we show that this guarantee, checked one decision at a time, fails over a whole run, because an answer to one permission prompt can rewrite the policy that every later answer is checked against. For example, a remote service with no access to the operator's files approves an unrelated command and attaches an update that deletes the deny rule protecting the project's secrets. The agent then reads the secrets in that session and the next, even inside the vendor's strict sandbox. The root cause is that Claude Code checks only updates that add or replace allow rules. Relays that forward such deletions already exist, including the vendor's own Remote Control. In effect, the right to answer a prompt has become the right to administer the policy. Worse, the deletion leaves the same records as a local edit by the operator, so Claude Code cannot tell who wrote a rule.\n  More generally, what a runtime records decides what it can safely delegate. A runtime that cannot tell who wrote a rule can accept only updates that keep every currently denied call denied, whereas, to protect every party's restrictions, a runtime that records who wrote each rule can let each party remove only the restrictions proven to be its own. We prove that these two bounds are tight. They correctly predict whether the operator's restrictions survive in all thirteen permission designs across ten agent systems, including predictions we wrote down before running Codex, Gemini CLI, opencode, and Goose. Enforcing the bounds at the shared update step blocks the attack. A survey of 2,227 fetched marketplace plugins finds only two that send policy updates.",
+    "html_url": "https://arxiv.org/abs/2611.32195v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.32195v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.32064v1",
+    "title": "Fix How It Acts, Not How It Thinks: Surgical Fine-Tuning of Frontier LLMs",
+    "authors": [
+      "Sandeep Singh Sandha",
+      "Prann Bansal",
+      "Arvind Sundararajan"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.LG",
+      "cs.CL"
+    ],
+    "published": "2026-11-24T06:51:43+00:00",
+    "updated": "2026-11-24T06:51:43+00:00",
+    "comments": "30 pages, 4 figures, 9 tables. Models released at https://huggingface.co/abacusai/Smaug-Nemotron-3.5 and https://huggingface.co/abacusai/Smaug-Nemotron-3.5-NVFP4",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "Open-weight LLMs are competent software engineers, but they sometimes fail at tasks they are otherwise able to do. Often it is not a failure of reasoning. It is a few small missteps over a long trajectory (repeating a step that has already failed, or declaring the task done while a requirement is still unmet) that make the difference. Correcting this calls for a surgical weight update that steers the model toward the right actions without interfering with its reasoning. Such updates, typically learned with LoRA adapters, are often too small to survive merging into a released checkpoint. In our BF16 release, the median weight change is only 1.5% of a single rounding step, and merging loses roughly two thirds of the update's norm. When the same adapter is merged into the mixed FP8/NVFP4 release of the same model, 93% of the update disappears. Instead of increasing the size of the update, we directly train on the surviving part. We introduce merge-aware fine-tuning. Standard LoRA rounds the merged weights to the storage format only at export, so the loss never sees the rounded weights. We instead round the sum of base weights and adapter update to the release format at every training step, keeping the vendor's quantization scales, and compute the loss on these weights. The forward pass matches the serving engine numerics, and the gradient passes straight through the rounding, so the model we train is the model we ship. The loss optimizes only the model's actions and keeps its reasoning close to the base model. Applied to Nemotron-3.5, the recipe improves agentic coding in both the BF16 and the NVFP4 release, by up to 8.4 points on Terminal-Bench 2.1, and we publicly release both models.",
+    "html_url": "https://arxiv.org/abs/2611.32064v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.32064v1",
+    "code_urls": [
+      "https://huggingface.co/abacusai/Smaug-Nemotron-3.5",
+      "https://huggingface.co/abacusai/Smaug-Nemotron-3.5-NVFP4"
+    ],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.32037v1",
+    "title": "Online Environment Repair for Coding Agents",
+    "authors": [
+      "Sheng Lu",
+      "Rui Mao",
+      "Zewei Chen",
+      "Chihua Ying",
+      "Beiduo Chen",
+      "Dingxin Hu",
+      "Tinghao Yu"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.LG",
+      "cs.CR",
+      "cs.SE"
+    ],
+    "published": "2026-11-24T06:21:42+00:00",
+    "updated": "2026-11-24T06:21:42+00:00",
+    "comments": "15 pages, 7 figures",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "Programmatic verifiers provide scalable reward signals for training coding agents with reinforcement learning, yet subtle harness defects and incomplete unit tests allow policies to earn full credit without solving the intended task. Existing training-time defenses intervene either by penalizing suspicious outputs or by filtering flagged tasks and rollouts. However, output penalties leave the underlying verifier exploitable, driving policies to disguise shortcuts under reasoning monitors or zeroing out valid solutions under detector false positives, whereas task and rollout filtering discards or mutes the hardest problems where shortcuts emerge earliest. Pre-training verifier hardening repairs the environment directly, but misses vulnerability classes that surface only as the policy improves during reinforcement learning. In this paper, we propose online environment repair, which leaves triggering rollout rewards unchanged to remove hiding incentives and asynchronously patches exploited environments during training. Candidate repairs triggered by execution invariants or differential fuzzing are deployed only after passing three automated validation gates that block the exploit while preserving valid solutions, canceling detector false positives and enabling structural propagation across repositories without scaffold labels or reference solutions. Across 20 controlled GRPO experiments on heterogeneous software-engineering repositories, online environment repair reduces cumulative reward hacking from 36.9% to 0.06% and improves held-out Pass@8 from 21.7% to 46.7%, consistently outperforming reward-penalty, rollout-filtering, and static-hardening baselines while eliminating zero-shot exploitation on unseen loophole classes.",
+    "html_url": "https://arxiv.org/abs/2611.32037v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.32037v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.31974v1",
+    "title": "Coding4Games: Can Modern Coding Agents Play Modern Video Games?",
+    "authors": [
+      "Shifang Zhao",
+      "Haoyu Wang",
+      "Yuyang Yin",
+      "Dong Chen",
+      "Xingyilang Yin",
+      "Yunkang Tao",
+      "Honghao Chen",
+      "Guangzhi Wang",
+      "Yiran Wang",
+      "Junfu Pu",
+      "Cheng Cheng",
+      "Xiaodong Cun",
+      "Ying Shan"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.AI"
+    ],
+    "published": "2026-11-24T05:24:32+00:00",
+    "updated": "2026-11-24T05:24:32+00:00",
+    "comments": "Project Page: https://coding4game.github.io/",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "Games, especially modern AAA games, challenge language models to perceive complex scenes, control actions, and make decisions over long horizons. Existing game benchmarks primarily test language models as computer-use agents that query a language model throughout play, incurring repeated inference cost and, in real-time games, acting while the environment continues to evolve. We ask whether coding agents can learn from game interaction to develop standalone game-playing programs that run without language model inference. We thus introduce Coding4Games, a benchmark for evaluating whether coding agents can develop standalone programs that play modern games through visual observations and standard game inputs. Coding4Games has three defining features: 1) Diverse Modern Games, covering 15 games with diverse visual, strategic, and control demands; 2) Development-Test Separation, in which a coding agent uses a sandbox and the standard player interface to iteratively develop a program, after which the selected program is frozen and independently tested without language-model inference; and 3) Outcome and Process Evaluation, which measures not only game performance and reliability but also how agents use feedback, revise programs, and resolve problems during development. Across 15 games, the best program per game outscores the strongest GUI baseline on 13 and ties it on one. The human player outscores all agents on 10 games. We additionally examine the effects of development budgets. Coding4Games evaluates whether coding agents can turn their understanding of complex interactive environments into programs that work reliably on their own.",
+    "html_url": "https://arxiv.org/abs/2611.31974v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.31974v1",
+    "code_urls": [],
+    "project_urls": [
+      "https://coding4game.github.io/"
+    ],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.31929v1",
+    "title": "Shuttle: Dependency-Attributed Workflow Evolution for Smart Contract Auditing",
+    "authors": [
+      "Yue Xue",
+      "Yi Rong",
+      "Ziqiao Kong",
+      "Ronghui Gu",
+      "Dan She",
+      "Yuannan Yang",
+      "Zhiju Yang",
+      "Yuqiang Sun"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.SE"
+    ],
+    "published": "2026-11-24T04:31:14+00:00",
+    "updated": "2026-11-24T04:31:14+00:00",
+    "comments": "15 pages, 9 figures, 11 tables",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "In LLM-based smart contract auditing, detection quality depends on both model capability and workflow design. While coding agents can revise workflows from execution feedback, unconstrained rewrites rarely yield stable gains. Cross-function vulnerabilities require multi-step state tracking and boundary reasoning that coarse pipelines miss. End-to-end outcomes hide which step lost a clue, so direct rewrites regress existing hits or discard valid edits under coarse aggregate scoring. Repeatedly iterating on a small project set also adds case-specific heuristics that bloat prompts and hurt generalization. We present Shuttle, a constrained workflow-evolution system, and LucidScan, the auditing framework it evolves. Shuttle centers on provenance-graph attribution: it expands each run into an instance-level dependency graph, locates the node where a clue was lost via forward search, and traces existing hits backward into a protected set. After evaluating a merged batch, Shuttle drops dragging edits via a node-level provenance ledger, falling back to cache-reusing local re-runs only when early-round edits overlap on the same node. For localized bottlenecks, Shuttle generates edits under task decomposition, progressive refinement, and generality blind review. On 10 training projects, Shuttle evolves LucidScan from $G_0$ (28.7% per-project average C/H/M recall) to $G_8$ (82.1%). On 13 held-out validation projects under the same model, average recall rises from 28.6% ($G_0$) to 70.3% ($G_8$), above Pashov and Codex Security. In an anonymized live public audit contest with 896 researchers (Nov. 2026), the evolved scanner tied for #1 in High-severity recall (6/8, 75.0%), ranked #2 in scored H/M clusters (34/72, 47.2%) with 92.9% validity (78/84), and finished #3 overall.",
+    "html_url": "https://arxiv.org/abs/2611.31929v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.31929v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.31927v1",
+    "title": "(No) Separation of Concerns: Philosophical Concerns about Agent Ethics and Implications for SE Practitioners",
+    "authors": [
+      "Marc Cheong",
+      "Sebastian Baltes",
+      "Joanne Byrne",
+      "Haoyu Gao",
+      "Raula Gaikovina Kula",
+      "Sarita Rosenstock",
+      "Christoph Treude",
+      "Mansooreh Zahedi"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.SE",
+      "cs.CY"
+    ],
+    "published": "2026-11-24T04:29:40+00:00",
+    "updated": "2026-11-24T04:29:40+00:00",
+    "comments": "8 pages, 2 figures, submitted for consideration to AGENT-2027",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "The use of AI agents in software engineering (SE) are commonplace, with differing levels of autonomy, a myriad of capabilities, and ability to perform a variety of tasks. Philosophers have begun to examine the ethics of such agents, and SE researchers or practitioners could benefit from them; on the other hand, SE practitioners currently explore most of these concerns through the lens of principlism. We bridge this gap by reviewing the philosophical literature on AI agents indexed in PhilPapers, and translating its ethical concerns into a research agenda for SE researchers and into implications for teams that use coding agents. A systematic mapping study of PhilPapers -- a major philosophy index and open access archive -- yielded 33 peer-reviewed papers by professional philosophers published since 2023. We coded these papers thematically, with cross-disciplinary review of the emerging themes, resulting in eight themes and 85 codes. From these, we derive seven research questions for SE, covering developers' reliance on agents, responsibility for agent-written code, ethical constraints in agent configurations, and benchmark design. For practitioners, we derive five implications: decide which choices an agent must refer to a human, keep agent-written pull requests small enough to review, pair configuration-file instructions with checks, watch for changes to tests, and record who approved what. We argue that ethical concerns cannot be separated from SE concerns into a module of their own: they arise inside code review, configuration, evaluation, and requirements work, and addressing them requires cross-disciplinary work.",
+    "html_url": "https://arxiv.org/abs/2611.31927v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.31927v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.30405v1",
+    "title": "Optimistic Online Learning for Coding Agents with Aggregate Feedback",
+    "authors": [
+      "Hao Luan",
+      "Hao Qiu",
+      "Zhi Zheng",
+      "See-Kiong Ng",
+      "Zhiyong Huang"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.LG"
+    ],
+    "published": "2026-11-23T10:05:39+00:00",
+    "updated": "2026-11-23T10:05:39+00:00",
+    "comments": "19 pages, 4 figures",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "Large language model (LLM) coding agents operating on Web development platforms can interact with repositories, issue trackers, and continuous integration services to carry out long-horizon software engineering tasks. However, behavioral drift remains a major bottleneck in such multi-turn reasoning and action trajectories. To mitigate this, activation steering has emerged as a promising approach for regularizing agent behaviors by intervening on the LLM's transformer residual streams. Nonetheless, existing methods typically apply a static steering policy across all tasks, overlooking the fact that a single policy is rarely effective across heterogeneous tasks and varying execution turns. This limitation motivates dynamic online selection among candidate steering policies. Yet, doing so in long-horizon agentic settings is challenging: verifiable task-level feedback is only revealed upon task completion, leaving the contributions of individual steering turns unobserved. To address this challenge, we formulate online steering-policy selection as a multi-armed bandit problem with delayed task-level feedback and turn-level predictive hints derived from residual-stream activations. Within this formulation, we introduce Online Optimistic Activation Steering, a meta-framework that uses hints to guide within-task steering policy selection and leverages terminal task-level feedback to correct cumulative reward estimates. Theoretically, against the best fixed policy in hindsight, we prove regret bounds that tighten with increasing hint accuracy and establish a matching lower bound with respect to prediction error and candidate policy count. Empirical evaluations on realistic coding benchmarks demonstrate that our framework outperforms both static steering policies and naive online adaptive baselines.",
+    "html_url": "https://arxiv.org/abs/2611.30405v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.30405v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.30350v1",
+    "title": "RepoClean: Evaluating Coding Agents on Repository-Level Obsolete Code Cleanup",
+    "authors": [
+      "Hongyixuan Yuan",
+      "Qixing Zhou",
+      "Pengcheng Huang",
+      "Qingshuo Ni",
+      "Runsong Zhao",
+      "Shaokai He",
+      "Xiangpeng Li",
+      "Deqiang Ouyang"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.SE",
+      "cs.AI"
+    ],
+    "published": "2026-11-23T09:22:53+00:00",
+    "updated": "2026-11-23T09:22:53+00:00",
+    "comments": "",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "Large language model (LLM) agents have demonstrated strong repository-level programming capabilities. However, as software evolves, repository code may become redundant or obsolete, increasing maintenance costs and potentially introducing functional issues. Agents must therefore identify and remove unnecessary code safely, yet autonomous repository-level code cleanup remains insufficiently evaluated in isolation. To evaluate this capability, we introduce RepoClean, a benchmark of 200 cleanup tasks from 34 popular open-source Python repositories. RepoClean is constructed by automatically reintroducing deleted code from real repository histories into newer versions, preserving current implementations and retaining instances where previously passing tests consequently fail. To restore existing functionality without new feature development, agents must use repository interfaces and cross-file dependencies to determine which historical code to remove and which implementations to preserve. Evaluation of seven models shows that even the best-performing model, GPT-6 Astra, resolves only 23% of tasks. Further analysis reveals that agents remove substantially less obsolete code when cleanup is not explicitly requested. RepoClean provides a foundation for systematically studying these cleanup challenges and advancing coding agents toward autonomous software maintenance.",
+    "html_url": "https://arxiv.org/abs/2611.30350v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.30350v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.30226v1",
+    "title": "VeriWorld: A Verifiable Visual SWE-Bench for Spatial Reasoning in 3D Environments",
+    "authors": [
+      "Yan Zheng",
+      "ShengYun Peng",
+      "Xuyao Liang",
+      "Xiaoyan Cong",
+      "Nuo Chen",
+      "Bangya Liu",
+      "Zihan Wang",
+      "Wenyan Cong",
+      "Zhiwen Fan",
+      "Zhangyang Wang"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.AI"
+    ],
+    "published": "2026-11-23T07:58:01+00:00",
+    "updated": "2026-11-23T07:58:01+00:00",
+    "comments": "32 pages, 5 figures. Accepted at NeurIPS 2026, Evaluations and Datasets Track. Code at https://github.com/VITA-Group/VeriWorld and dataset at https://huggingface.co/datasets/yanyanzheng96/VeriWorld",
+    "journal_ref": null,
+    "venue_inferred": "NeurIPS 2026",
+    "summary": "Vision-language models (VLMs) are increasingly used for spatial tasks such as navigation and manipulation, where they must infer geometry and object relationships from visual input in order to act correctly. Existing benchmarks usually test perception and reasoning in isolation, making it hard to tell whether failures come from visual understanding, downstream reasoning, or the bridge between them. We introduce VeriWorld, a benchmark for spatial reasoning in interactive 3D environments with executable actions and deterministic verification. For task families where all three channels are well-defined, we evaluate matched visual, structured, and combined input conditions on the same instance, environment, and verifier; families without a clean visual/structured/combined split are reported separately. This design supports controlled comparisons of perception, reasoning, and their interaction. Using this setup, we uncover two diagnostic findings. First, models often perform much better when task-relevant information, such as object identity, current state, or target location, is given explicitly than when it must be read from the rendered scene, revealing a recurring visual-to-structure gap. Second, action-space and harness design can change outcomes even under the same task and information condition, showing that interaction protocol is itself a confounding variable. VeriWorld is open-sourced to support reproducible and fine-grained evaluation of spatial reasoning in VLMs.",
+    "html_url": "https://arxiv.org/abs/2611.30226v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.30226v1",
+    "code_urls": [
+      "https://github.com/VITA-Group/VeriWorld",
+      "https://huggingface.co/datasets/yanyanzheng96/VeriWorld"
+    ],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "代码Agent"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.32812v1",
+    "title": "Breaking the Joint Action Space Dependence in Distributionally Robust Multi-Agent Reinforcement Learning",
+    "authors": [
+      "Yue Wang"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.LG"
+    ],
+    "published": "2026-11-24T15:32:04+00:00",
+    "updated": "2026-11-24T15:32:04+00:00",
+    "comments": "preprint, work in progress",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "We study the sample complexity of learning robust coarse correlated equilibria (CCE) in finite-horizon, general-sum, distributionally robust Markov games with known rewards and a generative model of the nominal transitions. Each player evaluates a policy by its worst-case return over total-variation (TV) balls centered at the nominal transition distribution of every stage, state, and joint action; this is the standard $(s,a)$-rectangular uncertainty set. Existing generative-model guarantees for this model scale with the number $\\prod_iA_i$ of joint actions, where $A_i$ is the number of actions of player~$i$. Since this number grows exponentially with the number of players, these guarantees suffer from the curse of multiagency. We design an algorithm whose sample complexity depends on the action sets only through the largest individual action-set size $A_*:=\\max_iA_i$. The algorithm uses $\\widetilde O(SA_*H^5D^4/\\varepsilon^4)$ transition samples and, with probability at least $1-δ$, returns a Markov policy that is an $\\varepsilon$-robust CCE from every initial state. Here $S$ is the number of states, $H$ is the horizon, and $D:=\\max_i\\min\\{H,1/ρ_i\\}$, where $ρ_i$ is the TV radius of player~$i$. Two ingredients make this possible: a plug-in estimate of the robust backup whose mean error does not depend on the number of states, and a single batch of samples per round that serves as bandit feedback for all players at once. The result shows that the dependence on $\\prod_iA_i$ can be avoided without modifying the $(s,a)$-rectangular uncertainty set.",
+    "html_url": "https://arxiv.org/abs/2611.32812v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.32812v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "Agentic RL"
+    ]
+  },
+  {
+    "id": "http://arxiv.org/abs/2611.31880v1",
+    "title": "Multi Agent Reinforcement Learning enhanced Federated Learning for Predicting Remaining Useful Lifetime",
+    "authors": [
+      "Rajarshi Chattopadhyay",
+      "Chen-Khong Tham"
+    ],
+    "primary_category": null,
+    "categories": [
+      "cs.LG",
+      "cs.DC"
+    ],
+    "published": "2026-11-24T03:39:05+00:00",
+    "updated": "2026-11-24T03:39:05+00:00",
+    "comments": "10 pages, 9 figures, 5 tables",
+    "journal_ref": null,
+    "venue_inferred": null,
+    "summary": "Remaining useful life (RUL) prediction is central to Prognostics and Health Management (PHM). The growth of industrial IoT has unlocked large multivariate sensor streams and enabled deep models - especially Transformers - for long-horizon sequence learning. However, transformers are parameter-heavy and data-hungry, while operational datasets are often siloed and privacy-sensitive. Federated Learning (FL) addresses this by training across clients without raw data sharing, but in practice many clients connect over lossy wireless links where UDP is preferred for low latency, making model exchange vulnerable to packet drops. We present a cooperative multi-agent reinforcement learning (MARL) framework that adapts FL to lossy channels by selecting per-client layer subsets to transmit and capping retransmissions. This framework is trained with QMIX value-function factorization for scalability. We instantiate the approach with a Graph Convolution Position-Aware Transformer (GCPATr) for RUL forecasting. On the CMAPSS dataset, our MARL-enhanced FL (RL-FL) consistently improves mean square error over standard FL, with the largest gains at high packet loss (e.g., up to 18% improvement on FD003 at 50% loss). These results show that MARL is an effective countermeasure to wireless degradation in FL-based RUL prediction.",
+    "html_url": "https://arxiv.org/abs/2611.31880v1",
+    "pdf_url": "https://arxiv.org/pdf/2611.31880v1",
+    "code_urls": [],
+    "project_urls": [],
+    "other_urls": [],
+    "groups": [
+      "Agentic RL"
+    ]
+  }
+]
